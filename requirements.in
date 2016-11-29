@@ -1,0 +1,11 @@
+# Django
+Django
+
+# Settings
+django-environ
+
+# Sentry monitoring
+raven>=5.2.0
+
+# PostgreSQL
+psycopg2

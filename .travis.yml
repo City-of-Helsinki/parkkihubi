@@ -1,0 +1,19 @@
+sudo: false
+language: python
+services:
+  - postgresql
+cache:
+  directories:
+    - "$HOME/.cache/pip"
+python:
+  - 3.4
+  - 3.5
+install:
+  - pip install -U pip
+  - pip install -r requirements.txt -r requirements-dev.txt
+before_script:
+  - psql -c 'create database parkkihubi;' -U postgres
+  - psql -U postgres -c "create extension postgis"
+script:
+  - flake8
+  - py.test -ra -vvv --cov
