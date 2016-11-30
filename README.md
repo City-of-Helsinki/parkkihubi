@@ -64,3 +64,6 @@ When you change requirements, set them in `requirements.in` or `requirements-dev
     pip-compile requirements.in
     pip-compile requirements-dev.in
 
+## License
+
+[MIT](https://tldrlegal.com/license/mit-license)
