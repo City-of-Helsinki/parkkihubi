@@ -1,5 +1,6 @@
 autoflake
 autopep8
+django-extensions
 flake8
 ipython
 isort

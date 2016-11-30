@@ -8,6 +8,7 @@ autoflake==0.6.6
 autopep8==1.2.2
 coverage==4.0.3           # via pytest-cov
 decorator==4.0.10         # via ipython, traitlets
+django-extensions==1.7.5
 flake8==2.5.4
 ipython-genutils==0.1.0   # via traitlets
 ipython==5.1.0
@@ -26,7 +27,7 @@ pytest-cov==2.2.1
 pytest-django==2.9.1
 pytest==2.9.1
 simplegeneric==0.8.1      # via ipython
-six==1.10.0               # via prompt-toolkit, traitlets
+six==1.10.0               # via django-extensions, prompt-toolkit, traitlets
 traitlets==4.3.1          # via ipython
 wcwidth==0.1.7            # via prompt-toolkit
 

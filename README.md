@@ -15,6 +15,11 @@ Django-based REST API for processing parking data.
 
     # Ubuntu 16.04
     sudo apt-get install python3-dev libpg-dev postgresql postgis
+    
+#### GeoDjango extra packages
+
+    # Ubuntu 16.04
+    sudo apt-get install binutils libproj-dev gdal-bin
 
 ### Creating a virtualenv
 
@@ -68,6 +73,18 @@ When you change requirements, set them in `requirements.in` or `requirements-dev
 
     pip-compile requirements.in
     pip-compile requirements-dev.in
+    
+### Running tests
+
+Run all tests
+
+    py.test
+    
+Run with coverage
+
+    py.test --cov-report html --cov .
+    
+Open `htmlcov/index.html` for the coverage report.
 
 ## License
 

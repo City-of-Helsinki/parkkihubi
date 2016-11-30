@@ -69,9 +69,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'raven.contrib.django.raven_compat',
-    'parkkihubi'
+    'parkkihubi',
+    'parkings',
 ]
+
+if DEBUG:
+    # shell_plus and other goodies
+    INSTALLED_APPS.append("django_extensions")
 
 ##############
 # Middleware #

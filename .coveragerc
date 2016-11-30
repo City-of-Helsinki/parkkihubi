@@ -3,3 +3,5 @@ branch = True
 omit =
     *migrations*
     *site-packages*
+include =
+    parkings/*
