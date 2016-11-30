@@ -28,9 +28,14 @@ The virtualenv will automatically activate. To activate it in the future, just d
 
 ### Python requirements
 
-Install development requirements as follows
+Use `pip-tools` to install and maintain installed dependencies.
 
-    pip install -r requirements.txt -r requirements-dev.txt
+    pip install -U pip  # pip-tools needs pip==6.1 or higher (!)
+    pip install pip-tools
+
+Install requirements as follows
+
+    pip-sync requirements.txt requirements-dev.txt
 
 ### Django configuration
 
