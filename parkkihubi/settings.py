@@ -71,6 +71,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'raven.contrib.django.raven_compat',
+    'rest_framework',
+    'rest_framework_gis',
     'parkkihubi',
     'parkings',
 ]
@@ -144,3 +146,12 @@ WSGI_APPLICATION = 'parkkihubi.wsgi.application'
 vars().update(env.email_url(
     default=('consolemail://' if DEBUG else 'smtp://localhost:25')
 ))
+
+#########################
+# Django REST Framework #
+#########################
+REST_FRAMEWORK = {
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
+    'PAGE_SIZE': 20
+}

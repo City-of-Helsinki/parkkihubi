@@ -7,6 +7,8 @@
 contextlib2==0.5.3        # via raven
 django-environ==0.4.1
 django==1.10.3
+djangorestframework-gis==0.11
+djangorestframework==3.5.3
 psycopg2==2.6.2
 raven==5.17.0
 six==1.10.0               # via django-environ

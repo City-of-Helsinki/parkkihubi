@@ -86,6 +86,14 @@ Run with coverage
     
 Open `htmlcov/index.html` for the coverage report.
 
+### Starting a development server
+
+    python manage.py runserver
+
+Operator API will be available at [http://127.0.0.1:8000/operator/v1/](http://127.0.0.1:8000/operator/v1/)
+
+Internal API will be available at [http://127.0.0.1:8000/internal/v1/](http://127.0.0.1:8000/internal/v1/)
+
 ## License
 
 [MIT](https://tldrlegal.com/license/mit-license)

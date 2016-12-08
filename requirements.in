@@ -9,3 +9,7 @@ raven>=5.2.0
 
 # PostgreSQL
 psycopg2
+
+# Django REST Framework
+djangorestframework
+djangorestframework-gis
