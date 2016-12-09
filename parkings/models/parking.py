@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.utils.timezone import localtime
 from django.utils.translation import ugettext_lazy as _
 
 from parkings.models.address import Address
@@ -37,3 +38,8 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     zone = models.IntegerField(verbose_name=_("zone number"), validators=[
         MinValueValidator(1), MaxValueValidator(3),
     ])
+
+    def __str__(self):
+        start = localtime(self.time_start).replace(tzinfo=None)
+        end = localtime(self.time_end).time().replace(tzinfo=None)
+        return "%s -> %s (%s)" % (start, end, self.registration_number)
