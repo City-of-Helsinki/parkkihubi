@@ -152,6 +152,7 @@ vars().update(env.email_url(
 #########################
 REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
+    'ALLOWED_VERSIONS': ('v1',),
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
     'PAGE_SIZE': 20
 }
