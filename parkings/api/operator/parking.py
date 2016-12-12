@@ -9,6 +9,6 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OperatorAPIParkingViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Parking.objects.all()
     serializer_class = OperatorAPIParkingSerializer
