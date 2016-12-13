@@ -2,7 +2,7 @@ import json
 
 from django.core.urlresolvers import reverse
 
-from ..utils import check_disallowed_methods, check_list_endpoint_base_fields, get
+from ..utils import ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes, get
 
 list_url = reverse('internal:v1:parking-list')
 
@@ -43,7 +43,7 @@ def test_list_endpoint_base_fields(staff_api_client):
 def test_disallowed_methods(staff_api_client, parking):
     disallowed_methods = ('post', 'put', 'patch', 'delete')
     urls = (list_url, get_detail_url(parking))
-    check_disallowed_methods(staff_api_client, urls, disallowed_methods)
+    check_method_status_codes(staff_api_client, urls, disallowed_methods, 405)
 
 
 def test_get_list_check_data(staff_api_client, parking):
@@ -57,6 +57,7 @@ def test_get_detail_check_data(staff_api_client, parking):
     check_parking_data(parking_data, parking)
 
 
-def test_staff_required_to_get_list_or_detail(operator_api_client, parking):
-    get(operator_api_client, list_url, status_code=403)
-    get(operator_api_client, get_detail_url(parking), status_code=403)
+def test_other_than_staff_cannot_do_anything(api_client, operator_api_client, parking):
+    urls = (list_url, get_detail_url(parking))
+    check_method_status_codes(api_client, urls, ALL_METHODS, 403)
+    check_method_status_codes(operator_api_client, urls, ALL_METHODS, 403)

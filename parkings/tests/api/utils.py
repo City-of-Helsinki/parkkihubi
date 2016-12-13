@@ -1,5 +1,8 @@
 import json
+
 from rest_framework.authtoken.models import Token
+
+ALL_METHODS = ('get', 'post', 'put', 'patch', 'delete')
 
 
 def token_authenticate(api_client, user):
@@ -14,16 +17,16 @@ def get(api_client, url, status_code=200):
     return json.loads(response.content.decode('utf-8'))
 
 
-def check_disallowed_methods(api_client, urls, disallowed_methods):
+def check_method_status_codes(api_client, urls, methods, status_code):
     # accept also a single url as a string
     if isinstance(urls, str):
         urls = (urls,)
 
     for url in urls:
-        for method in disallowed_methods:
+        for method in methods:
             response = getattr(api_client, method)(url)
-            assert response.status_code == 405, (
-                '%s %s %s %s' % (method, url, response.status_code, response.data)
+            assert response.status_code == status_code, (
+                '%s %s expected %s, got %s %s' % (method, url, status_code, response.status_code, response.data)
             )
 
 
