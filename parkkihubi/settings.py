@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'raven.contrib.django.raven_compat',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_gis',
     'parkkihubi',
     'parkings',
@@ -154,6 +155,7 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
     'ALLOWED_VERSIONS': ('v1',),
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
+    'DEFAULT_AUTHENTICATION_CLASSES': ('parkings.authentication.ApiKeyAuthentication',),
     'PAGE_SIZE': 20,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }

@@ -1,4 +1,11 @@
 import json
+from rest_framework.authtoken.models import Token
+
+
+def token_authenticate(api_client, user):
+    token, _ = Token.objects.get_or_create(user=user)
+    api_client.credentials(HTTP_AUTHORIZATION='ApiKey ' + token.key)
+    return api_client
 
 
 def get(api_client, url, status_code=200):
