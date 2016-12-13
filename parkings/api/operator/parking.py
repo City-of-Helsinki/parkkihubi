@@ -7,6 +7,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parking
         fields = '__all__'
+        read_only_fields = ('operator',)
 
 
 class OperatorAPIParkingPermission(permissions.BasePermission):
@@ -48,3 +49,6 @@ class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin
     queryset = Parking.objects.all()
     serializer_class = OperatorAPIParkingSerializer
     permission_classes = (OperatorAPIParkingPermission,)
+
+    def perform_create(self, serializer):
+        serializer.save(operator=self.request.user.operator)
