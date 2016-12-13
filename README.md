@@ -58,6 +58,10 @@ Create user and database
     sudo -u postgres createdb -O parkkihubi parkkihubi
     sudo -u postgres psql parkkihubi -c "CREATE EXTENSION postgis;"
 
+Tests also require that PostGIS extension is installed on the test database. This can be achieved most easily by adding PostGIS extension to the default template: 
+
+    sudo -u postgres psql -d template1 -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+
 Run migrations
 
     python manage.py migrate

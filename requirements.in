@@ -13,3 +13,6 @@ psycopg2
 # Django REST Framework
 djangorestframework
 djangorestframework-gis
+
+# Misc
+pytz
