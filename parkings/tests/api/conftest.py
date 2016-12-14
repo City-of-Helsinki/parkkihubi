@@ -1,4 +1,7 @@
+import datetime
+
 import pytest
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from .utils import token_authenticate
@@ -48,3 +51,30 @@ def operator_2(operator, operator_factory):
 def operator_2_api_client(api_client, operator, operator_2):
     token_authenticate(api_client, operator_2.user)
     return api_client
+
+
+@pytest.fixture
+def past_parking(parking_factory):
+    now = timezone.now()
+    return parking_factory(
+        time_start=now-datetime.timedelta(hours=2),
+        time_end=now-datetime.timedelta(hours=1),
+    )
+
+
+@pytest.fixture
+def current_parking(parking_factory):
+    now = timezone.now()
+    return parking_factory(
+        time_start=now-datetime.timedelta(hours=1),
+        time_end=now+datetime.timedelta(hours=1),
+    )
+
+
+@pytest.fixture
+def future_parking(parking_factory):
+    now = timezone.now()
+    return parking_factory(
+        time_start=now+datetime.timedelta(hours=1),
+        time_end=now+datetime.timedelta(hours=2),
+    )

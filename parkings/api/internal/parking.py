@@ -4,6 +4,8 @@ from parkings.models import Parking
 
 
 class InternalAPIParkingSerializer(serializers.ModelSerializer):
+    status = serializers.ReadOnlyField(source='get_state')
+
     class Meta:
         model = Parking
         fields = '__all__'

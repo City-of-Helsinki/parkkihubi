@@ -1,6 +1,6 @@
 from django.contrib.gis.db import models
 from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
-from django.utils.timezone import localtime
+from django.utils.timezone import localtime, now
 from django.utils.translation import ugettext_lazy as _
 
 from parkings.models.address import Address
@@ -9,6 +9,9 @@ from parkings.models.operator import Operator
 
 
 class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
+    VALID = 'valid'
+    NOT_VALID = 'not_valid'
+
     address = models.ForeignKey(
         Address, on_delete=models.SET_NULL, verbose_name=_("address"), related_name="parkings", null=True, blank=True
     )
@@ -43,3 +46,8 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         start = localtime(self.time_start).replace(tzinfo=None)
         end = localtime(self.time_end).time().replace(tzinfo=None)
         return "%s -> %s (%s)" % (start, end, self.registration_number)
+
+    def get_state(self):
+        if self.time_start <= now() <= self.time_end:
+            return Parking.VALID
+        return Parking.NOT_VALID

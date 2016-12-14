@@ -2,6 +2,8 @@ import json
 
 from django.core.urlresolvers import reverse
 
+from parkings.models import Parking
+
 from ..utils import ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes, get
 
 list_url = reverse('internal:v1:parking-list')
@@ -18,7 +20,7 @@ def check_parking_data(parking_data, parking_obj):
 
     # check keys
     all_fields = {'id', 'created_at', 'modified_at', 'address', 'device_identifier', 'location', 'operator',
-                  'registration_number', 'resident_code', 'special_code', 'time_start', 'time_end', 'zone'}
+                  'registration_number', 'resident_code', 'special_code', 'time_start', 'time_end', 'zone', 'status'}
     assert set(parking_data.keys()) == all_fields
 
     # string valued fields should match 1:1
@@ -61,3 +63,14 @@ def test_other_than_staff_cannot_do_anything(api_client, operator_api_client, pa
     urls = (list_url, get_detail_url(parking))
     check_method_status_codes(api_client, urls, ALL_METHODS, 403)
     check_method_status_codes(operator_api_client, urls, ALL_METHODS, 403)
+
+
+def test_is_valid_field(staff_api_client, past_parking, current_parking, future_parking):
+    parking_data = get(staff_api_client, get_detail_url(past_parking))
+    assert parking_data['status'] == Parking.NOT_VALID
+
+    parking_data = get(staff_api_client, get_detail_url(current_parking))
+    assert parking_data['status'] == Parking.VALID
+
+    parking_data = get(staff_api_client, get_detail_url(future_parking))
+    assert parking_data['status'] == Parking.NOT_VALID
