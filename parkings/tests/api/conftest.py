@@ -37,3 +37,14 @@ def admin_api_client(api_client, admin_user):
 def operator_api_client(api_client, operator):
     token_authenticate(api_client, operator.user)
     return api_client
+
+
+@pytest.fixture
+def operator_2(operator, operator_factory):
+    return operator_factory()
+
+
+@pytest.fixture
+def operator_2_api_client(api_client, operator, operator_2):
+    token_authenticate(api_client, operator_2.user)
+    return api_client

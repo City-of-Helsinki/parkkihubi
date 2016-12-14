@@ -120,3 +120,30 @@ def test_delete_parking(operator_api_client, parking):
     delete(operator_api_client, detail_url)
 
     assert not Parking.objects.filter(id=parking.id).exists()
+
+
+def test_operator_cannot_be_set(operator_api_client, operator, operator_2, new_parking_data):
+    new_parking_data['operator'] = str(operator_2.id)
+
+    # POST
+    response_parking_data = post(operator_api_client, list_url, new_parking_data)
+    new_parking = Parking.objects.get(id=response_parking_data['id'])
+    assert new_parking.operator == operator
+
+    # PUT
+    detail_url = get_detail_url(new_parking)
+    put(operator_api_client, detail_url, new_parking_data)
+    new_parking.refresh_from_db()
+    assert new_parking.operator == operator
+
+    # PATCH
+    patch(operator_api_client, detail_url, {'operator': str(operator_2.id)})
+    new_parking.refresh_from_db()
+    assert new_parking.operator == operator
+
+
+def test_cannot_access_other_than_own_parkings(operator_2_api_client, parking, new_parking_data):
+    detail_url = get_detail_url(parking)
+    put(operator_2_api_client, detail_url, new_parking_data, 403)
+    patch(operator_2_api_client, detail_url, new_parking_data, 403)
+    delete(operator_2_api_client, detail_url, 403)
