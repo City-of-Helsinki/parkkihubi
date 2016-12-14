@@ -45,7 +45,8 @@ class OperatorAPIParkingPermission(permissions.BasePermission):
         return operator == obj.operator
 
 
-class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
+class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                                viewsets.GenericViewSet):
     queryset = Parking.objects.all()
     serializer_class = OperatorAPIParkingSerializer
     permission_classes = (OperatorAPIParkingPermission,)
