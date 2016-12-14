@@ -15,6 +15,7 @@ class InternalAPIParkingSerializer(serializers.ModelSerializer):
 
 class InternalAPIParkingFilter(django_filters.rest_framework.FilterSet):
     status = django_filters.CharFilter(method='filter_status')
+    registration_number = django_filters.CharFilter()
 
     class Meta:
         model = Parking

@@ -82,3 +82,18 @@ def test_is_valid_filter(staff_api_client, past_parking, current_parking, future
 
     results = get(staff_api_client, list_url + '?status=not_valid')['results']
     assert get_ids_from_results(results) == {past_parking.id, future_parking.id}
+
+
+def test_registration_number_filter(staff_api_client, parking_factory):
+    parking_1 = parking_factory(registration_number='ABC-123')
+    parking_2 = parking_factory(registration_number='ZYX-987')
+    parking_3 = parking_factory(registration_number='ZYX-987')
+
+    results = get(staff_api_client, list_url + '?registration_number=ABC-123')['results']
+    assert get_ids_from_results(results) == {parking_1.id}
+
+    results = get(staff_api_client, list_url + '?registration_number=ZYX-987')['results']
+    assert get_ids_from_results(results) == {parking_2.id, parking_3.id}
+
+    results = get(staff_api_client, list_url + '?registration_number=LOL-777')['results']
+    assert len(results) == 0
