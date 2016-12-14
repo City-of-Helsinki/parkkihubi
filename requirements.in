@@ -13,6 +13,7 @@ psycopg2
 # Django REST Framework
 djangorestframework
 djangorestframework-gis
+django-filter
 
 # Misc
 pytz

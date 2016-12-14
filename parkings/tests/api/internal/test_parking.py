@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 
 from parkings.models import Parking
 
-from ..utils import ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes, get
+from ..utils import ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes, get, get_ids_from_results
 
 list_url = reverse('internal:v1:parking-list')
 
@@ -74,3 +74,11 @@ def test_is_valid_field(staff_api_client, past_parking, current_parking, future_
 
     parking_data = get(staff_api_client, get_detail_url(future_parking))
     assert parking_data['status'] == Parking.NOT_VALID
+
+
+def test_is_valid_filter(staff_api_client, past_parking, current_parking, future_parking):
+    results = get(staff_api_client, list_url + '?status=valid')['results']
+    assert get_ids_from_results(results) == {current_parking.id}
+
+    results = get(staff_api_client, list_url + '?status=not_valid')['results']
+    assert get_ids_from_results(results) == {past_parking.id, future_parking.id}

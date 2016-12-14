@@ -1,4 +1,5 @@
 import json
+import uuid
 
 from rest_framework.authtoken.models import Token
 
@@ -70,3 +71,8 @@ def check_required_fields(api_client, url, expected_required_fields, detail_endp
             required_fields.add(field)
 
     assert required_fields == expected_required_fields
+
+
+def get_ids_from_results(results, as_set=True):
+    id_list = [uuid.UUID(result['id']) for result in results]
+    return set(id_list) if as_set else id_list
