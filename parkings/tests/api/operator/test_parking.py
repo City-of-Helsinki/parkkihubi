@@ -22,8 +22,9 @@ def new_parking_data():
     return {
         'special_code': 'V',  'device_identifier': 'ea95d137-7496-4ba1-92bd-6e9ac79ebac1', 'zone': 3,
         'registration_number': 'JLH-247',  'time_start': '2016-12-10T20:34:38Z',
-        'time_end': '2016-12-10T23:33:29Z', 'resident_code': 'N', 'address': None,
-        'location': {'coordinates': [60.16896809536978, 24.942075065834615], 'type': 'Point'}
+        'time_end': '2016-12-10T23:33:29Z', 'resident_code': 'N',
+        'location': {'coordinates': [60.16896809536978, 24.942075065834615], 'type': 'Point'},
+        'address': {'city': 'Kannus', 'street': 'Litsibulevardi 11', 'postal_code': '75945'}
     }
 
 
@@ -39,7 +40,14 @@ def check_parking_object(parking_data, parking_obj):
     assert parking_data['time_start'] == parking_obj.time_start.strftime('%Y-%m-%dT%H:%M:%SZ')
     assert parking_data['time_end'] == parking_obj.time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
     assert parking_data['location'] == json.loads(parking_obj.location.geojson)
-    assert parking_data['address'] == None if not parking_obj.address_id else str(parking_obj.address_id)
+
+    if parking_obj.address:
+        address = parking_obj.address
+        assert parking_data['address'] == {
+            'city': address.city, 'postal_code': address.postal_code, 'street': address.street
+        }
+    else:
+        assert parking_data['address'] is None
 
 
 def check_response_parking_data(posted_parking_data, response_parking_data):

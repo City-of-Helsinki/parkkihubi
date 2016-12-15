@@ -34,7 +34,14 @@ def check_parking_data(parking_data, parking_obj):
     assert parking_data['time_end'] == parking_obj.time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
     assert parking_data['operator'] == str(parking_obj.operator_id)
     assert parking_data['location'] == json.loads(parking_obj.location.geojson)
-    assert parking_data['address'] == str(parking_obj.address_id)
+
+    if parking_obj.address:
+        address = parking_obj.address
+        assert parking_data['address'] == {
+            'city': address.city, 'postal_code': address.postal_code, 'street': address.street
+        }
+    else:
+        assert parking_data['address'] is None
 
 
 def test_list_endpoint_base_fields(staff_api_client):

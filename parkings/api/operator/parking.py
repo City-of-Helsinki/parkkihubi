@@ -1,15 +1,59 @@
 from django.conf import settings
+from django.db import transaction
 from django.utils.timezone import now
 from rest_framework import mixins, permissions, serializers, viewsets
 
-from parkings.models import Operator, Parking
+from parkings.models import Address, Operator, Parking
+
+
+class OperatorAPIAddressSerializer(serializers.ModelSerializer):
+    city = serializers.CharField(required=True)
+    postal_code = serializers.CharField(required=True)
+    street = serializers.CharField(required=True)
+
+    class Meta:
+        model = Address
+        fields = ('city', 'postal_code', 'street')
 
 
 class OperatorAPIParkingSerializer(serializers.ModelSerializer):
+    address = OperatorAPIAddressSerializer(allow_null=True, required=False)
+
     class Meta:
         model = Parking
         fields = '__all__'
         read_only_fields = ('operator',)
+
+    @transaction.atomic
+    def create(self, validated_data):
+        address_data = validated_data.pop('address', None)
+
+        if address_data:
+            validated_data['address'], _ = Address.objects.get_or_create(
+                city=address_data['city'],
+                postal_code=address_data['postal_code'],
+                street=address_data['street'],
+            )
+
+        return Parking.objects.create(**validated_data)
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        address_data = validated_data.get('address')
+
+        if address_data:
+            validated_data['address'], _ = Address.objects.get_or_create(
+                city=address_data['city'],
+                postal_code=address_data['postal_code'],
+                street=address_data['street'],
+            )
+
+        for attr, value in validated_data.items():
+            # does not handle many-to-many fields
+            setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
 
 class OperatorAPIParkingPermission(permissions.BasePermission):

@@ -70,7 +70,7 @@ def check_required_fields(api_client, url, expected_required_fields, detail_endp
         if isinstance(response_data[field], list) and 'This field is required.' in response_data[field]:
             required_fields.add(field)
 
-    assert required_fields == expected_required_fields
+    assert required_fields == expected_required_fields, '%s != %s' % (required_fields, expected_required_fields)
 
 
 def get_ids_from_results(results, as_set=True):

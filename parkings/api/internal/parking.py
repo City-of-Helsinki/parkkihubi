@@ -2,11 +2,18 @@ import django_filters
 from django.utils import timezone
 from rest_framework import permissions, serializers, viewsets
 
-from parkings.models import Parking
+from parkings.models import Address, Parking
+
+
+class InternalAPIAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ('city', 'postal_code', 'street')
 
 
 class InternalAPIParkingSerializer(serializers.ModelSerializer):
     status = serializers.ReadOnlyField(source='get_state')
+    address = InternalAPIAddressSerializer()
 
     class Meta:
         model = Parking
