@@ -32,11 +32,11 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     special_code = models.CharField(
         max_length=10, verbose_name=_("special parking code"), blank=True,
     )
-    time_end = models.DateTimeField(
-        verbose_name=_("parking end time"), db_index=True,
-    )
     time_start = models.DateTimeField(
         verbose_name=_("parking start time"), db_index=True,
+    )
+    time_end = models.DateTimeField(
+        verbose_name=_("parking end time"), db_index=True,
     )
     zone = models.IntegerField(verbose_name=_("zone number"), validators=[
         MinValueValidator(1), MaxValueValidator(3),
