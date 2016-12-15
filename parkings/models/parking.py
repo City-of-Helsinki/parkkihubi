@@ -42,6 +42,10 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         MinValueValidator(1), MaxValueValidator(3),
     ])
 
+    class Meta:
+        verbose_name = _("parking")
+        verbose_name_plural = _("parkings")
+
     def __str__(self):
         start = localtime(self.time_start).replace(tzinfo=None)
         end = localtime(self.time_end).time().replace(tzinfo=None)

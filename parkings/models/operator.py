@@ -9,5 +9,9 @@ class Operator(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(verbose_name=_("name"), max_length=80)
     user = models.OneToOneField(User, on_delete=models.PROTECT, verbose_name=_("user"))
 
+    class Meta:
+        verbose_name = _("operator")
+        verbose_name_plural = _("operators")
+
     def __str__(self):
         return self.name
