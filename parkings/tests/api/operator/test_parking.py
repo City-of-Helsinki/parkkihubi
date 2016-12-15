@@ -1,7 +1,10 @@
+import datetime
 import json
 
 import pytest
+from django.conf import settings
 from django.core.urlresolvers import reverse
+from freezegun import freeze_time
 
 from parkings.models import Parking
 
@@ -147,3 +150,17 @@ def test_cannot_access_other_than_own_parkings(operator_2_api_client, parking, n
     put(operator_2_api_client, detail_url, new_parking_data, 403)
     patch(operator_2_api_client, detail_url, new_parking_data, 403)
     delete(operator_2_api_client, detail_url, 403)
+
+
+def test_cannot_modify_parking_after_modify_period(operator_api_client, new_parking_data):
+    start_time = datetime.datetime(2010, 1, 1, 12, 00)
+
+    with freeze_time(start_time):
+        response_parking_data = post(operator_api_client, list_url, new_parking_data)
+
+    new_parking = Parking.objects.get(id=response_parking_data['id'])
+    new_parking_data['zone'] = 2  # change a value just for the heck of it, should not really matter
+    end_time = start_time + settings.PARKINGS_TIME_EDITABLE + datetime.timedelta(minutes=1)
+
+    with freeze_time(end_time):
+        put(operator_api_client, get_detail_url(new_parking), new_parking_data, 403)

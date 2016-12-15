@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from environ import Env
 from raven import fetch_git_sha
@@ -160,3 +161,9 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
+
+
+##############
+# Parkkihubi #
+##############
+PARKINGS_TIME_EDITABLE = timedelta(minutes=2)

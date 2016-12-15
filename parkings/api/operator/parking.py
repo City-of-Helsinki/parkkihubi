@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.utils.timezone import now
 from rest_framework import mixins, permissions, serializers, viewsets
 
 from parkings.models import Operator, Parking
@@ -30,19 +32,10 @@ class OperatorAPIParkingPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """
-        Allow only operators to modify and only their own parkings.
+        Allow only operators to modify and only their own parkings and
+        only for a fixed period of time after creation.
         """
-        user = request.user
-
-        if not user.is_authenticated():
-            return False
-
-        try:
-            operator = user.operator
-        except Operator.DoesNotExist:
-            return False
-
-        return operator == obj.operator
+        return request.user.operator == obj.operator and (now() - obj.created_at) <= settings.PARKINGS_TIME_EDITABLE
 
 
 class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
