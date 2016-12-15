@@ -8,3 +8,6 @@ class Address(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     city = models.CharField(verbose_name=_("city"), blank=True, max_length=80)
     postal_code = models.CharField(verbose_name=_("postal code"), blank=True, max_length=20)
     street = models.CharField(verbose_name=_("street address"), blank=True, max_length=128)
+
+    def __str__(self):
+        return "%s %s %s" % (self.street, self.postal_code, self.city)
