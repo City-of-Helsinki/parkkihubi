@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 
 from environ import Env
 from raven import fetch_git_sha
@@ -72,6 +73,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'raven.contrib.django.raven_compat',
     'rest_framework',
+    'rest_framework.authtoken',
     'rest_framework_gis',
     'parkkihubi',
     'parkings',
@@ -129,7 +131,7 @@ RAVEN_CONFIG = {
 ############################
 # Languages & Localization #
 ############################
-LANGUAGE_CODE = 'fi'
+LANGUAGE_CODE = 'en'
 TIME_ZONE = 'Europe/Helsinki'
 USE_I18N = True
 USE_L10N = True
@@ -154,6 +156,14 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
     'ALLOWED_VERSIONS': ('v1',),
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticatedOrReadOnly',),
+    'DEFAULT_AUTHENTICATION_CLASSES': ('parkings.authentication.ApiKeyAuthentication',),
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'PAGE_SIZE': 20,
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
+
+
+##############
+# Parkkihubi #
+##############
+PARKINGS_TIME_EDITABLE = timedelta(minutes=2)
