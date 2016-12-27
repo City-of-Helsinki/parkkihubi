@@ -37,6 +37,7 @@ simplegeneric==0.8.1      # via ipython
 six==1.10.0               # via django-extensions, fake-factory, freezegun, prompt-toolkit, python-dateutil, traitlets
 traitlets==4.3.1          # via ipython
 wcwidth==0.1.7            # via prompt-toolkit
+werkzeug==0.11.13
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools                # via ipython
