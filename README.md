@@ -14,7 +14,7 @@ Django-based REST API for processing parking data.
 #### PostgreSQL
 
     # Ubuntu 16.04
-    sudo apt-get install python3-dev libpg-dev postgresql postgis
+    sudo apt-get install python3-dev libpq-dev postgresql postgis
     
 #### GeoDjango extra packages
 
