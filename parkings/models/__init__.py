@@ -1,3 +1,3 @@
-from .address import Address
-from .operator import Operator
-from .parking import Parking
+from .address import Address  # noqa
+from .operator import Operator  # noqa
+from .parking import Parking  # noqa
