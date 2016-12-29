@@ -1,5 +1,7 @@
 import json
+from datetime import datetime
 
+import pytest
 from django.core.urlresolvers import reverse
 
 from parkings.models import Parking
@@ -104,3 +106,21 @@ def test_registration_number_filter(staff_api_client, parking_factory):
 
     results = get(staff_api_client, list_url + '?registration_number=LOL-777')['results']
     assert len(results) == 0
+
+
+@pytest.mark.parametrize('filtering, expected_parking_index', [
+    ('time_start_lte=2017-01-01', 0),
+    ('time_start_gte=2017-01-01', 1),
+    ('time_end_lte=2019-01-01', 0),
+    ('time_end_gte=2019-01-01', 1),
+    ('time_start_gte=2015-01-01&time_end_lte=2019-01-01', 0),
+])
+def test_time_filters(staff_api_client, parking_factory, filtering, expected_parking_index):
+    parkings = [
+        parking_factory(time_start=datetime(2016, 1, 1), time_end=datetime(2018, 1, 1)),
+        parking_factory(time_start=datetime(2018, 1, 1), time_end=datetime(2020, 1, 1))
+    ]
+    expected_id = {parkings[expected_parking_index].id}
+
+    results = get(staff_api_client, list_url + '?' + filtering)['results']
+    assert get_ids_from_results(results) == expected_id
