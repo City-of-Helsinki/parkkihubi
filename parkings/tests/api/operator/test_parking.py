@@ -172,3 +172,22 @@ def test_cannot_modify_parking_after_modify_period(operator_api_client, new_park
 
     with freeze_time(end_time):
         put(operator_api_client, get_detail_url(new_parking), new_parking_data, 403)
+
+
+def test_time_start_cannot_be_after_time_end(operator_api_client, parking, new_parking_data):
+    new_parking_data['time_start'] = '2116-12-10T23:33:29Z'
+    detail_url = get_detail_url(parking)
+    error_message = '"time_start" cannot be after "time_end".'
+
+    # POST
+    error_data = post(operator_api_client, list_url, new_parking_data, status_code=400)
+    assert error_message in error_data['non_field_errors']
+
+    # PUT
+    error_data = put(operator_api_client, detail_url, new_parking_data, status_code=400)
+    assert error_message in error_data['non_field_errors']
+
+    # PATCH
+    patch_data = {'time_start': '2116-12-10T23:33:29Z'}
+    error_data = patch(operator_api_client, detail_url, patch_data, status_code=400)
+    assert error_message in error_data['non_field_errors']

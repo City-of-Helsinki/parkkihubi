@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now
+from django.utils.translation import ugettext_lazy as _
 from rest_framework import mixins, permissions, serializers, viewsets
 
 from parkings.models import Address, Operator, Parking
@@ -54,6 +55,20 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+    def validate(self, data):
+        if self.instance:
+            # a partial update might be missing one or both of the time fields
+            time_start = data.get('time_start', self.instance.time_start)
+            time_end = data.get('time_end', self.instance.time_end)
+        else:
+            time_start = data['time_start']
+            time_end = data['time_end']
+
+        if time_start > time_end:
+            raise serializers.ValidationError(_('"time_start" cannot be after "time_end".'))
+
+        return data
 
 
 class OperatorAPIParkingPermission(permissions.BasePermission):

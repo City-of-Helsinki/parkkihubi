@@ -17,3 +17,5 @@ before_script:
 script:
   - flake8
   - py.test -ra -vvv --cov
+env:
+  - SECRET_KEY=topsecret123
