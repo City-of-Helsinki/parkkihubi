@@ -8,7 +8,9 @@ from freezegun import freeze_time
 
 from parkings.models import Parking
 
-from ..utils import ALL_METHODS, check_method_status_codes, check_required_fields, delete, patch, post, put
+from ..utils import (
+    ALL_METHODS, check_method_status_codes, check_required_fields, delete, get, get_ids_from_results, patch, post, put
+)
 
 list_url = reverse('operator:v1:parking-list')
 
@@ -65,8 +67,9 @@ def check_response_parking_data(posted_parking_data, response_parking_data):
     """
     Check that parking data dict in a response has the right fields and matches the posted one.
     """
-    expected_keys = {'id', 'special_code', 'device_identifier', 'zone', 'registration_number', 'time_start',
-                     'time_end', 'resident_code', 'address', 'location', 'created_at', 'modified_at', 'operator'}
+    expected_keys = {
+        'id', 'special_code', 'device_identifier', 'zone', 'registration_number', 'time_start', 'time_end',
+        'resident_code', 'address', 'location', 'created_at', 'modified_at', 'operator', 'status'}
 
     posted_data_keys = set(posted_parking_data)
     returned_data_keys = set(response_parking_data)
@@ -78,16 +81,16 @@ def check_response_parking_data(posted_parking_data, response_parking_data):
 
 
 def test_disallowed_methods(operator_api_client, parking):
-    list_disallowed_methods = ('get', 'put', 'patch', 'delete')
+    list_disallowed_methods = ('put', 'patch', 'delete')
     check_method_status_codes(operator_api_client, list_url, list_disallowed_methods, 405)
 
-    detail_disallowed_methods = ('get', 'post')
+    detail_disallowed_methods = ('post',)
     check_method_status_codes(operator_api_client, get_detail_url(parking), detail_disallowed_methods, 405)
 
 
-def test_unauthenticated_and_normal_users_cannot_do_anything(api_client, user_api_client, parking):
+def test_unauthenticated_and_normal_users_cannot_do_anything(unauthenticated_api_client, user_api_client, parking):
     urls = (list_url, get_detail_url(parking))
-    check_method_status_codes(api_client, urls, ALL_METHODS, 403)
+    check_method_status_codes(unauthenticated_api_client, urls, ALL_METHODS, 401)
     check_method_status_codes(user_api_client, urls, ALL_METHODS, 403)
 
 
@@ -164,11 +167,11 @@ def test_operator_cannot_be_set(operator_api_client, operator, operator_2, new_p
     assert new_parking.operator == operator
 
 
-def test_cannot_access_other_than_own_parkings(operator_2_api_client, parking, new_parking_data):
+def test_cannot_modify_other_than_own_parkings(operator_2_api_client, parking, new_parking_data):
     detail_url = get_detail_url(parking)
-    put(operator_2_api_client, detail_url, new_parking_data, 403)
-    patch(operator_2_api_client, detail_url, new_parking_data, 403)
-    delete(operator_2_api_client, detail_url, 403)
+    put(operator_2_api_client, detail_url, new_parking_data, 404)
+    patch(operator_2_api_client, detail_url, new_parking_data, 404)
+    delete(operator_2_api_client, detail_url, 404)
 
 
 def test_cannot_modify_parking_after_modify_period(operator_api_client, new_parking_data, updated_parking_data):
@@ -229,3 +232,23 @@ def test_time_start_cannot_be_after_time_end(operator_api_client, parking, new_p
     patch_data = {'time_start': '2116-12-10T23:33:29Z'}
     error_data = patch(operator_api_client, detail_url, patch_data, status_code=400)
     assert error_message in error_data['non_field_errors']
+
+
+def test_can_view_only_own_parkings(operator_api_client, operator_2_api_client, operator, operator_2, parking_factory):
+    parking_1 = parking_factory(operator=operator)
+    parking_2 = parking_factory(operator=operator_2)
+
+    # list
+    results = get(operator_api_client, list_url)['results']
+    assert get_ids_from_results(results) == {parking_1.id}
+
+    # detail
+    get(operator_api_client, get_detail_url(parking_1), 200)
+    get(operator_api_client, get_detail_url(parking_2), 404)
+
+    # just to be sure that everything is working as expected, test also with the other operator
+    results = get(operator_2_api_client, list_url)['results']
+    assert get_ids_from_results(results) == {parking_2.id}
+
+    get(operator_2_api_client, get_detail_url(parking_2), 200)
+    get(operator_2_api_client, get_detail_url(parking_1), 404)
