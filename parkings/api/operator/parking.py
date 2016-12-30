@@ -2,23 +2,16 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import exceptions, mixins, permissions, serializers, viewsets
+from rest_framework import exceptions, permissions, serializers, viewsets
 
 from parkings.models import Address, Operator, Parking
 
-
-class OperatorAPIAddressSerializer(serializers.ModelSerializer):
-    city = serializers.CharField(required=True)
-    postal_code = serializers.CharField(required=True)
-    street = serializers.CharField(required=True)
-
-    class Meta:
-        model = Address
-        fields = ('city', 'postal_code', 'street')
+from ..common import AddressSerializer, ParkingFilter
 
 
 class OperatorAPIParkingSerializer(serializers.ModelSerializer):
-    address = OperatorAPIAddressSerializer(allow_null=True, required=False)
+    status = serializers.ReadOnlyField(source='get_state')
+    address = AddressSerializer(allow_null=True, required=False)
 
     class Meta:
         model = Parking
@@ -102,11 +95,14 @@ class OperatorAPIParkingPermission(permissions.BasePermission):
         return request.user.operator == obj.operator
 
 
-class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
-                                viewsets.GenericViewSet):
+class OperatorAPIParkingViewSet(viewsets.ModelViewSet):
     queryset = Parking.objects.all()
     serializer_class = OperatorAPIParkingSerializer
     permission_classes = (OperatorAPIParkingPermission,)
+    filter_class = ParkingFilter
 
     def perform_create(self, serializer):
         serializer.save(operator=self.request.user.operator)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(operator=self.request.user.operator)
