@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import mixins, permissions, serializers, viewsets
+from rest_framework import exceptions, mixins, permissions, serializers, viewsets
 
 from parkings.models import Address, Operator, Parking
 
@@ -57,6 +57,12 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
         return instance
 
     def validate(self, data):
+        if self.instance and (now() - self.instance.created_at) > settings.PARKINGS_TIME_EDITABLE:
+            if set(data.keys()) != {'time_end'}:
+                raise exceptions.PermissionDenied(
+                    _('Grace period has passed. Only "time_end" can be updated via PATCH.')
+                )
+
         if self.instance:
             # a partial update might be missing one or both of the time fields
             time_start = data.get('time_start', self.instance.time_start)
@@ -74,7 +80,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
 class OperatorAPIParkingPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         """
-        Allow only operators to create a parking.
+        Allow only operators to create/modify a parking.
         """
         user = request.user
 
@@ -91,10 +97,9 @@ class OperatorAPIParkingPermission(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """
-        Allow only operators to modify and only their own parkings and
-        only for a fixed period of time after creation.
+        Allow operators to modify only their own parkings.
         """
-        return request.user.operator == obj.operator and (now() - obj.created_at) <= settings.PARKINGS_TIME_EDITABLE
+        return request.user.operator == obj.operator
 
 
 class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,

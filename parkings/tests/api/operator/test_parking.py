@@ -28,6 +28,17 @@ def new_parking_data():
     }
 
 
+@pytest.fixture
+def updated_parking_data():
+    return {
+        'special_code': 'X',  'device_identifier': 'b442679c-ffb5-4b00-af2b-40d3109f98d0', 'zone': 2,
+        'registration_number': 'VSM-162',  'time_start': '2016-12-12T20:34:38Z',
+        'time_end': '2016-12-12T23:33:29Z', 'resident_code': 'A',
+        'location': {'coordinates': [60.16899227603715, 24.9482582558314], 'type': 'Point'},
+        'address': {'city': 'Parkano', 'street': 'Greippipolku 98', 'postal_code': '24760'}
+    }
+
+
 def check_parking_object(parking_data, parking_obj):
     """
     Compare parking data dict posted the API to the actual Parking object that was created/updated.
@@ -101,16 +112,16 @@ def test_post_parking(operator_api_client, operator, new_parking_data):
     assert new_parking.operator == operator
 
 
-def test_put_parking(operator_api_client, parking, new_parking_data):
+def test_put_parking(operator_api_client, parking, updated_parking_data):
     detail_url = get_detail_url(parking)
-    response_parking_data = put(operator_api_client, detail_url, new_parking_data)
+    response_parking_data = put(operator_api_client, detail_url, updated_parking_data)
 
     # check data in the response
-    check_response_parking_data(new_parking_data, response_parking_data)
+    check_response_parking_data(updated_parking_data, response_parking_data)
 
     # check the actual object
     parking.refresh_from_db()
-    check_parking_object(new_parking_data, parking)
+    check_parking_object(updated_parking_data, parking)
 
 
 def test_patch_parking(operator_api_client, parking):
@@ -133,7 +144,7 @@ def test_delete_parking(operator_api_client, parking):
     assert not Parking.objects.filter(id=parking.id).exists()
 
 
-def test_operator_cannot_be_set(operator_api_client, operator, operator_2, new_parking_data):
+def test_operator_cannot_be_set(operator_api_client, operator, operator_2, new_parking_data, updated_parking_data):
     new_parking_data['operator'] = str(operator_2.id)
 
     # POST
@@ -143,7 +154,7 @@ def test_operator_cannot_be_set(operator_api_client, operator, operator_2, new_p
 
     # PUT
     detail_url = get_detail_url(new_parking)
-    put(operator_api_client, detail_url, new_parking_data)
+    put(operator_api_client, detail_url, updated_parking_data)
     new_parking.refresh_from_db()
     assert new_parking.operator == operator
 
@@ -160,18 +171,45 @@ def test_cannot_access_other_than_own_parkings(operator_2_api_client, parking, n
     delete(operator_2_api_client, detail_url, 403)
 
 
-def test_cannot_modify_parking_after_modify_period(operator_api_client, new_parking_data):
+def test_cannot_modify_parking_after_modify_period(operator_api_client, new_parking_data, updated_parking_data):
+    start_time = datetime.datetime(2010, 1, 1, 12, 00)
+    error_message = 'Grace period has passed. Only "time_end" can be updated via PATCH.'
+
+    with freeze_time(start_time):
+        response_parking_data = post(operator_api_client, list_url, new_parking_data)
+
+    new_parking = Parking.objects.get(id=response_parking_data['id'])
+    end_time = start_time + settings.PARKINGS_TIME_EDITABLE + datetime.timedelta(minutes=1)
+
+    with freeze_time(end_time):
+
+        # PUT
+        error_data = put(operator_api_client, get_detail_url(new_parking), updated_parking_data, 403)
+        assert error_message in error_data['detail']
+
+        # PATCH other fields than 'time_end'
+        for field_name in updated_parking_data:
+            if field_name == 'time_end':
+                continue
+            parking_data = {field_name: updated_parking_data[field_name]}
+            error_data = patch(operator_api_client, get_detail_url(new_parking), parking_data, 403)
+            assert error_message in error_data['detail']
+
+
+def test_can_modify_time_end_after_modify_period(operator_api_client, new_parking_data):
     start_time = datetime.datetime(2010, 1, 1, 12, 00)
 
     with freeze_time(start_time):
         response_parking_data = post(operator_api_client, list_url, new_parking_data)
 
     new_parking = Parking.objects.get(id=response_parking_data['id'])
-    new_parking_data['zone'] = 2  # change a value just for the heck of it, should not really matter
     end_time = start_time + settings.PARKINGS_TIME_EDITABLE + datetime.timedelta(minutes=1)
 
     with freeze_time(end_time):
-        put(operator_api_client, get_detail_url(new_parking), new_parking_data, 403)
+        parking_data = {'time_end': '2016-12-12T23:33:29Z'}
+        patch(operator_api_client, get_detail_url(new_parking), parking_data, 200)
+        new_parking.refresh_from_db()
+        assert new_parking.time_end.day == 12  # old day was 10
 
 
 def test_time_start_cannot_be_after_time_end(operator_api_client, parking, new_parking_data):
