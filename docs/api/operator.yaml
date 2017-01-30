@@ -1,0 +1,254 @@
+swagger: '2.0'
+info:
+  title: Parkkihubi
+  description: Parkkihubi REST API Documentation (Operator)
+  version: "1.0.0"
+host: 127.0.0.1:8000
+schemes:
+  - https
+securityDefinitions:
+  ApiKey:
+    type: apiKey
+    name: Authorization
+    in: header
+basePath: /operator/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /parking:
+    get:
+      security:
+        - ApiKey: []
+      tags:
+        - parking
+      summary: Get a list of parkings
+      operationId: getParkingList
+      description: TODO
+      parameters:
+        - name: status
+          in: query
+          description: Status of parkings
+          type: string
+        - name: registration_number
+          in: query
+          description: Registration number of parkings
+          type: string
+        - name: time_start_gte
+          in: query
+          description: Parking starts at or after the given time
+          type: string
+          format: dateTime
+        - name: time_start_lte
+          in: query
+          description: Parking starts at or before the given time
+          type: string
+          format: dateTime
+        - name: time_end_gte
+          in: query
+          description: Parking ends at or after the given time
+          type: string
+          format: dateTime
+        - name: time_end_lte
+          in: query
+          description: Parking ends at or before the given time
+          type: string
+          format: dateTime
+      responses:
+        200:
+          description: An array of parkings with metadata information
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: string
+              previous:
+                type: string
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/Parking'
+        401:
+          $ref: '#/responses/Unauthorized'
+    post:
+      security:
+        - ApiKey: []
+      tags:
+        - parking
+      summary: Create a new parking
+      operationId: createParking
+      parameters:
+        - name: parking
+          in: body
+          required: true
+          description: Parking to add to the system
+          schema:
+            $ref: '#/definitions/Parking'
+      responses:
+        200:
+          description: The created parking
+          schema:
+            $ref: '#/definitions/Parking'
+        401:
+          $ref: '#/responses/Unauthorized'
+  /parking/{parking_id}:
+    get:
+      security:
+        - ApiKey: []
+      tags:
+        - parking
+      summary: Get a parking by its ID
+      operationId: getParkingById
+      parameters:
+        - name: parking_id
+          in: path
+          required: true
+          description: ID of the parking to fetch
+          type: string
+          format: uuid
+      responses:
+        200:
+          description: The requested parking
+          schema:
+            $ref: '#/definitions/Parking'
+        401:
+          $ref: '#/responses/Unauthorized'
+    put:
+      security:
+        - ApiKey: []
+      tags:
+        - parking
+      summary: Update a parking by its ID
+      operationId: updateParkingById
+      parameters:
+        - name: parking_id
+          in: path
+          required: true
+          description: ID of the parking to udpate
+          type: string
+          format: uuid
+        - name: parking
+          in: body
+          required: true
+          description: Parking to add to the system
+          schema:
+            $ref: '#/definitions/Parking'
+      responses:
+        200:
+          description: The udpated parking
+          schema:
+            $ref: '#/definitions/Parking'
+        401:
+          $ref: '#/responses/Unauthorized'
+    patch:
+      security:
+        - ApiKey: []
+      tags:
+        - parking
+      summary: Partial update a parking by its ID
+      operationId: partialUpdateParkingById
+      parameters:
+        - name: parking_id
+          in: path
+          required: true
+          description: ID of the parking to udpate
+          type: string
+          format: uuid
+        - name: parking
+          in: body
+          required: true
+          description: Parking to add to the system
+          schema:
+            $ref: '#/definitions/Parking'
+      responses:
+        200:
+          description: The udpated parking
+          schema:
+            $ref: '#/definitions/Parking'
+        401:
+          $ref: '#/responses/Unauthorized'
+definitions:
+  Parking:
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the parking
+        type: string
+        format: uuid
+      status:
+        description: Status of the parking
+        type: string
+      address:
+        $ref: '#/definitions/Address'
+      created_at:
+        description: Creation time for the parking
+        type: string
+        format: dateTime
+      modified_at:
+        description: Modification time for the parking
+        type: string
+        format: dateTime
+      device_identifier:
+        description: Unique identifier for the device
+        type: string
+        format: uuid
+      location:
+        $ref: '#/definitions/Location'
+      registration_number:
+        description: Registration number for the parking
+        type: string
+      resident_code:
+        description: TODO
+        type: string
+      special_code:
+        description: TODO
+        type: string
+      time_start:
+        description: Start time for the parking
+        type: string
+        format: dateTime
+      time_end:
+        description: End time for the parking
+        type: string
+        format: dateTime
+      zone:
+        description: TODO
+        type: integer
+      operator:
+        description: Unique Identifier for the operator
+        type: string
+        format: uuid
+  Address:
+    type: object
+    properties:
+      city:
+        type: string
+      postal_code:
+        type: string
+      street:
+        type: string
+  Location:
+    type: object
+    properties:
+      type:
+        description: Location geometry type.
+        type: string
+      coordinates:
+        description: An array of coordinates describing the location geometry
+        type: array
+        items:
+          type: number
+          format: float
+  Unauthorized:
+    type: object
+    properties:
+      detail:
+        type: string
+responses:
+  Unauthorized:
+    description: Unauthorized access
+    schema:
+      $ref: '#/definitions/Unauthorized'
