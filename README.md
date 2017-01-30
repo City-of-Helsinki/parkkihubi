@@ -102,6 +102,15 @@ Operator API will be available at [http://127.0.0.1:8000/operator/v1/](http://12
 
 Internal API will be available at [http://127.0.0.1:8000/internal/v1/](http://127.0.0.1:8000/internal/v1/)
 
+### Generating API documentation
+
+The API documentation conforms to [Swagger Specification 2.0](http://swagger.io/specification/). Use
+[swagger-codegen](https://github.com/swagger-api/swagger-codegen) to generate the documentation.
+
+For example, to generate static HTML documentation for operator APIs:
+
+    java -jar swagger-codegen-cli.jar generate -i operator.yaml -l html2 -c config.json -o /output/directory/
+
 ## License
 
 [MIT](https://tldrlegal.com/license/mit-license)
