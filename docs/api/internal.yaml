@@ -17,7 +17,7 @@ consumes:
 produces:
   - application/json
 paths:
-  /parking:
+  /parking/:
     get:
       security:
         - ApiKey: []
@@ -73,7 +73,7 @@ paths:
                   $ref: '#/definitions/Parking'
         401:
           $ref: '#/responses/Unauthorized'
-  /parking/{parking_id}:
+  /parking/{parking_id}/:
     get:
       security:
         - ApiKey: []
