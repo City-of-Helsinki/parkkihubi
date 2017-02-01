@@ -1,53 +1,22 @@
 from django.conf import settings
-from django.db import transaction
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions, permissions, serializers, viewsets
 
-from parkings.models import Address, Operator, Parking
+from parkings.models import Operator, Parking
 
-from ..common import AddressSerializer, ParkingFilter
+from ..common import ParkingFilter
 
 
 class OperatorAPIParkingSerializer(serializers.ModelSerializer):
     status = serializers.ReadOnlyField(source='get_state')
-    address = AddressSerializer(allow_null=True, required=False)
 
     class Meta:
         model = Parking
-        fields = '__all__'
-        read_only_fields = ('operator',)
-
-    @transaction.atomic
-    def create(self, validated_data):
-        address_data = validated_data.pop('address', None)
-
-        if address_data:
-            validated_data['address'], _ = Address.objects.get_or_create(
-                city=address_data['city'],
-                postal_code=address_data['postal_code'],
-                street=address_data['street'],
-            )
-
-        return Parking.objects.create(**validated_data)
-
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        address_data = validated_data.get('address')
-
-        if address_data:
-            validated_data['address'], _ = Address.objects.get_or_create(
-                city=address_data['city'],
-                postal_code=address_data['postal_code'],
-                street=address_data['street'],
-            )
-
-        for attr, value in validated_data.items():
-            # does not handle many-to-many fields
-            setattr(instance, attr, value)
-
-        instance.save()
-        return instance
+        fields = (
+            'id', 'created_at', 'modified_at', 'location', 'registration_number', 'time_start', 'time_end', 'zone',
+            'status',
+        )
 
     def validate(self, data):
         if self.instance and (now() - self.instance.created_at) > settings.PARKINGS_TIME_EDITABLE:

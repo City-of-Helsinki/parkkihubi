@@ -22,45 +22,44 @@ def get_detail_url(obj):
 @pytest.fixture
 def new_parking_data():
     return {
-        'special_code': 'V',  'device_identifier': 'ea95d137-7496-4ba1-92bd-6e9ac79ebac1', 'zone': 3,
-        'registration_number': 'JLH-247',  'time_start': '2016-12-10T20:34:38Z',
-        'time_end': '2016-12-10T23:33:29Z', 'resident_code': 'N',
+        'zone': 3,
+        'registration_number': 'JLH-247',
+        'time_start': '2016-12-10T20:34:38Z',
+        'time_end': '2016-12-10T23:33:29Z',
         'location': {'coordinates': [60.16896809536978, 24.942075065834615], 'type': 'Point'},
-        'address': {'city': 'Kannus', 'street': 'Litsibulevardi 11', 'postal_code': '75945'}
     }
 
 
 @pytest.fixture
 def updated_parking_data():
     return {
-        'special_code': 'X',  'device_identifier': 'b442679c-ffb5-4b00-af2b-40d3109f98d0', 'zone': 2,
-        'registration_number': 'VSM-162',  'time_start': '2016-12-12T20:34:38Z',
-        'time_end': '2016-12-12T23:33:29Z', 'resident_code': 'A',
+        'zone': 2,
+        'registration_number': 'VSM-162',
+        'time_start': '2016-12-12T20:34:38Z',
+        'time_end': '2016-12-12T23:33:29Z',
         'location': {'coordinates': [60.16899227603715, 24.9482582558314], 'type': 'Point'},
-        'address': {'city': 'Parkano', 'street': 'Greippipolku 98', 'postal_code': '24760'}
     }
 
 
-def check_parking_object(parking_data, parking_obj):
+def check_parking_data_keys(parking_data):
+    assert set(parking_data.keys()) == {
+        'id', 'created_at', 'modified_at', 'location', 'registration_number', 'time_start', 'time_end', 'zone',
+        'status',
+    }
+
+
+def check_parking_data_matches_parking_object(parking_data, parking_obj):
     """
-    Compare parking data dict posted the API to the actual Parking object that was created/updated.
+    Check that a parking data dict and an actual Parking object match.
     """
 
-    # string valued fields should match 1:1
-    for field in {'device_identifier', 'registration_number', 'resident_code', 'special_code', 'zone'}:
+    # string or integer valued fields should match 1:1
+    for field in {'registration_number', 'zone'}:
         assert parking_data[field] == getattr(parking_obj, field)
 
     assert parking_data['time_start'] == parking_obj.time_start.strftime('%Y-%m-%dT%H:%M:%SZ')
     assert parking_data['time_end'] == parking_obj.time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
     assert parking_data['location'] == json.loads(parking_obj.location.geojson)
-
-    if parking_obj.address:
-        address = parking_obj.address
-        assert parking_data['address'] == {
-            'city': address.city, 'postal_code': address.postal_code, 'street': address.street
-        }
-    else:
-        assert parking_data['address'] is None
 
 
 def check_response_parking_data(posted_parking_data, response_parking_data):
@@ -68,8 +67,9 @@ def check_response_parking_data(posted_parking_data, response_parking_data):
     Check that parking data dict in a response has the right fields and matches the posted one.
     """
     expected_keys = {
-        'id', 'special_code', 'device_identifier', 'zone', 'registration_number', 'time_start', 'time_end',
-        'resident_code', 'address', 'location', 'created_at', 'modified_at', 'operator', 'status'}
+        'id', 'zone', 'registration_number', 'time_start', 'time_end', 'location', 'created_at', 'modified_at',
+        'status',
+    }
 
     posted_data_keys = set(posted_parking_data)
     returned_data_keys = set(response_parking_data)
@@ -94,9 +94,22 @@ def test_unauthenticated_and_normal_users_cannot_do_anything(unauthenticated_api
     check_method_status_codes(user_api_client, urls, ALL_METHODS, 403)
 
 
+def test_get_list_check_data(operator_api_client, parking):
+    data = get(operator_api_client, list_url)
+    assert len(data['results']) == 1
+    parking_data = data['results'][0]
+    check_parking_data_keys(parking_data)
+    check_parking_data_matches_parking_object(parking_data, parking)
+
+
+def test_get_detail_check_data(operator_api_client, parking):
+    parking_data = get(operator_api_client, get_detail_url(parking))
+    check_parking_data_keys(parking_data)
+    check_parking_data_matches_parking_object(parking_data, parking)
+
+
 def test_parking_required_fields(operator_api_client, parking):
-    expected_required_fields = {'registration_number', 'device_identifier', 'location', 'time_start', 'time_end',
-                                'zone'}
+    expected_required_fields = {'registration_number', 'time_start', 'time_end', 'zone'}
     check_required_fields(operator_api_client, list_url, expected_required_fields)
     check_required_fields(operator_api_client, get_detail_url(parking), expected_required_fields, detail_endpoint=True)
 
@@ -109,7 +122,7 @@ def test_post_parking(operator_api_client, operator, new_parking_data):
 
     # check the actual object
     new_parking = Parking.objects.get(id=response_parking_data['id'])
-    check_parking_object(new_parking_data, new_parking)
+    check_parking_data_matches_parking_object(new_parking_data, new_parking)
 
     # operator should be autopopulated
     assert new_parking.operator == operator
@@ -124,7 +137,7 @@ def test_put_parking(operator_api_client, parking, updated_parking_data):
 
     # check the actual object
     parking.refresh_from_db()
-    check_parking_object(updated_parking_data, parking)
+    check_parking_data_matches_parking_object(updated_parking_data, parking)
 
 
 def test_patch_parking(operator_api_client, parking):
