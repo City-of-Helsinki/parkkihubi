@@ -16,9 +16,9 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         Address, on_delete=models.SET_NULL, verbose_name=_("address"), related_name="parkings", null=True, blank=True
     )
     device_identifier = models.CharField(
-        max_length=128, verbose_name=_("device identifier"), db_index=True
+        max_length=128, verbose_name=_("device identifier"), db_index=True, null=True, blank=True,
     )
-    location = models.PointField(verbose_name=_("location"))
+    location = models.PointField(verbose_name=_("location"), null=True, blank=True)
     operator = models.ForeignKey(
         Operator, on_delete=models.PROTECT, verbose_name=_("operator"), related_name="parkings"
     )
