@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Parkkihubi
   description: Parkkihubi REST API Documentation (Operator)
-  version: "1.0.0"
+  version: "0.0.1"
 host: 127.0.0.1:8000
 schemes:
   - https
@@ -88,7 +88,7 @@ paths:
           schema:
             $ref: '#/definitions/Parking'
       responses:
-        200:
+        201:
           description: The created parking
           schema:
             $ref: '#/definitions/Parking'
@@ -127,7 +127,7 @@ paths:
         - name: parking_id
           in: path
           required: true
-          description: ID of the parking to udpate
+          description: ID of the parking to update
           type: string
           format: uuid
         - name: parking
@@ -138,7 +138,7 @@ paths:
             $ref: '#/definitions/Parking'
       responses:
         200:
-          description: The udpated parking
+          description: The updated parking
           schema:
             $ref: '#/definitions/Parking'
         401:
@@ -154,7 +154,7 @@ paths:
         - name: parking_id
           in: path
           required: true
-          description: ID of the parking to udpate
+          description: ID of the parking to update
           type: string
           format: uuid
         - name: parking
@@ -165,7 +165,7 @@ paths:
             $ref: '#/definitions/Parking'
       responses:
         200:
-          description: The udpated parking
+          description: The updated parking
           schema:
             $ref: '#/definitions/Parking'
         401:
