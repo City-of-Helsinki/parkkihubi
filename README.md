@@ -102,6 +102,34 @@ Operator API will be available at [http://127.0.0.1:8000/operator/v1/](http://12
 
 Internal API will be available at [http://127.0.0.1:8000/internal/v1/](http://127.0.0.1:8000/internal/v1/)
 
+### Generating API documentation
+
+The API documentation conforms to [Swagger Specification 2.0](http://swagger.io/specification/), and we use
+[swagger-codegen](https://github.com/swagger-api/swagger-codegen) to generate the documentation.
+
+Due to [a bug in swagger-codegen](https://github.com/swagger-api/swagger-codegen/pull/4508),
+we're using an unreleased version at the moment.
+
+To build swagger-codegen from source, you need Apache maven installed (you'll
+need java 7 runtime at a minimum):
+    
+    # Ubuntu
+    sudo apt-get install maven
+
+Clone swagger-codegen master branch and build it:
+
+    git clone https://github.com/swagger-api/swagger-codegen 
+    cd swagger-codegen/
+    mvn clean package  # Takes a few minutes
+    
+The client will now be available at `modules/swagger-codegen-cli/target/swagger-codegen-cli.jar`.
+
+To build the docs, in `parkkihubi` repository root:
+
+    cd docs/api
+    java -jar /path/to/codegen/swagger-codegen-cli.jar generate -i internal.yaml -l html2 -c config.json -o /output/path/internal/
+    java -jar /path/to/codegen/swagger-codegen-cli.jar generate -i operator.yaml -l html2 -c config.json -o /output/path/operator/
+
 ## License
 
 [MIT](https://tldrlegal.com/license/mit-license)
