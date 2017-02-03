@@ -5,7 +5,7 @@ from django.core.urlresolvers import reverse
 
 from parkings.models import Parking
 
-from .utils import check_list_endpoint_base_fields, check_parking_data, get, get_ids_from_results
+from .utils import check_list_endpoint_base_fields, get, get_ids_from_results
 
 
 @pytest.fixture(params=['operator', 'internal'])
@@ -32,21 +32,6 @@ def test_list_endpoint_base_fields(api_specific_values):
 
     parking_data = get(api_client, list_url)
     check_list_endpoint_base_fields(parking_data)
-
-
-def test_get_list_check_data(api_specific_values, parking):
-    (api_client, list_url, get_detail_url) = api_specific_values
-
-    data = get(api_client, list_url)
-    assert len(data['results']) == 1
-    check_parking_data(data['results'][0], parking)
-
-
-def test_get_detail_check_data(api_specific_values, parking):
-    (api_client, list_url, get_detail_url) = api_specific_values
-
-    parking_data = get(api_client, get_detail_url(parking))
-    check_parking_data(parking_data, parking)
 
 
 def test_is_valid_field(api_specific_values, past_parking, current_parking, future_parking):

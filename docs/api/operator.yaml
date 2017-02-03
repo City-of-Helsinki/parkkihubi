@@ -1,16 +1,17 @@
 swagger: '2.0'
 info:
   title: Parkkihubi
-  description: Parkkihubi REST API Documentation (Operator)
+  description: |
+                 Parkkihubi REST API Documentation (Operator)
+
+                 **Work in progress !** This documentation will evolve, and minor changes to the actual API are also possible.
+
+                 Authentication: Every request must have header `Authorization: ApiKey <your api key>`
+
   version: "0.0.1"
 host: 127.0.0.1:8000
 schemes:
   - https
-securityDefinitions:
-  ApiKey:
-    type: apiKey
-    name: Authorization
-    in: header
 basePath: /operator/v1
 consumes:
   - application/json
@@ -19,13 +20,10 @@ produces:
 paths:
   /parking/:
     get:
-      security:
-        - ApiKey: []
       tags:
         - parking
       summary: Get a list of parkings
       operationId: getParkingList
-      description: TODO
       parameters:
         - name: status
           in: query
@@ -74,8 +72,6 @@ paths:
         401:
           $ref: '#/responses/Unauthorized'
     post:
-      security:
-        - ApiKey: []
       tags:
         - parking
       summary: Create a new parking
@@ -86,18 +82,49 @@ paths:
           required: true
           description: Parking to add to the system
           schema:
-            $ref: '#/definitions/Parking'
+            type: object
+            example:
+              location:
+                type: Point
+                coordinates: [60.170014, 24.938466]
+              registration_number: LOL-007
+              time_start: 2016-12-24T21:00:00Z
+              time_end: 2016-12-24T22:00:00Z
+              zone: 2
+            properties:
+              location:
+                $ref: '#/definitions/Location'
+              registration_number:
+                description: Registration number for the parking
+                type: string
+              time_start:
+                description: Start time for the parking
+                type: string
+                format: dateTime
+              time_end:
+                description: End time for the parking
+                type: string
+                format: dateTime
+              zone:
+                description: Parking zone
+                type: integer
+                enum: [1, 2, 3]
+            required:
+              - registration_number
+              - time_start
+              - time_end
+              - zone
       responses:
         201:
-          description: The created parking
+          description: The parking was created successfully
           schema:
             $ref: '#/definitions/Parking'
+        400:
+          $ref: '#/responses/BadRequest'
         401:
           $ref: '#/responses/Unauthorized'
   /parking/{parking_id}/:
     get:
-      security:
-        - ApiKey: []
       tags:
         - parking
       summary: Get a parking by its ID
@@ -116,9 +143,9 @@ paths:
             $ref: '#/definitions/Parking'
         401:
           $ref: '#/responses/Unauthorized'
+        404:
+          $ref: '#/responses/NotFound'
     put:
-      security:
-        - ApiKey: []
       tags:
         - parking
       summary: Update a parking by its ID
@@ -135,17 +162,46 @@ paths:
           required: true
           description: Parking to add to the system
           schema:
-            $ref: '#/definitions/Parking'
+            type: object
+            example:
+              time_end: 2016-12-25T22:00:00Z
+            properties:
+              location:
+                $ref: '#/definitions/Location'
+              registration_number:
+                description: Registration number for the parking
+                type: string
+              time_start:
+                description: Start time for the parking
+                type: string
+                format: dateTime
+              time_end:
+                description: End time for the parking
+                type: string
+                format: dateTime
+              zone:
+                description: Parking zone
+                type: integer
+                enum: [1, 2, 3]
+            required:
+              - registration_number
+              - time_start
+              - time_end
+              - zone
       responses:
         200:
-          description: The updated parking
+          description: The parking was updated successfully
           schema:
             $ref: '#/definitions/Parking'
+        400:
+          $ref: '#/responses/BadRequest'
         401:
           $ref: '#/responses/Unauthorized'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
     patch:
-      security:
-        - ApiKey: []
       tags:
         - parking
       summary: Partial update a parking by its ID
@@ -162,49 +218,105 @@ paths:
           required: true
           description: Parking to add to the system
           schema:
-            $ref: '#/definitions/Parking'
+            type: object
+            example:
+              location:
+                type: Point
+                coordinates: [60.170014, 24.938466]
+              registration_number: LOL-007
+              time_start: 2016-12-24T21:00:00Z
+              time_end: 2016-12-24T22:00:00Z
+              zone: 2
+            properties:
+              location:
+                $ref: '#/definitions/Location'
+              registration_number:
+                description: Registration number for the parking
+                type: string
+              time_start:
+                description: Start time for the parking
+                type: string
+                format: dateTime
+              time_end:
+                description: End time for the parking
+                type: string
+                format: dateTime
+              zone:
+                description: Parking zone
+                type: integer
+                enum: [1, 2, 3]
       responses:
         200:
-          description: The updated parking
+          description: The parking was updated successfully
           schema:
             $ref: '#/definitions/Parking'
         401:
           $ref: '#/responses/Unauthorized'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+    delete:
+      tags:
+        - parking
+      summary: Delete a parking by its ID
+      operationId: deleteParkingById
+      parameters:
+        - name: parking_id
+          in: path
+          required: true
+          description: ID of the parking to delete
+          type: string
+          format: uuid
+      responses:
+        204:
+          description: The parking was deleted successfully
+        401:
+          $ref: '#/responses/Unauthorized'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
 definitions:
   Parking:
     type: object
+    example:
+      id: 70fb01a8-a17f-4b14-9b99-0060c748411c
+      status: valid
+      created_at: 2016-12-10T20:34:38Z
+      modified_at: 2016-12-11T21:34:22Z
+      location:
+        type: Point
+        coordinates: [60.170014, 24.938466]
+      registration_number: LOL-007
+      time_start: 2016-12-24T21:00:00Z
+      time_end: 2016-12-24T22:00:00Z
+      zone: 2
     properties:
       id:
         description: Unique identifier for the parking
         type: string
         format: uuid
+        readOnly: true
       status:
         description: Status of the parking
         type: string
-      address:
-        $ref: '#/definitions/Address'
+        enum: [valid, not_valid]
+        readOnly: true
       created_at:
         description: Creation time for the parking
         type: string
         format: dateTime
+        readOnly: true
       modified_at:
         description: Modification time for the parking
         type: string
         format: dateTime
-      device_identifier:
-        description: Unique identifier for the device
-        type: string
-        format: uuid
+        readOnly: true
       location:
         $ref: '#/definitions/Location'
       registration_number:
         description: Registration number for the parking
-        type: string
-      resident_code:
-        description: TODO
-        type: string
-      special_code:
-        description: TODO
         type: string
       time_start:
         description: Start time for the parking
@@ -215,23 +327,20 @@ definitions:
         type: string
         format: dateTime
       zone:
-        description: TODO
+        description: Parking zone
         type: integer
-      operator:
-        description: Unique Identifier for the operator
-        type: string
-        format: uuid
-  Address:
-    type: object
-    properties:
-      city:
-        type: string
-      postal_code:
-        type: string
-      street:
-        type: string
+        enum: [1, 2, 3]
+    required:
+      - registration_number
+      - time_start
+      - time_end
+      - zone
   Location:
+    description: Point location in geoJSON format
     type: object
+    example:
+      type: Point
+      coordinates: [60.170014, 24.938466]
     properties:
       type:
         description: Location geometry type.
@@ -242,13 +351,25 @@ definitions:
         items:
           type: number
           format: float
-  Unauthorized:
+  ErrorResponse:
     type: object
     properties:
       detail:
         type: string
 responses:
+  BadRequest:
+    description: Bad request, details in request body
+    schema:
+      $ref: '#/definitions/ErrorResponse'
   Unauthorized:
     description: Unauthorized access
     schema:
-      $ref: '#/definitions/Unauthorized'
+      $ref: '#/definitions/ErrorResponse'
+  Forbidden:
+    description: No permission, or the 2 min grace period for editing has passed
+    schema:
+      $ref: '#/definitions/ErrorResponse'
+  NotFound:
+    description: Parking not found
+    schema:
+      $ref: '#/definitions/ErrorResponse'
