@@ -15,5 +15,11 @@ djangorestframework
 djangorestframework-gis
 django-filter
 
+# XML parsing
+lxml
+
+# WFS
+owslib
+
 # Misc
 pytz
