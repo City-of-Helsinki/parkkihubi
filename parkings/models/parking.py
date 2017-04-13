@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from parkings.models.address import Address
 from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from parkings.models.operator import Operator
+from parkings.models.parking_area import ParkingArea
 
 
 class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
@@ -14,6 +15,9 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
     address = models.ForeignKey(
         Address, on_delete=models.SET_NULL, verbose_name=_("address"), related_name="parkings", null=True, blank=True
+    )
+    parking_area = models.ForeignKey(
+        ParkingArea, on_delete=models.SET_NULL, verbose_name=_("parking area"), null=True, blank=True,
     )
     device_identifier = models.CharField(
         max_length=128, verbose_name=_("device identifier"), db_index=True, null=True, blank=True,
