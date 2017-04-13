@@ -13,8 +13,10 @@ def get_detail_url(obj):
 
 def check_parking_data_keys(parking_data):
     assert set(parking_data.keys()) == {
-        'id', 'created_at', 'modified_at', 'address', 'device_identifier', 'location', 'operator',
-        'registration_number', 'resident_code', 'special_code', 'time_start', 'time_end', 'zone', 'status'
+        'id', 'created_at', 'modified_at', 'address', 'parking_area',
+        'device_identifier', 'location', 'operator', 'registration_number',
+        'resident_code', 'special_code', 'time_start', 'time_end', 'zone',
+        'status',
     }
 
 
