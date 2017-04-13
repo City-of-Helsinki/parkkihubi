@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.contrib.gis.db.models.functions import Distance
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.utils.timezone import localtime, now
 from django.utils.translation import ugettext_lazy as _
@@ -59,3 +60,18 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         if self.time_start <= now() <= self.time_end:
             return Parking.VALID
         return Parking.NOT_VALID
+
+    def get_closest_area(self, max_distance=50):
+        if self.location:
+            location = self.location
+        else:
+            return None
+
+        closest_area = ParkingArea.objects.annotate(
+            distance=Distance('areas', location),
+        ).filter(distance__lte=max_distance).order_by('distance').first()
+        return closest_area
+
+    def save(self, *args, **kwargs):
+        self.parking_area = self.get_closest_area()
+        super(Parking, self).save(*args, **kwargs)
