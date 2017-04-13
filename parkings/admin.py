@@ -12,11 +12,7 @@ class OperatorAdmin(admin.ModelAdmin):
     pass
 
 
-class ParkingAdmin(admin.ModelAdmin):
-    pass
-
-
 admin.site.register(Address, AddressAdmin)
 admin.site.register(Operator, OperatorAdmin)
-admin.site.register(Parking, ParkingAdmin)
+admin.site.register(Parking, OSMGeoAdmin)
 admin.site.register(ParkingArea, OSMGeoAdmin)
