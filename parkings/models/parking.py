@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from django.contrib.gis.db.models.functions import Distance
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
 from django.utils.timezone import localtime, now
 from django.utils.translation import ugettext_lazy as _
@@ -6,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from parkings.models.address import Address
 from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from parkings.models.operator import Operator
+from parkings.models.parking_area import ParkingArea
 
 
 class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
@@ -14,6 +16,9 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
     address = models.ForeignKey(
         Address, on_delete=models.SET_NULL, verbose_name=_("address"), related_name="parkings", null=True, blank=True
+    )
+    parking_area = models.ForeignKey(
+        ParkingArea, on_delete=models.SET_NULL, verbose_name=_("parking area"), null=True, blank=True,
     )
     device_identifier = models.CharField(
         max_length=128, verbose_name=_("device identifier"), db_index=True, null=True, blank=True,
@@ -55,3 +60,18 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         if self.time_start <= now() <= self.time_end:
             return Parking.VALID
         return Parking.NOT_VALID
+
+    def get_closest_area(self, max_distance=50):
+        if self.location:
+            location = self.location
+        else:
+            return None
+
+        closest_area = ParkingArea.objects.annotate(
+            distance=Distance('areas', location),
+        ).filter(distance__lte=max_distance).order_by('distance').first()
+        return closest_area
+
+    def save(self, *args, **kwargs):
+        self.parking_area = self.get_closest_area()
+        super(Parking, self).save(*args, **kwargs)

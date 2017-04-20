@@ -13,9 +13,11 @@ Django-based REST API for processing parking data.
 
 #### PostgreSQL
 
+The recommended versions for postgresql and postgis are at least 9.4 and 2.2 respectively.
+
     # Ubuntu 16.04
     sudo apt-get install python3-dev libpq-dev postgresql postgis
-    
+
 #### GeoDjango extra packages
 
     # Ubuntu 16.04
@@ -62,7 +64,7 @@ Allow user to create test database
 
     sudo -u postgres psql -c "ALTER USER parkkihubi CREATEDB;"
 
-Tests also require that PostGIS extension is installed on the test database. This can be achieved most easily by adding PostGIS extension to the default template: 
+Tests also require that PostGIS extension is installed on the test database. This can be achieved most easily by adding PostGIS extension to the default template:
 
     sudo -u postgres psql -d template1 -c "CREATE EXTENSION IF NOT EXISTS postgis;"
 
@@ -76,22 +78,22 @@ Use `pip-tools` to update the `requirements*.txt` files.
 
     pip install -U pip  # pip-tools needs pip==6.1 or higher (!)
     pip install pip-tools
-    
+
 When you change requirements, set them in `requirements.in` or `requirements-dev.in`. Then run:
 
     pip-compile requirements.in
     pip-compile requirements-dev.in
-    
+
 ### Running tests
 
 Run all tests
 
     py.test
-    
+
 Run with coverage
 
     py.test --cov-report html --cov .
-    
+
 Open `htmlcov/index.html` for the coverage report.
 
 ### Starting a development server
@@ -112,16 +114,16 @@ we're using an unreleased version at the moment.
 
 To build swagger-codegen from source, you need Apache maven installed (you'll
 need java 7 runtime at a minimum):
-    
+
     # Ubuntu
     sudo apt-get install maven
 
 Clone swagger-codegen master branch and build it:
 
-    git clone https://github.com/swagger-api/swagger-codegen 
+    git clone https://github.com/swagger-api/swagger-codegen
     cd swagger-codegen/
     mvn clean package  # Takes a few minutes
-    
+
 The client will now be available at `modules/swagger-codegen-cli/target/swagger-codegen-cli.jar`.
 
 To build the docs, in `parkkihubi` repository root:
