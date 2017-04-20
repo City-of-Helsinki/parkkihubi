@@ -13,6 +13,8 @@ Django-based REST API for processing parking data.
 
 #### PostgreSQL
 
+The recommended versions for postgresql and postgis are at least 9.4 and 2.2 respectively.
+
     # Ubuntu 16.04
     sudo apt-get install python3-dev libpq-dev postgresql postgis
 
