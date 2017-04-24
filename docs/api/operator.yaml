@@ -164,7 +164,13 @@ paths:
           schema:
             type: object
             example:
-              time_end: 2016-12-25T22:00:00Z
+              location:
+                type: Point
+                coordinates: [60.170014, 24.938466]
+              registration_number: LOL-007
+              time_start: 2016-12-24T21:00:00Z
+              time_end: 2016-12-24T22:00:00Z
+              zone: 2
             properties:
               location:
                 $ref: '#/definitions/Location'
@@ -220,13 +226,7 @@ paths:
           schema:
             type: object
             example:
-              location:
-                type: Point
-                coordinates: [60.170014, 24.938466]
-              registration_number: LOL-007
-              time_start: 2016-12-24T21:00:00Z
-              time_end: 2016-12-24T22:00:00Z
-              zone: 2
+              time_end: 2016-12-25T22:00:00Z
             properties:
               location:
                 $ref: '#/definitions/Location'
@@ -250,6 +250,8 @@ paths:
           description: The parking was updated successfully
           schema:
             $ref: '#/definitions/Parking'
+        400:
+          $ref: '#/responses/BadRequest'
         401:
           $ref: '#/responses/Unauthorized'
         403:
@@ -351,25 +353,26 @@ definitions:
         items:
           type: number
           format: float
-  ErrorResponse:
-    type: object
-    properties:
-      detail:
-        type: string
 responses:
   BadRequest:
     description: Bad request, details in request body
     schema:
-      $ref: '#/definitions/ErrorResponse'
+      example:
+        registration_number: [Enter a valid value.]
   Unauthorized:
     description: Unauthorized access
-    schema:
-      $ref: '#/definitions/ErrorResponse'
   Forbidden:
-    description: No permission, or the 2 min grace period for editing has passed
+    description: Forbidden request
     schema:
-      $ref: '#/definitions/ErrorResponse'
+      type: object
+      properties:
+        code:
+          type: string
+          enum: [unknown_error, permission_denied, grace_period_over]
+        detail:
+          type: string
+      example:
+        code: grace_period_over
+        detail: Grace period has passed. Only "time_end" can be updated via PATCH.
   NotFound:
     description: Parking not found
-    schema:
-      $ref: '#/definitions/ErrorResponse'
