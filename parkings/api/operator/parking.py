@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import exceptions, permissions, serializers, viewsets
+from rest_framework import permissions, serializers, viewsets
 
 from parkings.models import Operator, Parking
 
-from ..common import ParkingFilter
+from ..common import ParkingException, ParkingFilter
 
 
 class OperatorAPIParkingSerializer(serializers.ModelSerializer):
@@ -21,8 +21,9 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if self.instance and (now() - self.instance.created_at) > settings.PARKINGS_TIME_EDITABLE:
             if set(data.keys()) != {'time_end'}:
-                raise exceptions.PermissionDenied(
-                    _('Grace period has passed. Only "time_end" can be updated via PATCH.')
+                raise ParkingException(
+                    _('Grace period has passed. Only "time_end" can be updated via PATCH.'),
+                    code='grace_period_over',
                 )
 
         if self.instance:

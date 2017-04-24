@@ -41,7 +41,7 @@ def delete(api_client, url, status_code=204):
     assert response.status_code == status_code, '%s %s' % (response.status_code, response.data)
 
 
-def check_method_status_codes(api_client, urls, methods, status_code):
+def check_method_status_codes(api_client, urls, methods, status_code, **kwargs):
     # accept also a single url as a string
     if isinstance(urls, str):
         urls = (urls,)
@@ -52,6 +52,11 @@ def check_method_status_codes(api_client, urls, methods, status_code):
             assert response.status_code == status_code, (
                 '%s %s expected %s, got %s %s' % (method, url, status_code, response.status_code, response.data)
             )
+            error_code = kwargs.get('error_code')
+            if error_code:
+                assert response.data['code'] == error_code, (
+                    '%s %s expected error_code %s, got %s' % (method, url, error_code, response.data['code'])
+                )
 
 
 def check_list_endpoint_base_fields(data):
