@@ -22,8 +22,8 @@ class ParkingFactory(factory.django.DjangoModelFactory):
         model = Parking
 
     device_identifier = factory.LazyFunction(fake.uuid4)
-    location = factory.LazyFunction(lambda: Point(60.1631665 + fake.random.uniform(0.001, 0.01),
-                                                  24.9392813 + fake.random.uniform(0.001, 0.01)))
+    location = factory.LazyFunction(lambda: Point(24.9392813 + fake.random.uniform(0.001, 0.01),
+                                                  60.1631665 + fake.random.uniform(0.001, 0.01)))
     operator = factory.SubFactory(OperatorFactory)
     registration_number = factory.LazyFunction(generate_registration_number)
     resident_code = factory.LazyFunction(lambda: fake.random.choice(CAPITAL_LETTERS))
