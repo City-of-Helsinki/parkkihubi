@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import permissions, serializers, viewsets
+from rest_framework import mixins, permissions, serializers, viewsets
 
 from parkings.models import Operator, Parking
 
@@ -65,7 +65,8 @@ class OperatorAPIParkingPermission(permissions.BasePermission):
         return request.user.operator == obj.operator
 
 
-class OperatorAPIParkingViewSet(viewsets.ModelViewSet):
+class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
+                                viewsets.GenericViewSet):
     queryset = Parking.objects.all()
     serializer_class = OperatorAPIParkingSerializer
     permission_classes = (OperatorAPIParkingPermission,)
