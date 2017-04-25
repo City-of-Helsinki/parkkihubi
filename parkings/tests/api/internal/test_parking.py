@@ -13,10 +13,9 @@ def get_detail_url(obj):
 
 def check_parking_data_keys(parking_data):
     assert set(parking_data.keys()) == {
-        'id', 'created_at', 'modified_at', 'address', 'parking_area',
-        'device_identifier', 'location', 'operator', 'registration_number',
-        'resident_code', 'special_code', 'time_start', 'time_end', 'zone',
-        'status',
+        'id', 'created_at', 'modified_at', 'parking_area',
+        'location', 'operator', 'registration_number',
+        'time_start', 'time_end', 'zone', 'status',
     }
 
 
@@ -26,7 +25,7 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
     """
 
     # string and integer valued fields should match 1:1
-    for field in {'device_identifier', 'registration_number', 'resident_code', 'special_code', 'zone'}:
+    for field in {'registration_number', 'zone'}:
         assert parking_data[field] == getattr(parking_obj, field)
 
     assert parking_data['id'] == str(parking_obj.id)
@@ -36,14 +35,6 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
     assert parking_data['time_end'] == parking_obj.time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
     assert parking_data['operator'] == str(parking_obj.operator_id)
     assert parking_data['location'] == json.loads(parking_obj.location.geojson)
-
-    if parking_obj.address:
-        address = parking_obj.address
-        assert parking_data['address'] == {
-            'city': address.city, 'postal_code': address.postal_code, 'street': address.street
-        }
-    else:
-        assert parking_data['address'] is None
 
 
 def test_other_than_staff_cannot_do_anything(unauthenticated_api_client, operator_api_client, parking):

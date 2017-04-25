@@ -89,12 +89,14 @@ def check_parking_data(parking_data, parking_obj):
     """
 
     # check keys
-    all_fields = {'id', 'created_at', 'modified_at', 'address', 'device_identifier', 'location', 'operator',
-                  'registration_number', 'resident_code', 'special_code', 'time_start', 'time_end', 'zone', 'status'}
+    all_fields = {
+        'id', 'created_at', 'modified_at', 'location', 'operator', 'registration_number', 'time_start', 'time_end',
+        'zone', 'status',
+    }
     assert set(parking_data.keys()) == all_fields
 
     # string valued fields should match 1:1
-    for field in {'device_identifier', 'registration_number', 'resident_code', 'special_code', 'zone'}:
+    for field in {'registration_number', 'zone'}:
         assert parking_data[field] == getattr(parking_obj, field)
 
     assert parking_data['id'] == str(parking_obj.id)
@@ -104,11 +106,3 @@ def check_parking_data(parking_data, parking_obj):
     assert parking_data['time_end'] == parking_obj.time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
     assert parking_data['operator'] == str(parking_obj.operator_id)
     assert parking_data['location'] == json.loads(parking_obj.location.geojson)
-
-    if parking_obj.address:
-        address = parking_obj.address
-        assert parking_data['address'] == {
-            'city': address.city, 'postal_code': address.postal_code, 'street': address.street
-        }
-    else:
-        assert parking_data['address'] is None
