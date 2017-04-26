@@ -1,6 +1,7 @@
 import django_filters
 from django.utils import timezone
-from rest_framework import serializers
+from django.utils.translation import ugettext_lazy as _
+from rest_framework import exceptions, serializers
 
 from parkings.models import Address, Parking
 
@@ -36,3 +37,9 @@ class ParkingFilter(django_filters.rest_framework.FilterSet):
             return queryset.exclude(time_start__lte=now, time_end__gte=now)
 
         return queryset
+
+
+class ParkingException(exceptions.APIException):
+    status_code = 403
+    default_detail = _('Unknown error.')
+    default_code = 'unknown_error'

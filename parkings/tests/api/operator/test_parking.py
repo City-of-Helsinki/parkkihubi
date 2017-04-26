@@ -91,7 +91,7 @@ def test_disallowed_methods(operator_api_client, parking):
 def test_unauthenticated_and_normal_users_cannot_do_anything(unauthenticated_api_client, user_api_client, parking):
     urls = (list_url, get_detail_url(parking))
     check_method_status_codes(unauthenticated_api_client, urls, ALL_METHODS, 401)
-    check_method_status_codes(user_api_client, urls, ALL_METHODS, 403)
+    check_method_status_codes(user_api_client, urls, ALL_METHODS, 403, error_code='permission_denied')
 
 
 def test_get_list_check_data(operator_api_client, parking):
@@ -190,6 +190,7 @@ def test_cannot_modify_other_than_own_parkings(operator_2_api_client, parking, n
 def test_cannot_modify_parking_after_modify_period(operator_api_client, new_parking_data, updated_parking_data):
     start_time = datetime.datetime(2010, 1, 1, 12, 00)
     error_message = 'Grace period has passed. Only "time_end" can be updated via PATCH.'
+    error_code = 'grace_period_over'
 
     with freeze_time(start_time):
         response_parking_data = post(operator_api_client, list_url, new_parking_data)
@@ -202,6 +203,7 @@ def test_cannot_modify_parking_after_modify_period(operator_api_client, new_park
         # PUT
         error_data = put(operator_api_client, get_detail_url(new_parking), updated_parking_data, 403)
         assert error_message in error_data['detail']
+        assert error_data['code'] == error_code
 
         # PATCH other fields than 'time_end'
         for field_name in updated_parking_data:
@@ -210,6 +212,7 @@ def test_cannot_modify_parking_after_modify_period(operator_api_client, new_park
             parking_data = {field_name: updated_parking_data[field_name]}
             error_data = patch(operator_api_client, get_detail_url(new_parking), parking_data, 403)
             assert error_message in error_data['detail']
+            assert error_data['code'] == error_code
 
 
 def test_can_modify_time_end_after_modify_period(operator_api_client, new_parking_data):
