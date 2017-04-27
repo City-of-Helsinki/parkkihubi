@@ -1,7 +1,8 @@
+from django.db.models import Case, Count, When
 from django.utils import timezone
 from rest_framework import serializers, viewsets
 
-from parkings.models import Parking, ParkingArea
+from parkings.models import ParkingArea
 
 from ..common import WGS84InBBoxFilter
 
@@ -10,12 +11,7 @@ class ParkingAreaStatisticsSerializer(serializers.ModelSerializer):
     current_parking_count = serializers.SerializerMethodField()
 
     def get_current_parking_count(self, area):
-        count = Parking.objects.filter(
-            parking_area=area,
-            time_end__gte=timezone.now(),
-            time_start__lte=timezone.now(),
-        ).count()
-        return self.blur_count(count)
+        return self.blur_count(area['current_parking_count'])
 
     def blur_count(self, count):
         """
@@ -41,3 +37,18 @@ class PublicAPIParkingAreaStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     bbox_filter_field = 'areas'
     filter_backends = (WGS84InBBoxFilter,)
     bbox_filter_include_overlapping = True
+
+    def get_queryset(self):
+        now = timezone.now()
+
+        return ParkingArea.objects.annotate(
+            current_parking_count=Count(
+                Case(
+                    When(
+                        parking__time_start__lte=now,
+                        parking__time_end__gte=now,
+                        then=1,
+                    )
+                )
+            )
+        ).values('id', 'current_parking_count')
