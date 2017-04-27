@@ -4,6 +4,8 @@ from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySe
 
 from parkings.models import ParkingArea
 
+from ..common import WGS84InBBoxFilter
+
 
 class ParkingAreaSerializer(GeoFeatureModelSerializer):
     wgs84_areas = GeometrySerializerMethodField()
@@ -24,3 +26,6 @@ class PublicAPIParkingAreaViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ParkingArea.objects.all()
     serializer_class = ParkingAreaSerializer
     pagination_class = GeoJsonPagination
+    bbox_filter_field = 'areas'
+    filter_backends = (WGS84InBBoxFilter,)
+    bbox_filter_include_overlapping = True
