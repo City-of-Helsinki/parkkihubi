@@ -3,6 +3,8 @@ from rest_framework import serializers, viewsets
 
 from parkings.models import Parking, ParkingArea
 
+from ..common import WGS84InBBoxFilter
+
 
 class ParkingAreaStatisticsSerializer(serializers.ModelSerializer):
     current_parking_count = serializers.SerializerMethodField()
@@ -36,3 +38,6 @@ class ParkingAreaStatisticsSerializer(serializers.ModelSerializer):
 class PublicAPIParkingAreaStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ParkingArea.objects.all()
     serializer_class = ParkingAreaStatisticsSerializer
+    bbox_filter_field = 'areas'
+    filter_backends = (WGS84InBBoxFilter,)
+    bbox_filter_include_overlapping = True
