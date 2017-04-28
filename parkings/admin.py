@@ -8,6 +8,10 @@ class OperatorAdmin(admin.ModelAdmin):
     pass
 
 
+class ParkingAreaAdmin(OSMGeoAdmin):
+    ordering = ('origin_id',)
+
+
 admin.site.register(Operator, OperatorAdmin)
 admin.site.register(Parking, OSMGeoAdmin)
-admin.site.register(ParkingArea, OSMGeoAdmin)
+admin.site.register(ParkingArea, ParkingAreaAdmin)
