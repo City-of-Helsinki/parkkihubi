@@ -3,6 +3,7 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import mixins, permissions, serializers, viewsets
 
+from parkings.authentication import ApiKeyAuthentication
 from parkings.models import Operator, Parking
 
 from ..common import ParkingException, ParkingFilter
@@ -69,6 +70,7 @@ class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin
                                 viewsets.GenericViewSet):
     queryset = Parking.objects.all()
     serializer_class = OperatorAPIParkingSerializer
+    authentication_classes = (ApiKeyAuthentication,)
     permission_classes = (OperatorAPIParkingPermission,)
     filter_class = ParkingFilter
 
