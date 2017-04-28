@@ -34,7 +34,7 @@ class ParkingAreaStatisticsSerializer(serializers.ModelSerializer):
 class PublicAPIParkingAreaStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ParkingArea.objects.all()
     serializer_class = ParkingAreaStatisticsSerializer
-    bbox_filter_field = 'areas'
+    bbox_filter_field = 'geom'
     filter_backends = (WGS84InBBoxFilter,)
     bbox_filter_include_overlapping = True
 

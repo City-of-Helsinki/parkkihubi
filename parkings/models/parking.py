@@ -55,7 +55,7 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
             return None
 
         closest_area = ParkingArea.objects.annotate(
-            distance=Distance('areas', location),
+            distance=Distance('geom', location),
         ).filter(distance__lte=max_distance).order_by('distance').first()
         return closest_area
 

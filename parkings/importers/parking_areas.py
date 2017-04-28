@@ -85,7 +85,7 @@ class ParkingAreaImporter(object):
             """
             try:
                 parking_area = ParkingArea.objects.get(
-                    external_id=area_dict['external_id'],
+                    origin_id=area_dict['origin_id'],
                 )
                 self._update_parking_area(area_dict, parking_area)
             except ParkingArea.DoesNotExist:
@@ -110,24 +110,24 @@ class ParkingAreaImporter(object):
 
     def _create_parking_area(self, area_dict):
         parking_area = ParkingArea(
-            external_id=area_dict['external_id'],
-            areas=area_dict['areas'],
-            space_amount_estimate=area_dict['space_amount_estimate'],
+            origin_id=area_dict['origin_id'],
+            geom=area_dict['geom'],
+            capacity_estimate=area_dict['capacity_estimate'],
         )
         self.created += 1
         return parking_area
 
     def _update_parking_area(self, area_dict, parking_area):
-        new_area = area_dict['areas']
-        new_space = area_dict['space_amount_estimate']
+        new_area = area_dict['geom']
+        new_capacity = area_dict['capacity_estimate']
 
-        space_differs = parking_area.space_amount_estimate != new_space
-        area_differs = parking_area.areas.wkt != new_area.wkt
+        capacity_differs = parking_area.capacity_estimate != new_capacity
+        area_differs = parking_area.geom.wkt != new_area.wkt
 
-        if area_differs or space_differs:
+        if area_differs or capacity_differs:
             if self.overwrite:
-                parking_area.areas = new_area
-                parking_area.space_amount_estimate = new_space
+                parking_area.geom = new_area
+                parking_area.capacity_estimate = new_capacity
                 self.overwrites += 1
             else:
                 self.refusals += 1
@@ -156,9 +156,9 @@ class ParkingAreaImporter(object):
         """
         Parses the fields from the wfs:member XML element that are currently
         used:
-        alue_id > external_id
-        pyspaikkojen_lukumaara_arvio > space_amount_estimate
-        geom > areas
+        alue_id > origin_id
+        pyspaikkojen_lukumaara_arvio > capacity_estimate
+        geom > geom
         and puts them in a dict.
 
         The field from 'avoindata:paivitetty_tietopalveluun' rougly translates
@@ -171,30 +171,30 @@ class ParkingAreaImporter(object):
         There is an example file parkings/tests/parking_area_importer_data.xml
 
         :param member: The member XML element.
-        :returns: A dict containing the fields external_id, space_amount_estimate
-        and areas.
+        :returns: A dict containing the fields origin_id, capacity_estimate
+        and geom.
         """
         data = member.find(
             'avoindata:liikennemerkkipilotti_pysakointipaikat',
             self.ns,
         )
 
-        external_id = data.find('avoindata:alue_id', self.ns).text
+        origin_id = data.find('avoindata:alue_id', self.ns).text
         try:
-            space_amount_estimate = int(
+            capacity_estimate = int(
                 data.find(
                     'avoindata:pyspaikkojen_lukumaara_arvio',
                     self.ns,
                 ).text
             )
         except:
-            space_amount_estimate = None
-        areas = self._get_polygons(data.find('avoindata:geom', self.ns))
+            capacity_estimate = None
+        geom = self._get_polygons(data.find('avoindata:geom', self.ns))
 
         return {
-            'external_id': external_id,
-            'space_amount_estimate': space_amount_estimate,
-            'areas': areas,
+            'origin_id': origin_id,
+            'capacity_estimate': capacity_estimate,
+            'geom': geom,
         }
 
     def _get_polygons(self, geom):
