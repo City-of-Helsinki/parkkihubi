@@ -3,6 +3,7 @@ from django.utils import timezone
 from rest_framework import serializers, viewsets
 
 from parkings.models import ParkingArea
+from parkings.pagination import PublicAPIPagination
 
 from ..common import WGS84InBBoxFilter
 
@@ -34,6 +35,7 @@ class ParkingAreaStatisticsSerializer(serializers.ModelSerializer):
 class PublicAPIParkingAreaStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ParkingArea.objects.all()
     serializer_class = ParkingAreaStatisticsSerializer
+    pagination_class = PublicAPIPagination
     bbox_filter_field = 'geom'
     filter_backends = (WGS84InBBoxFilter,)
     bbox_filter_include_overlapping = True
