@@ -81,34 +81,3 @@ def check_required_fields(api_client, url, expected_required_fields, detail_endp
 def get_ids_from_results(results, as_set=True):
     id_list = [uuid.UUID(result['id']) for result in results]
     return set(id_list) if as_set else id_list
-
-
-def check_parking_data(parking_data, parking_obj):
-    """
-    Compare parking data dict returned from the API to the actual Parking object.
-    """
-
-    # check keys
-    all_fields = {'id', 'created_at', 'modified_at', 'address', 'device_identifier', 'location', 'operator',
-                  'registration_number', 'resident_code', 'special_code', 'time_start', 'time_end', 'zone', 'status'}
-    assert set(parking_data.keys()) == all_fields
-
-    # string valued fields should match 1:1
-    for field in {'device_identifier', 'registration_number', 'resident_code', 'special_code', 'zone'}:
-        assert parking_data[field] == getattr(parking_obj, field)
-
-    assert parking_data['id'] == str(parking_obj.id)
-    assert parking_data['created_at'] == parking_obj.created_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    assert parking_data['modified_at'] == parking_obj.modified_at.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-    assert parking_data['time_start'] == parking_obj.time_start.strftime('%Y-%m-%dT%H:%M:%SZ')
-    assert parking_data['time_end'] == parking_obj.time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
-    assert parking_data['operator'] == str(parking_obj.operator_id)
-    assert parking_data['location'] == json.loads(parking_obj.location.geojson)
-
-    if parking_obj.address:
-        address = parking_obj.address
-        assert parking_data['address'] == {
-            'city': address.city, 'postal_code': address.postal_code, 'street': address.street
-        }
-    else:
-        assert parking_data['address'] is None

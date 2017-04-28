@@ -1,20 +1,10 @@
 import django_filters
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import exceptions, serializers
+from rest_framework import exceptions
 from rest_framework_gis.filters import InBBoxFilter
 
-from parkings.models import Address, Parking
-
-
-class AddressSerializer(serializers.ModelSerializer):
-    city = serializers.CharField(required=True)
-    postal_code = serializers.CharField(required=True)
-    street = serializers.CharField(required=True)
-
-    class Meta:
-        model = Address
-        fields = ('city', 'postal_code', 'street')
+from parkings.models import Parking
 
 
 class ParkingFilter(django_filters.rest_framework.FilterSet):

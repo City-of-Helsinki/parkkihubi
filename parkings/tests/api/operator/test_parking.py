@@ -8,9 +8,7 @@ from freezegun import freeze_time
 
 from parkings.models import Parking
 
-from ..utils import (
-    ALL_METHODS, check_method_status_codes, check_required_fields, delete, get, get_ids_from_results, patch, post, put
-)
+from ..utils import ALL_METHODS, check_method_status_codes, check_required_fields, delete, patch, post, put
 
 list_url = reverse('operator:v1:parking-list')
 
@@ -81,10 +79,10 @@ def check_response_parking_data(posted_parking_data, response_parking_data):
 
 
 def test_disallowed_methods(operator_api_client, parking):
-    list_disallowed_methods = ('put', 'patch', 'delete')
+    list_disallowed_methods = ('get', 'put', 'patch', 'delete')
     check_method_status_codes(operator_api_client, list_url, list_disallowed_methods, 405)
 
-    detail_disallowed_methods = ('post',)
+    detail_disallowed_methods = ('get', 'post')
     check_method_status_codes(operator_api_client, get_detail_url(parking), detail_disallowed_methods, 405)
 
 
@@ -92,20 +90,6 @@ def test_unauthenticated_and_normal_users_cannot_do_anything(unauthenticated_api
     urls = (list_url, get_detail_url(parking))
     check_method_status_codes(unauthenticated_api_client, urls, ALL_METHODS, 401)
     check_method_status_codes(user_api_client, urls, ALL_METHODS, 403, error_code='permission_denied')
-
-
-def test_get_list_check_data(operator_api_client, parking):
-    data = get(operator_api_client, list_url)
-    assert len(data['results']) == 1
-    parking_data = data['results'][0]
-    check_parking_data_keys(parking_data)
-    check_parking_data_matches_parking_object(parking_data, parking)
-
-
-def test_get_detail_check_data(operator_api_client, parking):
-    parking_data = get(operator_api_client, get_detail_url(parking))
-    check_parking_data_keys(parking_data)
-    check_parking_data_matches_parking_object(parking_data, parking)
 
 
 def test_parking_required_fields(operator_api_client, parking):
@@ -248,23 +232,3 @@ def test_time_start_cannot_be_after_time_end(operator_api_client, parking, new_p
     patch_data = {'time_start': '2116-12-10T23:33:29Z'}
     error_data = patch(operator_api_client, detail_url, patch_data, status_code=400)
     assert error_message in error_data['non_field_errors']
-
-
-def test_can_view_only_own_parkings(operator_api_client, operator_2_api_client, operator, operator_2, parking_factory):
-    parking_1 = parking_factory(operator=operator)
-    parking_2 = parking_factory(operator=operator_2)
-
-    # list
-    results = get(operator_api_client, list_url)['results']
-    assert get_ids_from_results(results) == {parking_1.id}
-
-    # detail
-    get(operator_api_client, get_detail_url(parking_1), 200)
-    get(operator_api_client, get_detail_url(parking_2), 404)
-
-    # just to be sure that everything is working as expected, test also with the other operator
-    results = get(operator_2_api_client, list_url)['results']
-    assert get_ids_from_results(results) == {parking_2.id}
-
-    get(operator_2_api_client, get_detail_url(parking_2), 200)
-    get(operator_2_api_client, get_detail_url(parking_1), 404)

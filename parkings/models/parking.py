@@ -4,7 +4,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator, RegexVa
 from django.utils.timezone import localtime, now
 from django.utils.translation import ugettext_lazy as _
 
-from parkings.models.address import Address
 from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from parkings.models.operator import Operator
 from parkings.models.parking_area import ParkingArea
@@ -14,14 +13,8 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     VALID = 'valid'
     NOT_VALID = 'not_valid'
 
-    address = models.ForeignKey(
-        Address, on_delete=models.SET_NULL, verbose_name=_("address"), related_name="parkings", null=True, blank=True
-    )
     parking_area = models.ForeignKey(
         ParkingArea, on_delete=models.SET_NULL, verbose_name=_("parking area"), null=True, blank=True,
-    )
-    device_identifier = models.CharField(
-        max_length=128, verbose_name=_("device identifier"), db_index=True, null=True, blank=True,
     )
     location = models.PointField(verbose_name=_("location"), null=True, blank=True)
     operator = models.ForeignKey(
@@ -30,12 +23,6 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     registration_number = models.CharField(
         max_length=10, db_index=True, verbose_name=_("registration number"),
         validators=[RegexValidator(r"^[A-Z0-9-]+$")]
-    )
-    resident_code = models.CharField(
-        max_length=1, verbose_name=_("resident parking code"), validators=[RegexValidator(r"^[A-Z]{1}$")], blank=True
-    )
-    special_code = models.CharField(
-        max_length=10, verbose_name=_("special parking code"), blank=True,
     )
     time_start = models.DateTimeField(
         verbose_name=_("parking start time"), db_index=True,
