@@ -96,6 +96,12 @@ Run with coverage
 
 Open `htmlcov/index.html` for the coverage report.
 
+### Importing parking areas
+
+To import Helsinki parking areas run:
+
+    python manage.py import_parking_areas
+
 ### Starting a development server
 
     python manage.py runserver
@@ -103,6 +109,8 @@ Open `htmlcov/index.html` for the coverage report.
 Operator API will be available at [http://127.0.0.1:8000/operator/v1/](http://127.0.0.1:8000/operator/v1/)
 
 Internal API will be available at [http://127.0.0.1:8000/internal/v1/](http://127.0.0.1:8000/internal/v1/)
+
+Public API will be available at [http://127.0.0.1:8000/public/v1/](http://127.0.0.1:8000/public/v1/)
 
 ### Generating API documentation
 
