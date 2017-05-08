@@ -180,7 +180,7 @@ def test_cannot_modify_parking_after_modify_period(operator_api_client, new_park
         response_parking_data = post(operator_api_client, list_url, new_parking_data)
 
     new_parking = Parking.objects.get(id=response_parking_data['id'])
-    end_time = start_time + settings.PARKINGS_TIME_EDITABLE + datetime.timedelta(minutes=1)
+    end_time = start_time + settings.PARKKIHUBI_TIME_EDITABLE + datetime.timedelta(minutes=1)
 
     with freeze_time(end_time):
 
@@ -206,7 +206,7 @@ def test_can_modify_time_end_after_modify_period(operator_api_client, new_parkin
         response_parking_data = post(operator_api_client, list_url, new_parking_data)
 
     new_parking = Parking.objects.get(id=response_parking_data['id'])
-    end_time = start_time + settings.PARKINGS_TIME_EDITABLE + datetime.timedelta(minutes=1)
+    end_time = start_time + settings.PARKKIHUBI_TIME_EDITABLE + datetime.timedelta(minutes=1)
 
     with freeze_time(end_time):
         parking_data = {'time_end': '2016-12-12T23:33:29Z'}

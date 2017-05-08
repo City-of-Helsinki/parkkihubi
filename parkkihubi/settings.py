@@ -165,4 +165,4 @@ REST_FRAMEWORK = {
 ##############
 # Parkkihubi #
 ##############
-PARKINGS_TIME_EDITABLE = timedelta(minutes=2)
+PARKKIHUBI_TIME_EDITABLE = timedelta(minutes=2)
