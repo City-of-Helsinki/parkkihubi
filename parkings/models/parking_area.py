@@ -11,7 +11,7 @@ class ParkingArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     # sources are to be used, but for now this should be enough to at least fail
     # early if there are inconsistencies in the external system.
     origin_id = models.CharField(
-        verbose_name=_('external ID'),
+        verbose_name=_('origin ID'),
         max_length=32,
         db_index=True,
         unique=True,
@@ -29,7 +29,7 @@ class ParkingArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     # This is a rough capacity estimate of how many cars might fit into the
     # parking area.
     capacity_estimate = models.PositiveSmallIntegerField(
-        verbose_name=_('capasity estimate'),
+        verbose_name=_('capacity estimate'),
         null=True,
         blank=True,
     )
