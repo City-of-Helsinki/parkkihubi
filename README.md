@@ -52,6 +52,12 @@ Create a basic file for development as follows
 
     echo 'DEBUG=True' > .env
 
+#### Parkkihubi settings
+
+- `PARKKIHUBI_PUBLIC_API_ENABLED` default `True`
+- `PARKKIHUBI_OPERATOR_API_ENABLED` default `True`
+- `PARKKIHUBI_INTERNAL_API_ENABLED` default `False`
+
 ### Database
 
 Create user and database
@@ -108,7 +114,7 @@ To import Helsinki parking areas run:
 
 Operator API will be available at [http://127.0.0.1:8000/operator/v1/](http://127.0.0.1:8000/operator/v1/)
 
-Internal API will be available at [http://127.0.0.1:8000/internal/v1/](http://127.0.0.1:8000/internal/v1/)
+Internal API (disabled by default) will be available at [http://127.0.0.1:8000/internal/v1/](http://127.0.0.1:8000/internal/v1/)
 
 Public API will be available at [http://127.0.0.1:8000/public/v1/](http://127.0.0.1:8000/public/v1/)
 
