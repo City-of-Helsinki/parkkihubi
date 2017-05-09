@@ -4,12 +4,10 @@ info:
   description: |
                  Parkkihubi REST API Documentation (Operator)
 
-                 **Work in progress !** This documentation will evolve, and minor changes to the actual API are also possible.
-
                  Authentication: Every request must have header `Authorization: ApiKey <your api key>`
 
-  version: "0.0.4"
-host: 127.0.0.1:8000
+  version: "1.0.0"
+host: api.parkkiopas.fi
 schemes:
   - https
 basePath: /operator/v1
