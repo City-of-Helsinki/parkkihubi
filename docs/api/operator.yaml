@@ -8,7 +8,7 @@ info:
 
                  Authentication: Every request must have header `Authorization: ApiKey <your api key>`
 
-  version: "0.0.3"
+  version: "0.0.4"
 host: 127.0.0.1:8000
 schemes:
   - https
@@ -34,7 +34,7 @@ paths:
             example:
               location:
                 type: Point
-                coordinates: [60.170014, 24.938466]
+                coordinates: [24.938466, 60.170014]
               registration_number: LOL-007
               time_start: "2016-12-24T21:00:00Z"
               time_end: "2016-12-24T22:00:00Z"
@@ -93,7 +93,7 @@ paths:
             example:
               location:
                 type: Point
-                coordinates: [60.170014, 24.938466]
+                coordinates: [24.938466, 60.170014]
               registration_number: LOL-007
               time_start: "2016-12-24T21:00:00Z"
               time_end: "2016-12-24T22:00:00Z"
@@ -216,7 +216,7 @@ definitions:
       modified_at: "2016-12-11T21:34:22Z"
       location:
         type: Point
-        coordinates: [60.170014, 24.938466]
+        coordinates: [24.938466, 60.170014]
       registration_number: LOL-007
       time_start: "2016-12-24T21:00:00Z"
       time_end: "2016-12-24T22:00:00Z"
@@ -269,13 +269,13 @@ definitions:
     type: object
     example:
       type: Point
-      coordinates: [60.170014, 24.938466]
+      coordinates: [24.938466, 60.170014]
     properties:
       type:
         description: Location geometry type.
         type: string
       coordinates:
-        description: An array of coordinates describing the location geometry
+        description: An array of coordinates describing the location geometry (longitude, latitude)
         type: array
         items:
           type: number
