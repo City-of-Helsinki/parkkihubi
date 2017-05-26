@@ -13,7 +13,7 @@ def no_more_mark_django_db(transactional_db):
 
 
 @pytest.fixture
-def unauthenticated_api_client():
+def api_client():
     return APIClient()
 
 
