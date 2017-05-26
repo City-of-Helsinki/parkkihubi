@@ -20,8 +20,9 @@ class ParkingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Parking
 
-    location = factory.LazyFunction(lambda: Point(24.9392813 + fake.random.uniform(0.001, 0.01),
-                                                  60.1631665 + fake.random.uniform(0.001, 0.01)))
+    location = factory.LazyFunction(
+        lambda: Point(24.915 + fake.random.uniform(0, 0.040), 60.154 + fake.random.uniform(0, 0.022))
+    )
     operator = factory.SubFactory(OperatorFactory)
     registration_number = factory.LazyFunction(generate_registration_number)
     time_start = factory.LazyFunction(lambda: fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc))

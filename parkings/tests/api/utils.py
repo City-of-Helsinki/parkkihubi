@@ -81,3 +81,19 @@ def check_required_fields(api_client, url, expected_required_fields, detail_endp
 def get_ids_from_results(results, as_set=True):
     id_list = [uuid.UUID(result['id']) for result in results]
     return set(id_list) if as_set else id_list
+
+
+def check_response_objects(data, objects):
+    """
+    Assert object or objects exist in (response) data by comparing ids.
+    """
+    if 'results' in data:
+        data = data['results']
+
+    if not (isinstance(objects, list) or isinstance(objects, tuple) or isinstance(objects, set)):
+        objects = [objects]
+
+    expected_ids = [str(obj.id) for obj in objects]
+    actual_ids = [obj['id'] for obj in data]
+    error_message = '%s does not match %s' % (expected_ids, actual_ids)
+    assert set(expected_ids) == set(actual_ids) and len(objects) == len(data), error_message
