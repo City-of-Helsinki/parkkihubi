@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 import factory
 import pytz
+from django.conf import settings
 from django.contrib.gis.geos import Point
 
 from parkings.models import Parking
@@ -28,3 +31,13 @@ class ParkingFactory(factory.django.DjangoModelFactory):
     time_start = factory.LazyFunction(lambda: fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc))
     time_end = factory.LazyFunction(lambda: fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc))
     zone = factory.LazyFunction(lambda: fake.random.randint(1, 3))
+
+
+class HistoryParkingFactory(ParkingFactory):
+    time_end = factory.LazyFunction(
+        lambda: (
+            fake.date_time_this_decade(before_now=True, tzinfo=pytz.utc) -
+            getattr(settings, 'PARKKIHUBI_TIME_PARKINGS_HIDDEN', timedelta(days=7))
+        )
+    )
+    time_start = factory.lazy_attribute(lambda o: o.time_end - timedelta(seconds=fake.random.randint(0, 60*24*14)))

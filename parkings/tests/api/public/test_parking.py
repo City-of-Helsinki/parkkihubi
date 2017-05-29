@@ -1,11 +1,15 @@
 import json
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 import pytest
 from django.conf import settings
+from django.contrib.gis.geos import Point
 from django.core.urlresolvers import reverse
 from django.utils.timezone import utc
 from freezegun import freeze_time
+
+from parkings.models import Parking
 
 from ..utils import check_list_endpoint_base_fields, check_method_status_codes, check_response_objects, get
 
@@ -95,3 +99,96 @@ def test_new_parking_hidden_period(api_client, parking_factory):
         response = get(api_client, list_url)
 
     check_response_objects(response, (parking_that_should_be_visible_1, parking_that_should_be_visible_2))
+
+
+@pytest.mark.parametrize('filtering, expected_parking_indexes', [
+    ('', [0, 1]),
+    ('time_start_lte=2014-01-01T12:00:00Z', [0, 1]),
+    ('time_start_lte=2014-01-01T11:59:59Z', [0]),
+    ('time_end_gte=2014-01-01T12:00:00Z', [0, 1]),
+    ('time_end_gte=2014-01-01T12:00:01Z', [1]),
+    ('time_start_gte=2012-01-01T12:00:00Z', [0, 1]),
+    ('time_start_gte=2012-01-01T12:00:01Z', [1]),
+    ('time_end_lte=2016-01-01T12:00:00Z', [0, 1]),
+    ('time_end_lte=2016-01-01T11:59:59Z', [0]),
+    ('time_start_gte=2011-01-01T12:00:00Z&time_end_lte=2015-01-01T12:00:00Z', [0]),
+    ('time_start_gte=2013-01-01T12:00:00Z&time_end_lte=2015-01-01T12:00:00Z', []),
+])
+def test_time_filters(operator, api_client, parking_factory, filtering, expected_parking_indexes):
+    parkings = [
+        parking_factory(
+            time_start=datetime(2012, 1, 1, 12, 0, 0, tzinfo=utc),
+            time_end=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
+            operator=operator
+        ),
+        parking_factory(
+            time_start=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
+            time_end=datetime(2016, 1, 1, 12, 0, 0, tzinfo=utc),
+            operator=operator
+        )
+    ]
+    expected_parkings = set(parkings[index] for index in expected_parking_indexes)
+
+    response = get(api_client, list_url + '?' + filtering)
+    check_response_objects(response, expected_parkings)
+
+
+def test_parking_area_filter(api_client, history_parking_factory, parking_area_factory):
+    (parking_area_1, parking_area_2, parking_area_3) = parking_area_factory.create_batch(3)
+
+    with patch.object(Parking, 'get_closest_area', return_value=parking_area_1):
+        parking_1 = history_parking_factory()
+    with patch.object(Parking, 'get_closest_area', return_value=parking_area_2):
+        parking_2 = history_parking_factory()
+        parking_3 = history_parking_factory()
+    with patch.object(Parking, 'get_closest_area', return_value=parking_area_3):
+        parking_4 = history_parking_factory()
+
+    data = get(api_client, list_url)
+    check_response_objects(data, (parking_1, parking_2, parking_3, parking_4))
+
+    data = get(api_client, list_url + '?parking_area=%s' % str(parking_area_2.id))
+    check_response_objects(data, (parking_2, parking_3))
+
+    data = get(api_client, list_url + '?parking_area=%s,%s' % (str(parking_area_1.id), str(parking_area_2.id)))
+    check_response_objects(data, (parking_1, parking_2, parking_3))
+
+    data = get(api_client, list_url + '?parking_area=foobar')
+    assert not data['results']
+
+
+def test_zone_filter(api_client, history_parking_factory):
+    parking_1 = history_parking_factory(zone=1)
+    parking_2 = history_parking_factory(zone=2)
+    parking_3 = history_parking_factory(zone=2)
+    parking_4 = history_parking_factory(zone=3)
+
+    data = get(api_client, list_url)['results']
+    check_response_objects(data, (parking_1, parking_2, parking_3, parking_4))
+
+    data = get(api_client, list_url + '?zone=2')
+    check_response_objects(data, (parking_2, parking_3))
+
+    data = get(api_client, list_url + '?zone=1,2')
+    check_response_objects(data, (parking_1, parking_2, parking_3))
+
+    data = get(api_client, list_url + '?zone=foobar')
+    assert not data['results']
+
+
+def test_bounding_box_filter(api_client, history_parking_factory):
+    parking_1 = history_parking_factory(location=Point(10, 10))
+    parking_2 = history_parking_factory(location=Point(20, 20))
+    parking_3 = history_parking_factory(location=Point(30, 30))
+
+    data = get(api_client, list_url)
+    check_response_objects(data, (parking_1, parking_2, parking_3))
+
+    data = get(api_client, list_url + '?in_bbox=5,5,15,15')
+    check_response_objects(data, parking_1)
+
+    data = get(api_client, list_url + '?in_bbox=5,5,25,25')
+    check_response_objects(data, (parking_1, parking_2))
+
+    data = get(api_client, list_url + '?in_bbox=80,80,85,85')
+    assert not data['results']
