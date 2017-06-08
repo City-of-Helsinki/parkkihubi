@@ -41,9 +41,9 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
     assert parking_data['location'] == json.loads(parking_obj.location.geojson)
 
 
-def test_other_than_staff_cannot_do_anything(unauthenticated_api_client, operator_api_client, parking):
+def test_other_than_staff_cannot_do_anything(api_client, operator_api_client, parking):
     urls = (list_url, get_detail_url(parking))
-    check_method_status_codes(unauthenticated_api_client, urls, ALL_METHODS, 401)
+    check_method_status_codes(api_client, urls, ALL_METHODS, 401)
     check_method_status_codes(operator_api_client, urls, ALL_METHODS, 403, error_code='permission_denied')
 
 

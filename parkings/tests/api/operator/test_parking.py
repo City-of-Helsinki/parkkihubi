@@ -86,9 +86,9 @@ def test_disallowed_methods(operator_api_client, parking):
     check_method_status_codes(operator_api_client, get_detail_url(parking), detail_disallowed_methods, 405)
 
 
-def test_unauthenticated_and_normal_users_cannot_do_anything(unauthenticated_api_client, user_api_client, parking):
+def test_unauthenticated_and_normal_users_cannot_do_anything(api_client, user_api_client, parking):
     urls = (list_url, get_detail_url(parking))
-    check_method_status_codes(unauthenticated_api_client, urls, ALL_METHODS, 401)
+    check_method_status_codes(api_client, urls, ALL_METHODS, 401)
     check_method_status_codes(user_api_client, urls, ALL_METHODS, 403, error_code='permission_denied')
 
 
