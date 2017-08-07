@@ -10,8 +10,13 @@ python:
 
 cache: pip
 
-services:
-  - postgresql
+# As of 2017-08 the new travis trusty images have broken postgis,
+# so we have to specify the exact postgres version to install right addons
+addons:
+  postgresql: 9.6
+  apt:
+    packages:
+    - postgresql-9.6-postgis-2.3
 
 install: 'pip install codecov -r requirements.txt -r requirements-dev.txt'
 
