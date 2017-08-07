@@ -1,3 +1,7 @@
+[![Build status](https://travis-ci.org/City-of-Helsinki/parkkihubi.svg)](https://travis-ci.org/City-of-Helsinki/parkkihubi)
+[![codecov](https://codecov.io/gh/City-of-Helsinki/parkkihubi/branch/master/graph/badge.svg)](https://codecov.io/gh/City-of-Helsinki/parkkihubi)
+[![Requirements](https://requires.io/github/City-of-Helsinki/parkkihubi/requirements.svg?branch=master)](https://requires.io/github/City-of-Helsinki/parkkihubi/requirements/?branch=master)
+
 # Parking hub
 
 Django-based REST API for processing parking data.

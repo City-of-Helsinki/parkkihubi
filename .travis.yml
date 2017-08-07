@@ -1,22 +1,24 @@
-sudo: false
-dist: trusty
 language: python
+python:
+  - '3.6'
+  - 'nightly'
+
+cache: pip
+
 services:
   - postgresql
-cache:
-  directories:
-    - "$HOME/.cache/pip"
-python:
-  - 3.4
-  - 3.5
-install:
-  - pip install -U pip
-  - pip install -r requirements.txt -r requirements-dev.txt
+
+install: 'pip install codecov -r requirements.txt -r requirements-dev.txt'
+
 before_script:
   - psql -c 'create database parkkihubi;' -U postgres
   - psql -U postgres -c "create extension postgis"
+
 script:
   - flake8
-  - py.test -ra -vvv --cov
+  - pytest -ra -vvv --cov
+
+after_success: codecov
+
 env:
   - SECRET_KEY=topsecret123
