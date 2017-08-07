@@ -1,3 +1,8 @@
+# Postgis doesn't work on older 'precise' platform
+# and the default depends on repo age (parkkihubi is too old)
+sudo: false
+dist: trusty
+
 language: python
 python:
   - '3.6'
