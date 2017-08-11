@@ -1,22 +1,34 @@
+# Postgis doesn't work on older 'precise' platform
+# and the default depends on repo age (parkkihubi is too old)
 sudo: false
 dist: trusty
+
 language: python
-services:
-  - postgresql
-cache:
-  directories:
-    - "$HOME/.cache/pip"
 python:
-  - 3.4
-  - 3.5
-install:
-  - pip install -U pip
-  - pip install -r requirements.txt -r requirements-dev.txt
+  - '3.6'
+  - 'nightly'
+
+cache: pip
+
+# As of 2017-08 the new travis trusty images have broken postgis,
+# so we have to specify the exact postgres version to install right addons
+addons:
+  postgresql: 9.6
+  apt:
+    packages:
+    - postgresql-9.6-postgis-2.3
+
+install: 'pip install codecov -r requirements.txt -r requirements-dev.txt'
+
 before_script:
   - psql -c 'create database parkkihubi;' -U postgres
   - psql -U postgres -c "create extension postgis"
+
 script:
   - flake8
-  - py.test -ra -vvv --cov
+  - pytest -ra -vvv --cov
+
+after_success: codecov
+
 env:
   - SECRET_KEY=topsecret123
