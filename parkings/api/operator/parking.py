@@ -20,7 +20,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, data):
-        if self.instance and (now() - self.instance.created_at) > settings.PARKKIHUBI_TIME_EDITABLE:
+        if self.instance and (now() - self.instance.created_at) > settings.PARKKIHUBI_TIME_PARKINGS_EDITABLE:
             if set(data.keys()) != {'time_end'}:
                 raise ParkingException(
                     _('Grace period has passed. Only "time_end" can be updated via PATCH.'),
