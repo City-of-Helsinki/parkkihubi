@@ -1,6 +1,6 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.timezone import localtime, now
 from django.utils.translation import ugettext_lazy as _
 
@@ -20,10 +20,7 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     operator = models.ForeignKey(
         Operator, on_delete=models.PROTECT, verbose_name=_("operator"), related_name="parkings"
     )
-    registration_number = models.CharField(
-        max_length=10, db_index=True, verbose_name=_("registration number"),
-        validators=[RegexValidator(r"^[A-Z0-9-]+$")]
-    )
+    registration_number = models.CharField(max_length=20, db_index=True, verbose_name=_("registration number"))
     time_start = models.DateTimeField(
         verbose_name=_("parking start time"), db_index=True,
     )

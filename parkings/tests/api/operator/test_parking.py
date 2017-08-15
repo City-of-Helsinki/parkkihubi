@@ -232,3 +232,13 @@ def test_time_start_cannot_be_after_time_end(operator_api_client, parking, new_p
     patch_data = {'time_start': '2116-12-10T23:33:29Z'}
     error_data = patch(operator_api_client, detail_url, patch_data, status_code=400)
     assert error_message in error_data['non_field_errors']
+
+
+def test_parking_registration_number_special_chars(operator_api_client, new_parking_data):
+    new_parking_data['registration_number'] = 'ÅÄÖÆØ-:'
+
+    response_parking_data = post(operator_api_client, list_url, new_parking_data)
+
+    check_response_parking_data(new_parking_data, response_parking_data)
+    new_parking = Parking.objects.get(id=response_parking_data['id'])
+    check_parking_data_matches_parking_object(new_parking_data, new_parking)
