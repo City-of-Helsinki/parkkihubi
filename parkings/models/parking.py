@@ -25,7 +25,7 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         verbose_name=_("parking start time"), db_index=True,
     )
     time_end = models.DateTimeField(
-        verbose_name=_("parking end time"), db_index=True,
+        verbose_name=_("parking end time"), db_index=True, null=True, blank=True,
     )
     zone = models.IntegerField(verbose_name=_("zone number"), validators=[
         MinValueValidator(1), MaxValueValidator(3),
@@ -38,6 +38,9 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     def __str__(self):
         start = localtime(self.time_start).replace(tzinfo=None)
 
+        if self.time_end is None:
+            return "%s -> (%s)" % (start, self.registration_number)
+
         if self.time_start.date() == self.time_end.date():
             end = localtime(self.time_end).time().replace(tzinfo=None)
         else:
@@ -46,9 +49,15 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         return "%s -> %s (%s)" % (start, end, self.registration_number)
 
     def get_state(self):
-        if self.time_start <= now() <= self.time_end:
-            return Parking.VALID
-        return Parking.NOT_VALID
+        current_timestamp = now()
+
+        if self.time_start > current_timestamp:
+            return Parking.NOT_VALID
+
+        if self.time_end and self.time_end < current_timestamp:
+            return Parking.NOT_VALID
+
+        return Parking.VALID
 
     def get_closest_area(self, max_distance=50):
         if self.location:

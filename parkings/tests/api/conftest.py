@@ -81,10 +81,30 @@ def current_parking(parking_factory, operator):
 
 
 @pytest.fixture
+def current_parking_without_end_time(parking_factory, operator):
+    now = timezone.now()
+    return parking_factory(
+        time_start=now-datetime.timedelta(hours=1),
+        time_end=None,
+        operator=operator,
+    )
+
+
+@pytest.fixture
 def future_parking(parking_factory, operator):
     now = timezone.now()
     return parking_factory(
         time_start=now+datetime.timedelta(hours=1),
         time_end=now+datetime.timedelta(hours=2),
+        operator=operator,
+    )
+
+
+@pytest.fixture
+def future_parking_without_end_time(parking_factory, operator):
+    now = timezone.now()
+    return parking_factory(
+        time_start=now+datetime.timedelta(hours=1),
+        time_end=None,
         operator=operator,
     )
