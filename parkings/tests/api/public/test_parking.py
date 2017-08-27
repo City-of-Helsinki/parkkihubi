@@ -103,16 +103,16 @@ def test_new_parking_hidden_period(api_client, parking_factory):
 
 @pytest.mark.parametrize('filtering, expected_parking_indexes', [
     ('', [0, 1]),
-    ('time_start_lte=2014-01-01T12:00:00Z', [0, 1]),
-    ('time_start_lte=2014-01-01T11:59:59Z', [0]),
-    ('time_end_gte=2014-01-01T12:00:00Z', [0, 1]),
-    ('time_end_gte=2014-01-01T12:00:01Z', [1]),
-    ('time_start_gte=2012-01-01T12:00:00Z', [0, 1]),
-    ('time_start_gte=2012-01-01T12:00:01Z', [1]),
-    ('time_end_lte=2016-01-01T12:00:00Z', [0, 1]),
-    ('time_end_lte=2016-01-01T11:59:59Z', [0]),
-    ('time_start_gte=2011-01-01T12:00:00Z&time_end_lte=2015-01-01T12:00:00Z', [0]),
-    ('time_start_gte=2013-01-01T12:00:00Z&time_end_lte=2015-01-01T12:00:00Z', []),
+    ('time_start__lte=2014-01-01T12:00:00Z', [0, 1]),
+    ('time_start__lte=2014-01-01T11:59:59Z', [0]),
+    ('time_end__gte=2014-01-01T12:00:00Z', [0, 1]),
+    ('time_end__gte=2014-01-01T12:00:01Z', [1]),
+    ('time_start__gte=2012-01-01T12:00:00Z', [0, 1]),
+    ('time_start__gte=2012-01-01T12:00:01Z', [1]),
+    ('time_end__lte=2016-01-01T12:00:00Z', [0, 1]),
+    ('time_end__lte=2016-01-01T11:59:59Z', [0]),
+    ('time_start__gte=2011-01-01T12:00:00Z&time_end__lte=2015-01-01T12:00:00Z', [0]),
+    ('time_start__gte=2013-01-01T12:00:00Z&time_end__lte=2015-01-01T12:00:00Z', []),
 ])
 def test_time_filters(operator, api_client, parking_factory, filtering, expected_parking_indexes):
     parkings = [
@@ -192,3 +192,19 @@ def test_bounding_box_filter(api_client, history_parking_factory):
 
     data = get(api_client, list_url + '?in_bbox=80,80,85,85')
     assert not data['results']
+
+
+def test_parkings_without_end_time_not_visible(api_client, history_parking_factory):
+    parking_1 = history_parking_factory()
+    history_parking_factory(time_end=None)
+
+    response = get(api_client, list_url)
+    check_response_objects(response, parking_1)
+
+
+def test_registration_number_filter_not_available(api_client, history_parking_factory):
+    parking_1 = history_parking_factory(registration_number='ABC-123')
+    parking_2 = history_parking_factory(registration_number='ZYX-987')
+
+    response = get(api_client, list_url + '?registration_number=ABC-123')
+    check_response_objects(response, (parking_1, parking_2))

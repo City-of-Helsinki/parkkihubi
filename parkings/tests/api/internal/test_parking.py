@@ -3,13 +3,15 @@ from datetime import datetime
 
 import pytest
 from django.core.urlresolvers import reverse
+from django.utils.timezone import utc
 
 from parkings.models import Parking
 
 from ..utils import (
-    ALL_METHODS, check_list_endpoint_base_fields, check_response_objects, check_method_status_codes, get,
+    ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes, check_response_objects, get,
     get_ids_from_results
 )
+
 list_url = reverse('internal:v1:parking-list')
 
 
@@ -116,27 +118,41 @@ def test_registration_number_filter(operator, staff_api_client, parking_factory)
     assert len(results) == 0
 
 
-@pytest.mark.parametrize('filtering, expected_parking_index', [
-    ('time_start_lte=2017-01-01', 0),
-    ('time_start_gte=2017-01-01', 1),
-    ('time_end_lte=2019-01-01', 0),
-    ('time_end_gte=2019-01-01', 1),
-    ('time_start_gte=2015-01-01&time_end_lte=2019-01-01', 0),
+@pytest.mark.parametrize('filtering, expected_parking_indexes', [
+    ('', [0, 1]),
+    ('time_start__lte=2014-01-01T12:00:00Z', [0, 1]),
+    ('time_start__lte=2014-01-01T11:59:59Z', [0]),
+    ('time_end__gte=2014-01-01T12:00:00Z', [0, 1]),
+    ('time_end__gte=2014-01-01T12:00:01Z', [1]),
+    ('time_start__gte=2012-01-01T12:00:00Z', [0, 1]),
+    ('time_start__gte=2012-01-01T12:00:01Z', [1]),
+    ('time_end__lte=2016-01-01T12:00:00Z', [0, 1]),
+    ('time_end__lte=2016-01-01T11:59:59Z', [0]),
+    ('time_start__gte=2011-01-01T12:00:00Z&time_end__lte=2015-01-01T12:00:00Z', [0]),
+    ('time_start__gte=2013-01-01T12:00:00Z&time_end__lte=2015-01-01T12:00:00Z', []),
 ])
-def test_time_filters(operator, staff_api_client, parking_factory, filtering, expected_parking_index):
+def test_time_filters(operator, staff_api_client, parking_factory, filtering, expected_parking_indexes):
     parkings = [
-        parking_factory(time_start=datetime(2016, 1, 1), time_end=datetime(2018, 1, 1), operator=operator),
-        parking_factory(time_start=datetime(2018, 1, 1), time_end=datetime(2020, 1, 1), operator=operator)
+        parking_factory(
+            time_start=datetime(2012, 1, 1, 12, 0, 0, tzinfo=utc),
+            time_end=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
+            operator=operator
+        ),
+        parking_factory(
+            time_start=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
+            time_end=datetime(2016, 1, 1, 12, 0, 0, tzinfo=utc),
+            operator=operator
+        )
     ]
-    expected_id = {parkings[expected_parking_index].id}
+    expected_parkings = set(parkings[index] for index in expected_parking_indexes)
 
-    results = get(staff_api_client, list_url + '?' + filtering)['results']
-    assert get_ids_from_results(results) == expected_id
+    response = get(staff_api_client, list_url + '?' + filtering)
+    check_response_objects(response, expected_parkings)
 
 
 @pytest.mark.parametrize('filtering, expected_visibility', [
-    ('time_end_lte=2020-01-01', False),
-    ('time_end_gte=2020-01-01', True),
+    ('time_end__lte=2020-01-01T12:00:00Z', False),
+    ('time_end__gte=2020-01-01T12:00:00Z', True),
 ])
 def test_end_time_filters_no_end_time(operator, staff_api_client, parking_factory, filtering, expected_visibility):
     parking = parking_factory(time_start=datetime(2018, 1, 1), time_end=None, operator=operator)

@@ -1,6 +1,6 @@
 import django_filters
+from django.db import models
 from django.db.models import Q
-from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import exceptions
 from rest_framework_gis.filters import InBBoxFilter
@@ -9,30 +9,25 @@ from parkings.models import Parking
 
 
 class ParkingFilter(django_filters.rest_framework.FilterSet):
-    status = django_filters.CharFilter(method='filter_status')
-    registration_number = django_filters.CharFilter()
-    time_start_gte = django_filters.DateTimeFilter(name='time_start', lookup_expr='gte')
-    time_start_lte = django_filters.DateTimeFilter(name='time_start', lookup_expr='lte')
-    time_end_gte = django_filters.DateTimeFilter(method='filter_time_end_gte')
-    time_end_lte = django_filters.DateTimeFilter(name='time_end', lookup_expr='lte')
+    """
+    Common filters in internal and public API.
+    """
+    time_end__gte = django_filters.IsoDateTimeFilter(method='filter_time_end__gte')
 
     class Meta:
         model = Parking
-        fields = ('status', 'registration_number', 'time_start_gte', 'time_start_lte', 'time_end_gte', 'time_end_lte')
-
-    def filter_status(self, queryset, name, value):
-        now = timezone.now()
-        valid_parkings = Q(time_start__lte=now) & (Q(time_end__gte=now) | Q(time_end__isnull=True))
-
-        if value == Parking.VALID:
-            return queryset.filter(valid_parkings)
-        elif value == Parking.NOT_VALID:
-            return queryset.exclude(valid_parkings)
-
-        return queryset
+        fields = {
+            'time_start': ['lte', 'gte'],
+            'time_end': ['lte'],
+        }
+        filter_overrides = {
+            models.DateTimeField: {
+                'filter_class': django_filters.IsoDateTimeFilter,
+            },
+        }
 
     # we need to implement this manually to include parkings with no end_time
-    def filter_time_end_gte(self, queryset, name, value):
+    def filter_time_end__gte(self, queryset, name, value):
         return queryset.filter(Q(time_end__gte=value) | Q(time_end__isnull=True))
 
 

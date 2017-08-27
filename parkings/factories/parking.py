@@ -33,11 +33,17 @@ class ParkingFactory(factory.django.DjangoModelFactory):
     zone = factory.LazyFunction(lambda: fake.random.randint(1, 3))
 
 
+def get_time_far_enough_in_past():
+    some_time_before_now = fake.date_time_this_decade(before_now=True, tzinfo=pytz.utc)
+    time_hidden = getattr(settings, 'PARKKIHUBI_TIME_PARKINGS_HIDDEN', timedelta(days=7)) + timedelta(seconds=1)
+    return some_time_before_now - time_hidden
+
+
 class HistoryParkingFactory(ParkingFactory):
-    time_end = factory.LazyFunction(
-        lambda: (
-            fake.date_time_this_decade(before_now=True, tzinfo=pytz.utc) -
-            getattr(settings, 'PARKKIHUBI_TIME_PARKINGS_HIDDEN', timedelta(days=7))
-        )
+    time_end = factory.LazyFunction(get_time_far_enough_in_past)
+    time_start = factory.lazy_attribute(
+        lambda o:
+        o.time_end - timedelta(seconds=fake.random.randint(0, 60*24*14))
+        if o.time_end
+        else get_time_far_enough_in_past()
     )
-    time_start = factory.lazy_attribute(lambda o: o.time_end - timedelta(seconds=fake.random.randint(0, 60*24*14)))
