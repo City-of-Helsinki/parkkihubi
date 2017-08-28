@@ -6,7 +6,7 @@ info:
 
                  Authentication: Every request must have header `Authorization: ApiKey <your api key>`
 
-  version: "1.0.0"
+  version: "1.1.0"
 host: api.parkkiopas.fi
 schemes:
   - https
@@ -58,7 +58,6 @@ paths:
             required:
               - registration_number
               - time_start
-              - time_end
               - zone
       responses:
         201:
@@ -117,7 +116,6 @@ paths:
             required:
               - registration_number
               - time_start
-              - time_end
               - zone
       responses:
         200:
@@ -260,7 +258,6 @@ definitions:
     required:
       - registration_number
       - time_start
-      - time_end
       - zone
   Location:
     description: Point location in geoJSON format
