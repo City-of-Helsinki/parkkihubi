@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Parkkihubi
   description: Parkkihubi REST API Documentation (Internal)
-  version: "0.0.1"
+  version: "0.1.0"
 host: 127.0.0.1:8000
 schemes:
   - https
@@ -106,8 +106,6 @@ definitions:
       status:
         description: Status of the parking
         type: string
-      address:
-        $ref: '#/definitions/Address'
       created_at:
         description: Creation time for the parking
         type: string
@@ -146,15 +144,6 @@ definitions:
         description: Unique Identifier for the operator
         type: string
         format: uuid
-  Address:
-    type: object
-    properties:
-      city:
-        type: string
-      postal_code:
-        type: string
-      street:
-        type: string
   Location:
     type: object
     properties:

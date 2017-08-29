@@ -93,7 +93,7 @@ def test_unauthenticated_and_normal_users_cannot_do_anything(api_client, user_ap
 
 
 def test_parking_required_fields(operator_api_client, parking):
-    expected_required_fields = {'registration_number', 'time_start', 'time_end', 'zone'}
+    expected_required_fields = {'registration_number', 'time_start', 'zone'}
     check_required_fields(operator_api_client, list_url, expected_required_fields)
     check_required_fields(operator_api_client, get_detail_url(parking), expected_required_fields, detail_endpoint=True)
 
