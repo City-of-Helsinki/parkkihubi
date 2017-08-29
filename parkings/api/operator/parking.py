@@ -68,7 +68,7 @@ class OperatorAPIParkingPermission(permissions.BasePermission):
 
 class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.DestroyModelMixin,
                                 viewsets.GenericViewSet):
-    queryset = Parking.objects.all()
+    queryset = Parking.objects.order_by('time_start')
     serializer_class = OperatorAPIParkingSerializer
     authentication_classes = (ApiKeyAuthentication,)
     permission_classes = (OperatorAPIParkingPermission,)
