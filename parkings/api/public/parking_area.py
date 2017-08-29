@@ -23,7 +23,7 @@ class ParkingAreaSerializer(GeoFeatureModelSerializer):
 
 
 class PublicAPIParkingAreaViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = ParkingArea.objects.all()
+    queryset = ParkingArea.objects.order_by('origin_id')
     serializer_class = ParkingAreaSerializer
     pagination_class = GeoJsonPagination
     bbox_filter_field = 'geom'

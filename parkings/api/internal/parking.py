@@ -15,7 +15,7 @@ class InternalAPIParkingSerializer(serializers.ModelSerializer):
 
 
 class InternalAPIParkingViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Parking.objects.all()
+    queryset = Parking.objects.order_by('time_start')
     serializer_class = InternalAPIParkingSerializer
     authentication_classes = (ApiKeyAuthentication,)
     permission_classes = (permissions.IsAdminUser,)

@@ -38,7 +38,7 @@ class PublicAPIParkingFilter(django_filters.rest_framework.FilterSet):
 
 
 class PublicAPIParkingViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Parking.objects.all()
+    queryset = Parking.objects.order_by('time_start')
     serializer_class = PublicAPIParkingSerializer
     filter_class = PublicAPIParkingFilter
     bbox_filter_field = 'location'
