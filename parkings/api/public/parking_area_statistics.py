@@ -1,4 +1,4 @@
-from django.db.models import Case, Count, When
+from django.db.models import Case, Count, Q, When
 from django.utils import timezone
 from rest_framework import serializers, viewsets
 
@@ -47,8 +47,8 @@ class PublicAPIParkingAreaStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             current_parking_count=Count(
                 Case(
                     When(
-                        parking__time_start__lte=now,
-                        parking__time_end__gte=now,
+                        Q(parking__time_start__lte=now) &
+                        (Q(parking__time_end__gte=now) | Q(parking__time_end__isnull=True)),
                         then=1,
                     )
                 )
