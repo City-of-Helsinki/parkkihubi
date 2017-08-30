@@ -14,7 +14,8 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     NOT_VALID = 'not_valid'
 
     parking_area = models.ForeignKey(
-        ParkingArea, on_delete=models.SET_NULL, verbose_name=_("parking area"), null=True, blank=True,
+        ParkingArea, on_delete=models.SET_NULL, verbose_name=_("parking area"), related_name='parkings', null=True,
+        blank=True,
     )
     location = models.PointField(verbose_name=_("location"), null=True, blank=True)
     operator = models.ForeignKey(

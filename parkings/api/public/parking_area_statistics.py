@@ -47,8 +47,8 @@ class PublicAPIParkingAreaStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             current_parking_count=Count(
                 Case(
                     When(
-                        Q(parking__time_start__lte=now) &
-                        (Q(parking__time_end__gte=now) | Q(parking__time_end__isnull=True)),
+                        Q(parkings__time_start__lte=now) &
+                        (Q(parkings__time_end__gte=now) | Q(parkings__time_end__isnull=True)),
                         then=1,
                     )
                 )
