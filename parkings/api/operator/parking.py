@@ -19,6 +19,14 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
             'status',
         )
 
+        # these are needed because by default a PUT request that does not contain some optional field
+        # works the same way as PATCH would, ie. not updating that field to null on the target object,
+        # which seems wrong. see https://github.com/encode/django-rest-framework/issues/3648
+        extra_kwargs = {
+            'location': {'default': None},
+            'time_end': {'default': None},
+        }
+
     def validate(self, data):
         if self.instance and (now() - self.instance.created_at) > settings.PARKKIHUBI_TIME_PARKINGS_EDITABLE:
             if set(data.keys()) != {'time_end'}:
@@ -35,7 +43,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
             time_start = data['time_start']
             time_end = data['time_end']
 
-        if time_start > time_end:
+        if time_end is not None and time_start > time_end:
             raise serializers.ValidationError(_('"time_start" cannot be after "time_end".'))
 
         return data
