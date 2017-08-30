@@ -2,7 +2,6 @@ from datetime import timedelta
 
 import factory
 import pytz
-from django.conf import settings
 from django.contrib.gis.geos import Point
 
 from parkings.models import Parking
@@ -34,9 +33,7 @@ class ParkingFactory(factory.django.DjangoModelFactory):
 
 
 def get_time_far_enough_in_past():
-    some_time_before_now = fake.date_time_this_decade(before_now=True, tzinfo=pytz.utc)
-    time_hidden = getattr(settings, 'PARKKIHUBI_TIME_PARKINGS_HIDDEN', timedelta(days=7)) + timedelta(seconds=1)
-    return some_time_before_now - time_hidden
+    return fake.date_time_this_decade(before_now=True, tzinfo=pytz.utc) - timedelta(days=7, seconds=1)
 
 
 class HistoryParkingFactory(ParkingFactory):
@@ -44,6 +41,6 @@ class HistoryParkingFactory(ParkingFactory):
     time_start = factory.lazy_attribute(
         lambda o:
         o.time_end - timedelta(seconds=fake.random.randint(0, 60*24*14))
-        if o.time_end
+        if o.time_end is not None
         else get_time_far_enough_in_past()
     )
