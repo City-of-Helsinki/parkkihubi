@@ -9,9 +9,6 @@ from parkings.models import Parking
 
 
 class ParkingFilter(django_filters.rest_framework.FilterSet):
-    """
-    Common filters in internal and public API.
-    """
     time_end__gte = django_filters.IsoDateTimeFilter(method='filter_time_end__gte')
 
     class Meta:
