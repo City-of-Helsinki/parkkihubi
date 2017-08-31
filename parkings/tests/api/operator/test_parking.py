@@ -56,8 +56,11 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
         assert parking_data[field] == getattr(parking_obj, field)
 
     assert parking_data['time_start'] == parking_obj.time_start.strftime('%Y-%m-%dT%H:%M:%SZ')
-    assert parking_data['time_end'] == parking_obj.time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
-    assert parking_data['location'] == json.loads(parking_obj.location.geojson)
+
+    obj_time_end = parking_obj.time_end.strftime('%Y-%m-%dT%H:%M:%SZ') if parking_obj.time_end else None
+    assert parking_data['time_end'] == obj_time_end
+    obj_location = json.loads(parking_obj.location.geojson) if parking_obj.location else None
+    assert parking_data['location'] == obj_location
 
 
 def check_response_parking_data(posted_parking_data, response_parking_data):
@@ -112,6 +115,30 @@ def test_post_parking(operator_api_client, operator, new_parking_data):
     assert new_parking.operator == operator
 
 
+def test_post_parking_optional_fields_omitted(operator_api_client, new_parking_data):
+    new_parking_data.pop('time_end')
+    new_parking_data.pop('location')
+
+    response_parking_data = post(operator_api_client, list_url, new_parking_data)
+
+    new_parking_data['time_end'] = None
+    new_parking_data['location'] = None
+    check_response_parking_data(new_parking_data, response_parking_data)
+    new_parking = Parking.objects.get(id=response_parking_data['id'])
+    check_parking_data_matches_parking_object(new_parking_data, new_parking)
+
+
+def test_post_parking_optional_fields_null(operator_api_client, new_parking_data):
+    new_parking_data['time_end'] = None
+    new_parking_data['location'] = None
+
+    response_parking_data = post(operator_api_client, list_url, new_parking_data)
+
+    check_response_parking_data(new_parking_data, response_parking_data)
+    new_parking = Parking.objects.get(id=response_parking_data['id'])
+    check_parking_data_matches_parking_object(new_parking_data, new_parking)
+
+
 def test_put_parking(operator_api_client, parking, updated_parking_data):
     detail_url = get_detail_url(parking)
     response_parking_data = put(operator_api_client, detail_url, updated_parking_data)
@@ -120,6 +147,32 @@ def test_put_parking(operator_api_client, parking, updated_parking_data):
     check_response_parking_data(updated_parking_data, response_parking_data)
 
     # check the actual object
+    parking.refresh_from_db()
+    check_parking_data_matches_parking_object(updated_parking_data, parking)
+
+
+def test_put_parking_optional_fields_omitted(operator_api_client, parking, updated_parking_data):
+    detail_url = get_detail_url(parking)
+    updated_parking_data.pop('time_end')
+    updated_parking_data.pop('location')
+
+    response_parking_data = put(operator_api_client, detail_url, updated_parking_data)
+
+    updated_parking_data['time_end'] = None
+    updated_parking_data['location'] = None
+    check_response_parking_data(updated_parking_data, response_parking_data)
+    parking.refresh_from_db()
+    check_parking_data_matches_parking_object(updated_parking_data, parking)
+
+
+def test_put_parking_optional_fields_null(operator_api_client, parking, updated_parking_data):
+    detail_url = get_detail_url(parking)
+    updated_parking_data['time_end'] = None
+    updated_parking_data['location'] = None
+
+    response_parking_data = put(operator_api_client, detail_url, updated_parking_data)
+
+    check_response_parking_data(updated_parking_data, response_parking_data)
     parking.refresh_from_db()
     check_parking_data_matches_parking_object(updated_parking_data, parking)
 

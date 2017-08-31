@@ -25,8 +25,8 @@ def test_list_endpoint_base_fields(api_client):
     check_list_endpoint_base_fields(stats_data)
 
 
-def test_get_list_check_data(api_client, parking_factory, parking_area_factory):
-    parking_area_1, parking_area_2 = parking_area_factory.create_batch(2)
+def test_get_list_check_data(api_client, parking_factory, parking_area_factory, history_parking_factory):
+    parking_area_1, parking_area_2, parking_area_3, parking_area_4 = parking_area_factory.create_batch(4)
 
     with patch.object(Parking, 'get_closest_area', return_value=parking_area_1):
         parking_factory.create_batch(4)
@@ -34,15 +34,25 @@ def test_get_list_check_data(api_client, parking_factory, parking_area_factory):
     with patch.object(Parking, 'get_closest_area', return_value=parking_area_2):
         parking_factory.create_batch(3)
 
+    with patch.object(Parking, 'get_closest_area', return_value=parking_area_3):
+        history_parking_factory.create_batch(5)
+
+    with patch.object(Parking, 'get_closest_area', return_value=parking_area_4):
+        history_parking_factory.create_batch(5, time_end=None)
+
     results = get(api_client, list_url)['results']
-    assert len(results) == 2
+    assert len(results) == 4
 
     stats_data_1 = next(result for result in results if result['id'] == str(parking_area_1.id))
     stats_data_2 = next(result for result in results if result['id'] == str(parking_area_2.id))
+    stats_data_3 = next(result for result in results if result['id'] == str(parking_area_3.id))
+    stats_data_4 = next(result for result in results if result['id'] == str(parking_area_4.id))
 
-    assert len(stats_data_1) == 2  # fields id and current_parking_count
+    assert stats_data_1.keys() == {'id', 'current_parking_count'}
     assert stats_data_1['current_parking_count'] == 4
-    assert stats_data_2['current_parking_count'] == 0
+    assert stats_data_2['current_parking_count'] == 0  # under 4
+    assert stats_data_3['current_parking_count'] == 0  # not valid parkings currently
+    assert stats_data_4['current_parking_count'] == 5  # no end time so valid
 
 
 def test_get_detail_check_data(api_client, parking_factory, parking_area):
@@ -50,7 +60,7 @@ def test_get_detail_check_data(api_client, parking_factory, parking_area):
         parking_factory.create_batch(3)
 
     stats_data = get(api_client, get_detail_url(parking_area))
-    assert len(stats_data) == 2  # fields id and current_parking_count
+    assert stats_data.keys() == {'id', 'current_parking_count'}
     assert stats_data['current_parking_count'] == 0
 
     with patch.object(Parking, 'get_closest_area', return_value=parking_area):
