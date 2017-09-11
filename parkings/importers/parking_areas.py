@@ -142,7 +142,7 @@ class ParkingAreaImporter(object):
         logger.info('Getting data from the server.')
         try:
             wfs = WebFeatureService(
-                url='http://kartta.hel.fi/ws/geoserver/avoindata/wfs',
+                url='https://kartta.hel.fi/ws/geoserver/avoindata/wfs',
                 version='2.0.0',
             )
             response = wfs.getfeature(
