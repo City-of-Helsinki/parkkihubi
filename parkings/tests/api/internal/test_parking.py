@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 import pytest
+import pytz
 from django.core.urlresolvers import reverse
 from django.utils.timezone import utc
 
@@ -155,7 +156,10 @@ def test_time_filters(operator, staff_api_client, parking_factory, filtering, ex
     ('time_end__gte=2020-01-01T12:00:00Z', True),
 ])
 def test_end_time_filters_no_end_time(operator, staff_api_client, parking_factory, filtering, expected_visibility):
-    parking = parking_factory(time_start=datetime(2018, 1, 1), time_end=None, operator=operator)
+    parking = parking_factory(
+        time_start=datetime(2018, 1, 1, tzinfo=pytz.utc),
+        time_end=None,
+        operator=operator)
 
     response = get(staff_api_client, list_url + '?' + filtering)
     check_response_objects(response, parking if expected_visibility else [])
