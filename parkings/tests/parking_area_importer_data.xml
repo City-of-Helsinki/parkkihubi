@@ -1,4 +1,4 @@
-<wfs:FeatureCollection xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:avoindata="http://www.hel.fi/avoindata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" numberMatched="1" numberReturned="1">
+<wfs:FeatureCollection xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:avoindata="https://www.hel.fi/avoindata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" numberMatched="1" numberReturned="1">
     <wfs:member>
         <avoindata:liikennemerkkipilotti_pysakointipaikat>
             <avoindata:alue_id>3508</avoindata:alue_id>
