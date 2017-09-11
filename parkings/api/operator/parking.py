@@ -1,3 +1,4 @@
+import pytz
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
@@ -26,6 +27,11 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
             'location': {'default': None},
             'time_end': {'default': None},
         }
+
+    def __init__(self, *args, **kwargs):
+        super(OperatorAPIParkingSerializer, self).__init__(*args, **kwargs)
+        self.fields['time_start'].timezone = pytz.utc
+        self.fields['time_end'].timezone = pytz.utc
 
     def validate(self, data):
         if self.instance and (now() - self.instance.created_at) > settings.PARKKIHUBI_TIME_PARKINGS_EDITABLE:
