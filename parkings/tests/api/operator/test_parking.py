@@ -68,7 +68,10 @@ def check_response_parking_data(posted_parking_data, response_parking_data):
     Check that parking data dict in a response has the right fields and matches the posted one.
     """
     expected_keys = {
-        'id', 'zone', 'registration_number', 'time_start', 'time_end', 'location', 'created_at', 'modified_at',
+        'id', 'zone', 'registration_number',
+        'terminal_number',
+        'time_start', 'time_end',
+        'location', 'created_at', 'modified_at',
         'status',
     }
 

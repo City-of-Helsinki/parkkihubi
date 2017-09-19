@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Point
 from django.test import override_settings
 from django.utils.timezone import now, utc
 
-from parkings.models import Operator, Parking
+from parkings.models import Operator, Parking, ParkingTerminal
 
 
 def test_operator_instance_creation():
@@ -13,13 +13,18 @@ def test_operator_instance_creation():
 
 
 def test_parking_instance_creation():
-    Parking(
+    create_parking()
+
+
+def create_parking(operator_id=1, **kwargs):
+    return Parking(
         location=Point(60.193609, 24.951394),
-        operator_id=1,
+        operator_id=operator_id,
         registration_number="ABC-123",
         time_end=now() + datetime.timedelta(days=1),
         time_start=now(),
         zone=3,
+        **kwargs
     )
 
 
@@ -46,3 +51,45 @@ def test_parking_str(parking_factory):
         registration_number='ABC-123',
     )
     assert all(str(parking).count(val) == 1 for val in ('2016', '8', 'ABC-123'))
+
+
+@pytest.mark.django_db
+def test_terminal_set_on_save(admin_user):
+    operator = Operator.objects.get_or_create(user=admin_user)[0]
+    terminal = ParkingTerminal.objects.get_or_create(number=1234)[0]
+    parking = create_parking(operator_id=operator.pk, terminal_number=1234)
+    assert parking.terminal_number == 1234
+    assert parking.terminal is None
+    parking.save()
+    assert parking.terminal == terminal
+
+
+@pytest.mark.django_db
+def test_location_set_from_terminal(admin_user):
+    operator = Operator.objects.get_or_create(user=admin_user)[0]
+    terminal = ParkingTerminal.objects.get_or_create(
+        number=4567, defaults={
+            'location': Point(61, 25), 'name': "Test terminal"})[0]
+    parking = create_parking(operator_id=operator.pk, terminal_number=4567)
+    parking.location = None
+    parking.save()
+    assert parking.location == terminal.location
+
+
+@pytest.mark.django_db
+def test_location_not_overridden_from_terminal(admin_user):
+    operator = Operator.objects.get_or_create(user=admin_user)[0]
+    terminal = ParkingTerminal.objects.get_or_create(
+        number=4567, defaults={
+            'location': Point(61, 25), 'name': "Test terminal"})[0]
+    parking = create_parking(operator_id=operator.pk, terminal_number=4567)
+    location = parking.location
+    parking.save()
+    assert parking.location == location
+    assert parking.location != terminal.location
+
+
+def test_parking_terminal_str():
+    terminal = ParkingTerminal(
+        number=4567, location=Point(61, 25), name="Test terminal")
+    assert '{}'.format(terminal) == "4567: Test terminal"

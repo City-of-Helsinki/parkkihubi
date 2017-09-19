@@ -8,6 +8,8 @@ from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from parkings.models.operator import Operator
 from parkings.models.parking_area import ParkingArea
 
+from .parking_terminal import ParkingTerminal
+
 
 class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     VALID = 'valid'
@@ -16,6 +18,15 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     parking_area = models.ForeignKey(
         ParkingArea, on_delete=models.SET_NULL, verbose_name=_("parking area"), related_name='parkings', null=True,
         blank=True,
+    )
+    terminal_number = models.CharField(
+        max_length=50,  blank=True,
+        verbose_name=_("terminal number"),
+    )
+    terminal = models.ForeignKey(
+        ParkingTerminal, null=True, blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("terminal"),
     )
     location = models.PointField(verbose_name=_("location"), null=True, blank=True)
     operator = models.ForeignKey(
@@ -72,5 +83,13 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         return closest_area
 
     def save(self, *args, **kwargs):
+        if not self.terminal and self.terminal_number:
+            self.terminal = ParkingTerminal.objects.filter(
+                number=self.terminal_number).first()
+
+        if self.terminal and not self.location:
+            self.location = self.terminal.location
+
         self.parking_area = self.get_closest_area()
+
         super(Parking, self).save(*args, **kwargs)

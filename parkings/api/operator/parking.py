@@ -16,7 +16,11 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parking
         fields = (
-            'id', 'created_at', 'modified_at', 'location', 'registration_number', 'time_start', 'time_end', 'zone',
+            'id', 'created_at', 'modified_at',
+            'location', 'terminal_number',
+            'registration_number',
+            'time_start', 'time_end',
+            'zone',
             'status',
         )
 
@@ -25,6 +29,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
         # which seems wrong. see https://github.com/encode/django-rest-framework/issues/3648
         extra_kwargs = {
             'location': {'default': None},
+            'terminal_number': {'default': ''},
             'time_end': {'default': None},
         }
 
