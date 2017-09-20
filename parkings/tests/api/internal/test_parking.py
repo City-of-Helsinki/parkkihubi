@@ -24,6 +24,7 @@ def check_parking_data_keys(parking_data):
     assert set(parking_data.keys()) == {
         'id', 'created_at', 'modified_at', 'parking_area',
         'location', 'operator', 'registration_number',
+        'terminal', 'terminal_number',
         'time_start', 'time_end', 'zone', 'status',
     }
 
