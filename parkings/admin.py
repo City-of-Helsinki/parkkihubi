@@ -10,9 +10,10 @@ class OperatorAdmin(admin.ModelAdmin):
 
 @admin.register(Parking)
 class ParkingAdmin(OSMGeoAdmin):
+    exclude = ['registration_number']
     list_display = [
         'id', 'operator', 'zone', 'parking_area', 'terminal_number',
-        'time_start', 'time_end', 'registration_number',
+        'time_start', 'time_end',
         'created_at', 'modified_at']
     list_filter = ['operator', 'zone']
     ordering = ('-created_at',)
