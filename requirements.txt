@@ -11,13 +11,13 @@ django-filter==1.0.4
 djangorestframework==3.6.4
 djangorestframework-gis==0.11.2
 idna==2.6                 # via requests
-lxml==3.8.0
-owslib==0.14.0
+lxml==4.0.0
+owslib==0.15.0
 psycopg2==2.7.3.1
 pyproj==1.9.5.1           # via owslib
 python-dateutil==2.6.1    # via owslib
 pytz==2017.2
 raven==6.1.0
 requests==2.18.4          # via owslib
-six==1.10.0               # via django-environ, python-dateutil
+six==1.11.0               # via django-environ, python-dateutil
 urllib3==1.22             # via requests

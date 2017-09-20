@@ -35,7 +35,7 @@ pytest-django==3.1.2
 pytest-factoryboy==1.3.1
 python-dateutil==2.6.1    # via faker, freezegun
 simplegeneric==0.8.1      # via ipython
-six==1.10.0               # via django-extensions, faker, freezegun, prompt-toolkit, pydocstyle, python-dateutil, traitlets
+six==1.11.0               # via django-extensions, faker, freezegun, prompt-toolkit, pydocstyle, python-dateutil, traitlets
 snowballstemmer==1.2.1    # via pydocstyle
 traitlets==4.3.2          # via ipython
 typing==3.6.2             # via ipython
