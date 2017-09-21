@@ -77,6 +77,17 @@ def test_location_set_from_terminal(admin_user):
 
 
 @pytest.mark.django_db
+def test_parking_save_with_nondigit_terminal_number(admin_user):
+    operator = Operator.objects.get_or_create(user=admin_user)[0]
+    parking = create_parking(operator_id=operator.pk, terminal_number='123a')
+    parking.location = None
+    parking.save()
+    assert parking.terminal is None
+    assert parking.location is None
+    assert parking.terminal_number == '123a'
+
+
+@pytest.mark.django_db
 def test_location_not_overridden_from_terminal(admin_user):
     operator = Operator.objects.get_or_create(user=admin_user)[0]
     terminal = ParkingTerminal.objects.get_or_create(
