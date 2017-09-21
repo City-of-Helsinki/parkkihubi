@@ -85,7 +85,7 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     def save(self, *args, **kwargs):
         if not self.terminal and self.terminal_number:
             self.terminal = ParkingTerminal.objects.filter(
-                number=self.terminal_number).first()
+                number=_try_cast_int(self.terminal_number)).first()
 
         if self.terminal and not self.location:
             self.location = self.terminal.location
@@ -93,3 +93,10 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         self.parking_area = self.get_closest_area()
 
         super(Parking, self).save(*args, **kwargs)
+
+
+def _try_cast_int(value):
+    try:
+        return int(value)
+    except ValueError:
+        return None
