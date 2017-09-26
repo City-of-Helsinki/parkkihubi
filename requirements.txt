@@ -5,6 +5,7 @@
 certifi==2018.1.18        # via requests
 chardet==3.0.4            # via requests
 django==1.11.9
+django-cors-headers==2.1.0
 django-environ==0.4.4
 django-filter==1.1.0
 djangorestframework==3.7.7

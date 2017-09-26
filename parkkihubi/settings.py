@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'raven.contrib.django.raven_compat',
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_gis',
@@ -88,6 +89,7 @@ if DEBUG:
 ##############
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'parkkihubi.middleware.AdminTimezoneMiddleware',
@@ -164,6 +166,7 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
+CORS_ORIGIN_ALLOW_ALL = True
 
 ##############
 # Parkkihubi #
