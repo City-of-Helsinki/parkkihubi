@@ -33,6 +33,10 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         Operator, on_delete=models.PROTECT, verbose_name=_("operator"), related_name="parkings"
     )
     registration_number = models.CharField(max_length=20, db_index=True, verbose_name=_("registration number"))
+    normalized_reg_num = models.CharField(
+        max_length=20, db_index=True,
+        verbose_name=_("normalized registration number"),
+    )
     time_start = models.DateTimeField(
         verbose_name=_("parking start time"), db_index=True,
     )
@@ -92,7 +96,16 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
         self.parking_area = self.get_closest_area()
 
+        self.normalized_reg_num = (
+            self.normalize_reg_num(self.registration_number))
+
         super(Parking, self).save(*args, **kwargs)
+
+    @classmethod
+    def normalize_reg_num(cls, registration_number):
+        if not registration_number:
+            return ''
+        return registration_number.upper().replace('-', '').replace(' ', '')
 
 
 def _try_cast_int(value):
