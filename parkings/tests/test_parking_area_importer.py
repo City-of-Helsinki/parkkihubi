@@ -1,10 +1,14 @@
+import os
+
 from lxml import etree
 
 from parkings.importers import ParkingAreaImporter
 
+mydir = os.path.dirname(__file__)
+
 
 def test_parking_area_importer():
-    filename = 'parkings/tests/parking_area_importer_data.xml'
+    filename = os.path.join(mydir, 'parking_area_importer_data.xml')
     root = etree.fromstring(open(filename, 'r', encoding='utf8').read())
     importer = ParkingAreaImporter()
     members = importer._separate_members(root)
