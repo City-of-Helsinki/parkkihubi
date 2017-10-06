@@ -95,5 +95,5 @@ def check_response_objects(data, objects):
 
     expected_ids = [str(obj.id) for obj in objects]
     actual_ids = [obj['id'] for obj in data]
-    error_message = '%s does not match %s' % (expected_ids, actual_ids)
+    error_message = 'Expected {} but got {}'.format(expected_ids, actual_ids)
     assert set(expected_ids) == set(actual_ids) and len(objects) == len(data), error_message
