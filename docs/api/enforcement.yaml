@@ -1,0 +1,103 @@
+swagger: '2.0'
+info:
+  title: Parkkihubi
+  description: Parkkihubi Enforcement REST API Documentation
+  version: "0.1.0"
+host: 127.0.0.1:8000
+schemes:
+  - https
+securityDefinitions:
+  ApiKey:
+    type: apiKey
+    name: Authorization
+    in: header
+basePath: /enforcement/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /valid_parking/:
+    get:
+      security:
+        - ApiKey: []
+      tags:
+        - parking
+      summary: Get a list of valid parkings by registration number
+      operationId: getParkingList
+      description: TODO
+      parameters:
+        - name: reg_num
+          in: query
+          description: >-
+            Registration number of parkings. Dashes are ignored.
+          type: string
+          required: yes
+        - name: time
+          in: query
+          description: >-
+            Time when parking should be valid.  If not given, default
+            is current time.
+          type: string
+          format: dateTime
+      responses:
+        200:
+          description: An array of parkings with metadata information
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: string
+              previous:
+                type: string
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/Parking'
+        401:
+          $ref: '#/responses/Unauthorized'
+definitions:
+  Parking:
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the parking
+        type: string
+        format: uuid
+      created_at:
+        description: Creation time for the parking
+        type: string
+        format: dateTime
+      modified_at:
+        description: Modification time for the parking
+        type: string
+        format: dateTime
+      registration_number:
+        description: Registration number for the parking
+        type: string
+      time_start:
+        description: Start time for the parking
+        type: string
+        format: dateTime
+      time_end:
+        description: End time for the parking
+        type: string
+        format: dateTime
+      zone:
+        description: TODO
+        type: integer
+      operator_name:
+        description: Name of the operator
+        type: string
+  Unauthorized:
+    type: object
+    properties:
+      detail:
+        type: string
+responses:
+  Unauthorized:
+    description: Unauthorized access
+    schema:
+      $ref: '#/definitions/Unauthorized'
