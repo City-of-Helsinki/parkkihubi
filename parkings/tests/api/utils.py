@@ -90,9 +90,6 @@ def check_response_objects(data, objects):
     if 'results' in data:
         data = data['results']
 
-    if not (isinstance(objects, list) or isinstance(objects, tuple) or isinstance(objects, set)):
-        objects = [objects]
-
     expected_ids = [str(obj.id) for obj in objects]
     actual_ids = [obj['id'] for obj in data]
     error_message = 'Expected {} but got {}'.format(expected_ids, actual_ids)
