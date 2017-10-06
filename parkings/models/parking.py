@@ -10,6 +10,35 @@ from parkings.models.parking_area import ParkingArea
 
 from .parking_terminal import ParkingTerminal
 
+Q = models.Q
+
+
+class ParkingQuerySet(models.QuerySet):
+    def valid_at(self, time):
+        """
+        Filter to parkings which are valid at given time.
+
+        :type time: datetime.datetime
+        :rtype: ParkingQuerySet
+        """
+        return self.starts_before(time).ends_after(time)
+
+    def starts_before(self, time):
+        return self.filter(time_start__lte=time)
+
+    def ends_after(self, time):
+        return self.filter(Q(time_end__gte=time) | Q(time_end=None))
+
+    def registration_number_like(self, registration_number):
+        """
+        Filter to parkings having registration number like the given value.
+
+        :type registration_number: str
+        :rtype: ParkingQuerySet
+        """
+        normalized_reg_num = Parking.normalize_reg_num(registration_number)
+        return self.filter(normalized_reg_num=normalized_reg_num)
+
 
 class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     VALID = 'valid'
@@ -46,6 +75,8 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     zone = models.IntegerField(verbose_name=_("zone number"), validators=[
         MinValueValidator(1), MaxValueValidator(3),
     ])
+
+    objects = ParkingQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("parking")
