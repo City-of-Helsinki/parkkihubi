@@ -51,14 +51,14 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         start = localtime(self.time_start).replace(tzinfo=None)
 
         if self.time_end is None:
-            return "%s -> (%s)" % (start, 'ABC-123')
+            return "%s -> (%s)" % (start, self.registration_number)
 
         if self.time_start.date() == self.time_end.date():
             end = localtime(self.time_end).time().replace(tzinfo=None)
         else:
             end = localtime(self.time_end).replace(tzinfo=None)
 
-        return "%s -> %s (%s)" % (start, end, 'ABC-123')
+        return "%s -> %s (%s)" % (start, end, self.registration_number)
 
     def get_state(self):
         current_timestamp = now()
