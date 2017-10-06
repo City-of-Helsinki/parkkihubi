@@ -60,7 +60,7 @@ Create a basic file for development as follows
 
 - `PARKKIHUBI_PUBLIC_API_ENABLED` default `True`
 - `PARKKIHUBI_OPERATOR_API_ENABLED` default `True`
-- `PARKKIHUBI_INTERNAL_API_ENABLED` default `False`
+- `PARKKIHUBI_ENFORCEMENT_API_ENABLED` default `True`
 
 ### Database
 
@@ -118,7 +118,8 @@ To import Helsinki parking areas run:
 
 Operator API will be available at [http://127.0.0.1:8000/operator/v1/](http://127.0.0.1:8000/operator/v1/)
 
-Internal API (disabled by default) will be available at [http://127.0.0.1:8000/internal/v1/](http://127.0.0.1:8000/internal/v1/)
+Enforcement API will be available at
+http://127.0.0.1:8000/enforcement/v1/
 
 Public API will be available at [http://127.0.0.1:8000/public/v1/](http://127.0.0.1:8000/public/v1/)
 
@@ -139,7 +140,7 @@ Two possible ways (out of many) to generate the documentation:
 
     Running (in `parkkihubi` repository root):
 
-      bootprint openapi docs/api/internal.yaml </output/path/internal/>
+      bootprint openapi docs/api/enforcement.yaml </output/path/enforcement/>
       bootprint openapi docs/api/operator.yaml </output/path/operator/>
 
 - [swagger-codegen](https://github.com/swagger-api/swagger-codegen)
@@ -164,8 +165,12 @@ Two possible ways (out of many) to generate the documentation:
     To build the docs, in `parkkihubi` repository root:
     
         cd docs/api
-        java -jar /path/to/codegen/swagger-codegen-cli.jar generate -i internal.yaml -l html2 -c config.json -o /output/path/internal/
-        java -jar /path/to/codegen/swagger-codegen-cli.jar generate -i operator.yaml -l html2 -c config.json -o /output/path/operator/
+        java -jar /path/to/codegen/swagger-codegen-cli.jar generate \
+          -i enforcement.yaml -l html2 -c config.json \
+          -o /output/path/enforcement/
+        java -jar /path/to/codegen/swagger-codegen-cli.jar generate \
+          -i operator.yaml -l html2 -c config.json \
+          -o /output/path/operator/
 
 ## License
 
