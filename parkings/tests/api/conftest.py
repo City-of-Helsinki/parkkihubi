@@ -1,7 +1,4 @@
-import datetime
-
 import pytest
-from django.utils import timezone
 from rest_framework.test import APIClient
 
 from .utils import token_authenticate
@@ -33,13 +30,6 @@ def staff_api_client(staff_user):
 
 
 @pytest.fixture
-def admin_api_client(admin_user):
-    api_client = APIClient()
-    token_authenticate(api_client, admin_user)
-    return api_client
-
-
-@pytest.fixture
 def operator_api_client(operator):
     api_client = APIClient()
     token_authenticate(api_client, operator.user)
@@ -58,53 +48,3 @@ def operator_2_api_client(operator_2):
     token_authenticate(api_client, operator_2.user)
     api_client.operator = operator_2
     return api_client
-
-
-@pytest.fixture
-def past_parking(parking_factory, operator):
-    now = timezone.now()
-    return parking_factory(
-        time_start=now-datetime.timedelta(hours=2),
-        time_end=now-datetime.timedelta(hours=1),
-        operator=operator,
-    )
-
-
-@pytest.fixture
-def current_parking(parking_factory, operator):
-    now = timezone.now()
-    return parking_factory(
-        time_start=now-datetime.timedelta(hours=1),
-        time_end=now+datetime.timedelta(hours=1),
-        operator=operator,
-    )
-
-
-@pytest.fixture
-def current_parking_without_end_time(parking_factory, operator):
-    now = timezone.now()
-    return parking_factory(
-        time_start=now-datetime.timedelta(hours=1),
-        time_end=None,
-        operator=operator,
-    )
-
-
-@pytest.fixture
-def future_parking(parking_factory, operator):
-    now = timezone.now()
-    return parking_factory(
-        time_start=now+datetime.timedelta(hours=1),
-        time_end=now+datetime.timedelta(hours=2),
-        operator=operator,
-    )
-
-
-@pytest.fixture
-def future_parking_without_end_time(parking_factory, operator):
-    now = timezone.now()
-    return parking_factory(
-        time_start=now+datetime.timedelta(hours=1),
-        time_end=None,
-        operator=operator,
-    )
