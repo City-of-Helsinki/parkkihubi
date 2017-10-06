@@ -10,6 +10,35 @@ from parkings.models.parking_area import ParkingArea
 
 from .parking_terminal import ParkingTerminal
 
+Q = models.Q
+
+
+class ParkingQuerySet(models.QuerySet):
+    def valid_at(self, time):
+        """
+        Filter to parkings which are valid at given time.
+
+        :type time: datetime.datetime
+        :rtype: ParkingQuerySet
+        """
+        return self.starts_before(time).ends_after(time)
+
+    def starts_before(self, time):
+        return self.filter(time_start__lte=time)
+
+    def ends_after(self, time):
+        return self.filter(Q(time_end__gte=time) | Q(time_end=None))
+
+    def registration_number_like(self, registration_number):
+        """
+        Filter to parkings having registration number like the given value.
+
+        :type registration_number: str
+        :rtype: ParkingQuerySet
+        """
+        normalized_reg_num = Parking.normalize_reg_num(registration_number)
+        return self.filter(normalized_reg_num=normalized_reg_num)
+
 
 class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     VALID = 'valid'
@@ -33,6 +62,10 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         Operator, on_delete=models.PROTECT, verbose_name=_("operator"), related_name="parkings"
     )
     registration_number = models.CharField(max_length=20, db_index=True, verbose_name=_("registration number"))
+    normalized_reg_num = models.CharField(
+        max_length=20, db_index=True,
+        verbose_name=_("normalized registration number"),
+    )
     time_start = models.DateTimeField(
         verbose_name=_("parking start time"), db_index=True,
     )
@@ -42,6 +75,8 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     zone = models.IntegerField(verbose_name=_("zone number"), validators=[
         MinValueValidator(1), MaxValueValidator(3),
     ])
+
+    objects = ParkingQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("parking")
@@ -92,7 +127,16 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
         self.parking_area = self.get_closest_area()
 
+        self.normalized_reg_num = (
+            self.normalize_reg_num(self.registration_number))
+
         super(Parking, self).save(*args, **kwargs)
+
+    @classmethod
+    def normalize_reg_num(cls, registration_number):
+        if not registration_number:
+            return ''
+        return registration_number.upper().replace('-', '').replace(' ', '')
 
 
 def _try_cast_int(value):

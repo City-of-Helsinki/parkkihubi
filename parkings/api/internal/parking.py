@@ -18,6 +18,7 @@ class InternalAPIParkingFilter(ParkingFilter):
         fields = deepcopy(ParkingFilter.Meta.fields)
         fields.update({
             'registration_number': ['exact'],
+            'normalized_reg_num': ['exact'],
         })
 
     def filter_status(self, queryset, name, value):
@@ -37,7 +38,7 @@ class InternalAPIParkingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Parking
-        fields = '__all__'
+        exclude = ['normalized_reg_num']
 
 
 class InternalAPIParkingViewSet(viewsets.ReadOnlyModelViewSet):

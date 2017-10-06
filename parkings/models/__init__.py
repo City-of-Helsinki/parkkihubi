@@ -1,5 +1,5 @@
 from .operator import Operator
-from .parking import Parking
+from .parking import Parking, ParkingQuerySet
 from .parking_area import ParkingArea
 from .parking_terminal import ParkingTerminal
 
@@ -8,4 +8,5 @@ __all__ = [
     'Parking',
     'ParkingArea',
     'ParkingTerminal',
+    'ParkingQuerySet',
 ]
