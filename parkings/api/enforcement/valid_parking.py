@@ -76,8 +76,8 @@ class ValidParkingFilter(django_filters.rest_framework.FilterSet):
         valid_parkings = queryset.valid_at(time)
         if valid_parkings:
             return valid_parkings
-        day_ago = time - datetime.timedelta(days=1)
-        valid_within_limit = queryset.starts_before(time).ends_after(day_ago)
+        limit = time - datetime.timedelta(minutes=15)
+        valid_within_limit = queryset.starts_before(time).ends_after(limit)
         return valid_within_limit.order_by('-time_end')[:1]
 
 
