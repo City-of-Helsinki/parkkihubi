@@ -1,5 +1,5 @@
 # Django
-Django
+Django~=1.11
 
 # Settings
 django-environ
