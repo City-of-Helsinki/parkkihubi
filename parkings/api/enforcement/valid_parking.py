@@ -1,6 +1,7 @@
 import datetime
 
 import django_filters
+from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions, serializers, viewsets
@@ -76,9 +77,15 @@ class ValidParkingFilter(django_filters.rest_framework.FilterSet):
         valid_parkings = queryset.valid_at(time)
         if valid_parkings:
             return valid_parkings
-        limit = time - datetime.timedelta(minutes=15)
+        limit = time - get_time_old_parkings_visible()
         valid_within_limit = queryset.starts_before(time).ends_after(limit)
         return valid_within_limit.order_by('-time_end')[:1]
+
+
+def get_time_old_parkings_visible(default=datetime.timedelta(minutes=15)):
+    value = getattr(settings, 'PARKKIHUBI_TIME_OLD_PARKINGS_VISIBLE', None)
+    assert value is None or isinstance(value, datetime.timedelta)
+    return value if value is not None else default
 
 
 class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
