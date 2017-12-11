@@ -149,7 +149,7 @@ class ParkingAreaImporter(object):
                 typename='avoindata:liikennemerkkipilotti_pysakointipaikat',
             )
             return etree.fromstring(bytes(response.getvalue(), 'UTF-8'))
-        except:
+        except Exception:
             logger.error('Unable to get data from the server.', exc_info=True)
 
     def _parse_member(self, member):
@@ -187,7 +187,7 @@ class ParkingAreaImporter(object):
                     self.ns,
                 ).text
             )
-        except:
+        except Exception:
             capacity_estimate = None
         geom = self._get_polygons(data.find('avoindata:geom', self.ns))
 
