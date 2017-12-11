@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 from django.core.urlresolvers import reverse
-from django.utils.timezone import utc
+from django.utils.timezone import localtime, utc
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 
 from ..utils import (
@@ -97,11 +97,17 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
 
 
 def iso8601(dt):
-    return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
+    return add_colon_to_tz(localtime(dt).strftime('%Y-%m-%dT%H:%M:%S%z'))
 
 
 def iso8601_us(dt):
-    return dt.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+    return add_colon_to_tz(localtime(dt).strftime('%Y-%m-%dT%H:%M:%S.%f%z'))
+
+
+def add_colon_to_tz(timestamp_string):
+    assert isinstance(timestamp_string, str)
+    assert timestamp_string[-4:].isdigit(), "Last 4 chars should be digits"
+    return timestamp_string[:-2] + ':' + timestamp_string[-2:]
 
 
 def test_registration_number_filter(operator, staff_api_client, parking_factory):
