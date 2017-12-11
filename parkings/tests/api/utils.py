@@ -71,8 +71,8 @@ def check_required_fields(api_client, url, expected_required_fields, detail_endp
     response_data = method(api_client, url, {}, 400)
 
     required_fields = set()
-    for field in response_data:
-        if isinstance(response_data[field], list) and 'This field is required.' in response_data[field]:
+    for (field, errors) in response_data.items():
+        if 'This field is required.' in repr(errors):
             required_fields.add(field)
 
     assert required_fields == expected_required_fields, '%s != %s' % (required_fields, expected_required_fields)
@@ -87,13 +87,11 @@ def check_response_objects(data, objects):
     """
     Assert object or objects exist in (response) data by comparing ids.
     """
-    if 'results' in data:
-        data = data['results']
-
-    if not (isinstance(objects, list) or isinstance(objects, tuple) or isinstance(objects, set)):
-        objects = [objects]
+    results = data['results']
 
     expected_ids = [str(obj.id) for obj in objects]
-    actual_ids = [obj['id'] for obj in data]
-    error_message = 'Expected {} but got {}'.format(expected_ids, actual_ids)
-    assert set(expected_ids) == set(actual_ids) and len(objects) == len(data), error_message
+    actual_ids = [obj['id'] for obj in results]
+    assert (
+        set(expected_ids) == set(actual_ids) and
+        len(objects) == len(results)), (
+            'Expected {} but got {}'.format(expected_ids, actual_ids))

@@ -3,7 +3,6 @@ from django.conf.urls import include, url
 from django.contrib import admin
 
 from parkings.api.enforcement import urls as enforcement_urls
-from parkings.api.internal import urls as internal_urls
 from parkings.api.operator import urls as operator_urls
 from parkings.api.public import urls as public_urls
 
@@ -14,9 +13,6 @@ if getattr(settings, 'PARKKIHUBI_PUBLIC_API_ENABLED', False):
 
 if getattr(settings, 'PARKKIHUBI_OPERATOR_API_ENABLED', False):
     urlpatterns.append(url(r'^operator/v1/', include(operator_urls, namespace='operator')))
-
-if getattr(settings, 'PARKKIHUBI_INTERNAL_API_ENABLED', False):
-    urlpatterns.append(url(r'^internal/v1/', include(internal_urls, namespace='internal')))
 
 if getattr(settings, 'PARKKIHUBI_ENFORCEMENT_API_ENABLED', False):
     urlpatterns.append(

@@ -7,7 +7,7 @@ from rest_framework import mixins, permissions, serializers, viewsets
 from parkings.authentication import ApiKeyAuthentication
 from parkings.models import Operator, Parking
 
-from ..common import ParkingException, ParkingFilter
+from ..common import ParkingException
 
 
 class OperatorAPIParkingSerializer(serializers.ModelSerializer):
@@ -91,7 +91,6 @@ class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin
     serializer_class = OperatorAPIParkingSerializer
     authentication_classes = (ApiKeyAuthentication,)
     permission_classes = (OperatorAPIParkingPermission,)
-    filter_class = ParkingFilter
 
     def perform_create(self, serializer):
         serializer.save(operator=self.request.user.operator)
