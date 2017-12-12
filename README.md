@@ -84,15 +84,13 @@ Run migrations
 
 ### Updating requirements files
 
-Use `pip-tools` to update the `requirements*.txt` files.
+Use Prequ to update the `requirements*.txt` files.
 
-    pip install -U pip  # pip-tools needs pip==6.1 or higher (!)
-    pip install pip-tools
+    pip install prequ
 
 When you change requirements, set them in `requirements.in` or `requirements-dev.in`. Then run:
 
-    pip-compile requirements.in
-    pip-compile requirements-dev.in
+    prequ update
 
 ### Running tests
 

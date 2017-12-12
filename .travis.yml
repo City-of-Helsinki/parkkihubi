@@ -28,6 +28,11 @@ before_script:
 script:
   - flake8
   - pytest -ra -vvv --cov
+  - |
+    if [ "$TRAVIS_PYTHON_VERSION" = "3.4" ]; then
+        pip install -q prequ
+        prequ check -v
+    fi
 
 after_success: codecov
 
