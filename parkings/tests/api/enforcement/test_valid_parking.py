@@ -75,7 +75,7 @@ def check_parking_data_keys(parking_data):
         'id', 'created_at', 'modified_at',
         'registration_number',
         'time_start', 'time_end', 'zone',
-        'operator_name',
+        'operator', 'operator_name',
     }
 
 
@@ -89,6 +89,7 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
         assert parking_data[field] == getattr(parking_obj, field)
 
     assert parking_data['id'] == str(parking_obj.id)  # UUID -> str
+    assert parking_data['operator'] == str(parking_obj.operator.id)
     assert parking_data['created_at'] == iso8601_us(parking_obj.created_at)
     assert parking_data['modified_at'] == iso8601_us(parking_obj.modified_at)
     assert parking_data['time_start'] == iso8601(parking_obj.time_start)
