@@ -87,10 +87,11 @@ if DEBUG:
 ##############
 # Middleware #
 ##############
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'parkkihubi.middleware.AdminTimezoneMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -133,7 +134,8 @@ RAVEN_CONFIG = {
 # Languages & Localization #
 ############################
 LANGUAGE_CODE = 'en'
-TIME_ZONE = 'Europe/Helsinki'
+TIME_ZONE = 'UTC'
+ADMIN_TIME_ZONE = 'Europe/Helsinki'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
