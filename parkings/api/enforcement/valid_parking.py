@@ -23,6 +23,7 @@ class ValidParkingSerializer(serializers.ModelSerializer):
             'time_start',
             'time_end',
             'zone',
+            'operator',
             'operator_name',
         ]
 
