@@ -1,4 +1,3 @@
-flake8
 freezegun
 pytest
 pytest-cov
