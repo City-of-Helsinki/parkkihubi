@@ -24,7 +24,8 @@ addons:
     packages:
     - postgresql-9.6-postgis-2.3
 
-install: 'pip install codecov -r requirements.txt -r requirements-dev.txt'
+install:
+  - pip install codecov -r requirements.txt -r requirements-test.txt
 
 before_script:
   - psql -c 'create database parkkihubi;' -U postgres
