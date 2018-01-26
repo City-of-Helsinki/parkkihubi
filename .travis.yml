@@ -9,6 +9,11 @@ python:
   - '3.5'
   - '3.6'
 
+env:
+  global:
+    - DEBUG=0
+    - SECRET_KEY=topsecret123
+
 cache: pip
 
 # As of 2017-08 the new travis trusty images have broken postgis,
@@ -35,6 +40,3 @@ script:
     fi
 
 after_success: codecov
-
-env:
-  - SECRET_KEY=topsecret123
