@@ -3,12 +3,12 @@ from datetime import datetime
 import pytest
 from django.core.urlresolvers import reverse
 from django.utils.timezone import utc
-from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
+from rest_framework.status import (
+    HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN)
 
 from ..utils import (
-    ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes, check_response_objects, get,
-    get_ids_from_results
-)
+    ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes,
+    check_response_objects, get, get_ids_from_results)
 
 list_url = reverse('enforcement:v1:valid_parking-list')
 

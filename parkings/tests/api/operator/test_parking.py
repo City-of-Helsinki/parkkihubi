@@ -8,7 +8,9 @@ from freezegun import freeze_time
 
 from parkings.models import Parking
 
-from ..utils import ALL_METHODS, check_method_status_codes, check_required_fields, delete, patch, post, put
+from ..utils import (
+    ALL_METHODS, check_method_status_codes, check_required_fields, delete,
+    patch, post, put)
 
 list_url = reverse('operator:v1:parking-list')
 

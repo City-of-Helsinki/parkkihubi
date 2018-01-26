@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework_gis.pagination import GeoJsonPagination
-from rest_framework_gis.serializers import GeoFeatureModelSerializer, GeometrySerializerMethodField
+from rest_framework_gis.serializers import (
+    GeoFeatureModelSerializer, GeometrySerializerMethodField)
 
 from parkings.models import ParkingArea
 
