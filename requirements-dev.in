@@ -4,4 +4,5 @@ django-extensions
 ipython
 isort
 pydocstyle
+tox
 werkzeug

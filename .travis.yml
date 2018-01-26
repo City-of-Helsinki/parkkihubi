@@ -4,17 +4,23 @@ sudo: false
 dist: trusty
 
 language: python
-python:
-  - '3.4'
-  - '3.5'
-  - '3.6'
-
-env:
-  global:
-    - DEBUG=0
-    - SECRET_KEY=topsecret123
 
 cache: pip
+
+matrix:
+  include:
+    - python: "3.4"
+    - python: "3.5"
+    - python: "3.6"
+    - env: TOXENV=requirements
+      python: "3.4"
+      addons: null
+      before_script: null
+    - env: TOXENV=style
+      python: "3.4"
+      addons: null
+      before_script: null
+
 
 # As of 2017-08 the new travis trusty images have broken postgis,
 # so we have to specify the exact postgres version to install right addons
@@ -24,20 +30,10 @@ addons:
     packages:
     - postgresql-9.6-postgis-2.3
 
-install:
-  - pip install codecov -r requirements.txt -r requirements-test.txt
+install: pip install tox-travis codecov
 
-before_script:
-  - psql -c 'create database parkkihubi;' -U postgres
-  - psql -U postgres -c "create extension postgis"
+before_script: psql -U postgres -c "create extension postgis"
 
-script:
-  - flake8
-  - pytest -ra -vvv --cov
-  - |
-    if [ "$TRAVIS_PYTHON_VERSION" = "3.4" ]; then
-        pip install -q prequ
-        prequ check -v
-    fi
+script: tox
 
 after_success: codecov
