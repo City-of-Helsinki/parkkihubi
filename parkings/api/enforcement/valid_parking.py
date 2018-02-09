@@ -6,7 +6,6 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions, serializers, viewsets
 
-from ...authentication import ApiKeyAuthentication
 from ...models import Parking
 
 
@@ -90,8 +89,7 @@ def get_time_old_parkings_visible(default=datetime.timedelta(minutes=15)):
 
 
 class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAdminUser]
     queryset = Parking.objects.order_by('-time_end')
     serializer_class = ValidParkingSerializer
     filter_class = ValidParkingFilter
-    authentication_classes = [ApiKeyAuthentication]
-    permission_classes = [permissions.IsAdminUser]

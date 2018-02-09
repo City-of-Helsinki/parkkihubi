@@ -18,6 +18,7 @@ env.read_env(os.path.join(BASE_DIR, '.env'))
 # Django core settings #
 ########################
 DEBUG = env.bool('DEBUG', default=False)
+TIER = env.str('TIER', default='dev')
 SECRET_KEY = env.str('SECRET_KEY', default=('' if not DEBUG else 'xxx'))
 ALLOWED_HOSTS = ['*']
 
@@ -80,7 +81,7 @@ INSTALLED_APPS = [
     'parkings',
 ]
 
-if DEBUG:
+if DEBUG and TIER == 'dev':
     # shell_plus and other goodies
     INSTALLED_APPS.append("django_extensions")
 
@@ -157,6 +158,17 @@ vars().update(env.email_url(
 # Django REST Framework #
 #########################
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        # Make nothing accessible to non-admins by default.  Viewsets
+        # should specify permission_classes to override permissions.
+        'rest_framework.permissions.IsAdminUser',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'parkings.authentication.ApiKeyAuthentication',
+    ] + ([  # Following two are only for DEBUG mode in dev environment:
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ] if (DEBUG and TIER == 'dev') else []),
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
     'ALLOWED_VERSIONS': ('v1',),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),

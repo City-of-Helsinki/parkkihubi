@@ -1,6 +1,5 @@
 from rest_framework import permissions, serializers, viewsets
 
-from ...authentication import ApiKeyAuthentication
 from ...models import Operator
 
 
@@ -16,7 +15,6 @@ class OperatorSerializer(serializers.ModelSerializer):
 
 
 class OperatorViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.IsAdminUser]
     queryset = Operator.objects.order_by('name')
     serializer_class = OperatorSerializer
-    authentication_classes = [ApiKeyAuthentication]
-    permission_classes = [permissions.IsAdminUser]

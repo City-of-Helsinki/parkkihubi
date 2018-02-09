@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import permissions, viewsets
 from rest_framework_gis.pagination import GeoJsonPagination
 from rest_framework_gis.serializers import (
     GeoFeatureModelSerializer, GeometrySerializerMethodField)
@@ -24,6 +24,7 @@ class ParkingAreaSerializer(GeoFeatureModelSerializer):
 
 
 class PublicAPIParkingAreaViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.AllowAny]
     queryset = ParkingArea.objects.order_by('origin_id')
     serializer_class = ParkingAreaSerializer
     pagination_class = GeoJsonPagination
