@@ -9,18 +9,19 @@ import thunkMiddleware from 'redux-thunk';
 // Configure Moment.js to use Finnish locale
 import 'moment/locale/fi';
 
-import './index.css';
 import api from './api';
 import * as config from './config';
 import App from './containers/App';
+import * as dispatchers from './dispatchers';
 import rootReducer from './reducers';
 import registerServiceWorker from './registerServiceWorker';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import 'font-awesome/css/font-awesome.min.css';
+import 'leaflet/dist/leaflet.css';
 import 'react-select/dist/react-select.css';
 
-import 'leaflet/dist/leaflet.css';
+import './index.css';
 
 Leaflet.Icon.Default.imagePath =
     '//cdnjs.cloudflare.com/ajax/libs/leaflet/1.3.1/images/';
@@ -38,6 +39,9 @@ const store = Redux.createStore(rootReducer, composeEnhancers(storeEnhancer));
 
 // Configure API base URL
 api.setBaseUrl(config.apiBaseUrl);
+
+// Check if there is an existing login
+store.dispatch(dispatchers.checkExistingLogin());
 
 ReactDOM.render(
     <ReactRedux.Provider store={store}>

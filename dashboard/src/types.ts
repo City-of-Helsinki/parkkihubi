@@ -1,6 +1,8 @@
 import { Region, MapViewport } from './components/types';
 
 export interface RootState {
+    auth: AuthenticationState;
+
     views: ViewState;
 
     dataTime: number|null; // milliseconds
@@ -11,6 +13,19 @@ export interface RootState {
     regions: RegionsMap;
 
     regionUsageHistory: RegionUsageHistory;
+}
+
+export interface AuthenticationState {
+    existingLoginChecked?: boolean;
+    loggedIn?: boolean;
+
+    codeToken?: string;
+    codeTokenFetching?: boolean;
+    codeTokenFailure?: string;
+
+    authToken?: string;
+    authTokenFetching?: boolean;
+    authTokenFailure?: string;
 }
 
 export interface ViewState {

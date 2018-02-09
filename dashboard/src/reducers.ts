@@ -4,8 +4,81 @@ import { combineReducers } from 'redux';
 import { Action } from './actions';
 import * as conv from './converters';
 import {
-    ParkingRegionMapState, RegionsMap, RegionUsageHistory,
-    RootState, ViewState } from './types';
+    AuthenticationState, ParkingRegionMapState, RegionsMap,
+    RegionUsageHistory, RootState, ViewState } from './types';
+
+// Auth state reducer ////////////////////////////////////////////////
+
+const initialAuthState: AuthenticationState = {
+    loggedIn: false,
+    existingLoginChecked: false,
+};
+
+function auth(
+    state: AuthenticationState = initialAuthState,
+    action: Action,
+): AuthenticationState {
+    if (action.type === 'CHECK_EXISTING_LOGIN') {
+        return {
+            ...state,
+            existingLoginChecked: false,
+        };
+    } else if (action.type === 'RESOLVE_EXISTING_LOGIN_CHECK') {
+        return {
+            ...state,
+            existingLoginChecked: true,
+        };
+    } else if (action.type === 'REQUEST_CODE_TOKEN') {
+        return {
+            ...state,
+            codeToken: undefined,
+            codeTokenFailure: undefined,
+            codeTokenFetching: true,
+            loggedIn: false,
+        };
+    } else if (action.type === 'RECEIVE_CODE_TOKEN') {
+        return {
+            ...state,
+            codeToken: action.codeToken,
+            codeTokenFetching: false,
+        };
+    } else if (action.type === 'RECEIVE_CODE_TOKEN_FAILURE') {
+        return {
+            ...state,
+            codeTokenFailure: action.reason,
+            codeTokenFetching: false,
+        };
+    } else if (action.type === 'REQUEST_AUTH_TOKEN') {
+        return {
+            ...state,
+            authToken: undefined,
+            authTokenFailure: undefined,
+            authTokenFetching: true,
+        };
+    } else if (action.type === 'RECEIVE_AUTH_TOKEN') {
+        return {
+            ...state,
+            authToken: action.authToken,
+            authTokenFetching: false,
+            codeToken: undefined,
+            loggedIn: true,
+        };
+    } else if (action.type === 'RECEIVE_AUTH_TOKEN_FAILURE') {
+        return {
+            ...state,
+            authTokenFailure: action.reason,
+            authTokenFetching: false,
+        };
+    } else if (action.type === 'LOGOUT') {
+        return {
+            ...state,
+            codeToken: undefined,
+            authToken: undefined,
+            loggedIn: false,
+        };
+    }
+    return state;
+}
 
 // View state reducers ///////////////////////////////////////////////
 
@@ -96,6 +169,7 @@ function mapByIdAndApply<T>(
 
 const rootReducer: ((state: RootState, action: Action) => RootState) =
     combineReducers({
+        auth,
         views,
         dataTime,
         autoUpdate,

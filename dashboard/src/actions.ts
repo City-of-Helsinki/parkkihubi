@@ -3,6 +3,77 @@ import { Moment } from 'moment';
 import { RegionList, RegionStatsList } from './api/types';
 import { MapViewport } from './components/types';
 
+interface CheckExistingLoginAction {
+    type: 'CHECK_EXISTING_LOGIN';
+}
+export function checkExistingLogin(): CheckExistingLoginAction {
+    return {type: 'CHECK_EXISTING_LOGIN'};
+}
+
+interface ResolveExistingLoginCheckAction {
+    type: 'RESOLVE_EXISTING_LOGIN_CHECK';
+}
+export function resolveExistingLoginCheck(): ResolveExistingLoginCheckAction {
+    return {type: 'RESOLVE_EXISTING_LOGIN_CHECK'};
+}
+
+interface RequestCodeTokenAction {
+    type: 'REQUEST_CODE_TOKEN';
+}
+export function requestCodeToken(): RequestCodeTokenAction {
+    return {type: 'REQUEST_CODE_TOKEN'};
+}
+
+interface ReceiveCodeTokenAction {
+    type: 'RECEIVE_CODE_TOKEN';
+    codeToken: string;
+}
+export function receiveCodeToken(codeToken: string): ReceiveCodeTokenAction {
+    return {type: 'RECEIVE_CODE_TOKEN', codeToken};
+}
+
+interface ReceiveCodeTokenFailureAction {
+    type: 'RECEIVE_CODE_TOKEN_FAILURE';
+    reason: string;
+}
+export function receiveCodeTokenFailure(
+    reason: string
+): ReceiveCodeTokenFailureAction {
+    return {type: 'RECEIVE_CODE_TOKEN_FAILURE', reason};
+}
+
+interface RequestAuthTokenAction {
+    type: 'REQUEST_AUTH_TOKEN';
+}
+export function requestAuthToken(): RequestAuthTokenAction {
+    return {type: 'REQUEST_AUTH_TOKEN'};
+}
+
+interface ReceiveAuthTokenAction {
+    type: 'RECEIVE_AUTH_TOKEN';
+    authToken: string;
+}
+export function receiveAuthToken(authToken: string): ReceiveAuthTokenAction {
+    return {type: 'RECEIVE_AUTH_TOKEN', authToken};
+}
+
+interface ReceiveAuthTokenFailureAction {
+    type: 'RECEIVE_AUTH_TOKEN_FAILURE';
+    reason: string;
+}
+export function receiveAuthTokenFailure(
+    reason: string
+): ReceiveAuthTokenFailureAction {
+    return {type: 'RECEIVE_AUTH_TOKEN_FAILURE', reason};
+}
+
+interface LogoutAction {
+    type: 'LOGOUT';
+}
+export function logout(): LogoutAction {
+    return {type: 'LOGOUT'};
+}
+
 interface SetMapViewportAction {
     type: 'SET_MAP_VIEWPORT';
     viewport: MapViewport;
@@ -57,6 +128,15 @@ export function receiveRegionInfo(data: RegionList): ReceiveRegionInfoAction {
 }
 
 export type Action =
+    CheckExistingLoginAction |
+    ResolveExistingLoginCheckAction |
+    RequestCodeTokenAction |
+    ReceiveCodeTokenAction |
+    ReceiveCodeTokenFailureAction |
+    RequestAuthTokenAction |
+    ReceiveAuthTokenAction |
+    ReceiveAuthTokenFailureAction |
+    LogoutAction |
     SetMapViewportAction |
     SetDataTimeAction |
     SetAutoUpdateAction |

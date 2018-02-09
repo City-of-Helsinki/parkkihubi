@@ -1,5 +1,13 @@
 import * as geojson from 'geojson';
 
+export interface AuthToken {
+    token: string;
+}
+
+export interface CodeToken {
+    token: string;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Primitive types
 

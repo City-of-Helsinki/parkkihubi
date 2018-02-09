@@ -8,6 +8,63 @@ import { RootState } from './types';
 
 const updateInterval = 5 * 60 * 1000;  // 5 minutes in ms
 
+export function checkExistingLogin() {
+    return (dispatch: Dispatch<RootState>) => {
+        dispatch(actions.checkExistingLogin());
+        api.auth.checkExistingLogin().then(
+            (authToken) => {
+                if (authToken) {
+                    dispatch(actions.receiveAuthToken(authToken.token));
+                }
+                dispatch(actions.resolveExistingLoginCheck());
+            },
+            (error) => {
+                dispatch(actions.resolveExistingLoginCheck());
+                throw error;
+            });
+    };
+}
+
+export function initiateLogin(username: string, password: string) {
+    return (dispatch: Dispatch<RootState>) => {
+        dispatch(actions.requestCodeToken());
+        api.auth.initiateLogin(username, password).then(
+            (codeToken) => {
+                dispatch(actions.receiveCodeToken(codeToken.token));
+            },
+            (error) => {
+                dispatch(actions.receiveCodeTokenFailure(
+                    `${error.response.statusText} `
+                        + `-- ${JSON.stringify(error.response.data)}`));
+            });
+    };
+}
+
+export function continueLogin(verificationCode: string) {
+    return (dispatch: Dispatch<RootState>, getState: () => RootState) => {
+        dispatch(actions.requestAuthToken());
+        const { codeToken } = getState().auth;
+        if (codeToken) {
+            api.auth.continueLogin(codeToken, verificationCode).then(
+                (authToken) => {
+                    dispatch(actions.receiveAuthToken(authToken.token));
+                },
+                (error) => {
+                    dispatch(actions.receiveAuthTokenFailure(
+                        `${error.response.statusText} `
+                            + `-- ${JSON.stringify(error.response.data)}`));
+                });
+        }
+    };
+}
+
+export function logout() {
+    return (dispatch: Dispatch<RootState>) => {
+        api.auth.logout();
+        dispatch(actions.logout());
+    };
+}
+
 export function setMapViewport(viewport: MapViewport) {
     return (dispatch: Dispatch<RootState>) => {
         dispatch(actions.setMapViewport(viewport));

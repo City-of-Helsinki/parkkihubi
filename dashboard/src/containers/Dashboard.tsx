@@ -3,7 +3,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import { Bar } from 'react-chartjs-2';
-import { Card, CardHeader, CardBody, Container, Row, Col } from 'reactstrap';
+import {
+    Button, Card, CardHeader, CardBody,
+    Container, Row, Col } from 'reactstrap';
 
 import * as dispatchers from '../dispatchers';
 import { RootState } from '../types';
@@ -33,6 +35,7 @@ const bar = {
 interface Props {
     autoUpdate: boolean;
     onUpdate: () => void;
+    onLogout: (event: React.MouseEvent<{}>) => void;
 }
 
 type TimerId = number;
@@ -237,6 +240,16 @@ class Dashboard extends React.Component<Props> {
                             </Card>
                         </Col>
                     </Row>
+                    <Row>
+                        <Col>
+                            <Button
+                                onClick={this.props.onLogout}
+                                color="danger"
+                            >
+                                <i className="fa fa-sign-out"/>{' '}Kirjaudu ulos
+                            </Button>
+                        </Col>
+                    </Row>
                 </Container>
             </main>
         );
@@ -252,6 +265,7 @@ function mapStateToProps(state: RootState): Partial<Props> {
 function mapDispatchToProps(dispatch: Dispatch<RootState>): Partial<Props> {
     return {
         onUpdate: () => dispatch(dispatchers.updateData()),
+        onLogout: (event: React.MouseEvent<{}>) => dispatch(dispatchers.logout()),
     };
 }
 

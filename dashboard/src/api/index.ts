@@ -1,6 +1,7 @@
 import * as axios from 'axios';
 import { Moment } from 'moment';
 
+import AuthManager from './auth-manager';
 import { RegionList, RegionStatsList } from './types';
 
 interface SuccessCallback<T> {
@@ -13,14 +14,20 @@ interface ErrorHandler {
 
 export class Api {
     public endpoints = {
+        authCodeToken: '/auth/v1/get-code/',
+        authAuthToken: '/auth/v1/auth/',
+        authRefresh: '/auth/v1/refresh/',
         regions: '/monitoring/v1/region/',
         regionStats: '/monitoring/v1/region_statistics/',
     };
+
+    public auth: AuthManager;
 
     private axios: axios.AxiosInstance;
 
     constructor(baseUrl?: string) {
         this.axios = axios.default.create({baseURL: baseUrl});
+        this.auth = new AuthManager(this, this.axios);
     }
 
     setBaseUrl(baseUrl: string) {
