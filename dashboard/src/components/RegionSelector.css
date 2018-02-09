@@ -1,0 +1,5 @@
+.region-selector .Select-menu-outer {
+    /* Make sure the select dropdown is over the Leaflet map container,
+     * which uses very high z-index values for its components. */
+    z-index: 1000000;
+}

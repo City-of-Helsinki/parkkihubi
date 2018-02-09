@@ -1,0 +1,19 @@
+.dashboard .card-body {
+    padding: 0.5rem;
+}
+
+.dashboard .map-card .card-body {
+    padding: 0;
+}
+
+.map-card .leaflet-container {
+    height: 60vh;
+}
+
+.dashboard .card {
+    margin: 0.5rem 0;
+}
+
+.dashboard .parking-histogram {
+    height: 40vh;
+}
