@@ -15,6 +15,15 @@ def api_client():
 
 
 @pytest.fixture
+def monitoring_api_client(user_factory):
+    api_client = APIClient()
+    user = user_factory()
+    user.groups.get_or_create(name='monitoring')
+    api_client.force_authenticate(user)
+    return api_client
+
+
+@pytest.fixture
 def user_api_client(user_factory):
     api_client = APIClient()
     user = user_factory()  # don't use the same user as operator_api_client
