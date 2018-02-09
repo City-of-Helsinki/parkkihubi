@@ -9,6 +9,7 @@ from parkings.models.operator import Operator
 from parkings.models.parking_area import ParkingArea
 
 from .parking_terminal import ParkingTerminal
+from .region import Region
 
 Q = models.Q
 
@@ -44,6 +45,10 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     VALID = 'valid'
     NOT_VALID = 'not_valid'
 
+    region = models.ForeignKey(
+        Region, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='parkings', verbose_name=_("region"),
+    )
     parking_area = models.ForeignKey(
         ParkingArea, on_delete=models.SET_NULL, verbose_name=_("parking area"), related_name='parkings', null=True,
         blank=True,
@@ -106,6 +111,11 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
         return Parking.VALID
 
+    def get_region(self):
+        if not self.location:
+            return None
+        return Region.objects.filter(geom__intersects=self.location).first()
+
     def get_closest_area(self, max_distance=50):
         if self.location:
             location = self.location
@@ -117,7 +127,7 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         ).filter(distance__lte=max_distance).order_by('distance').first()
         return closest_area
 
-    def save(self, *args, **kwargs):
+    def save(self, update_fields=None, *args, **kwargs):
         if not self.terminal and self.terminal_number:
             self.terminal = ParkingTerminal.objects.filter(
                 number=_try_cast_int(self.terminal_number)).first()
@@ -125,12 +135,16 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         if self.terminal and not self.location:
             self.location = self.terminal.location
 
-        self.parking_area = self.get_closest_area()
+        if update_fields is None or 'region' in update_fields:
+            self.region = self.get_region()
+        if update_fields is None or 'parking_area' in update_fields:
+            self.parking_area = self.get_closest_area()
 
-        self.normalized_reg_num = (
-            self.normalize_reg_num(self.registration_number))
+        if update_fields is None or 'normalized_reg_num' in update_fields:
+            self.normalized_reg_num = (
+                self.normalize_reg_num(self.registration_number))
 
-        super(Parking, self).save(*args, **kwargs)
+        super(Parking, self).save(update_fields=update_fields, *args, **kwargs)
 
     @classmethod
     def normalize_reg_num(cls, registration_number):
