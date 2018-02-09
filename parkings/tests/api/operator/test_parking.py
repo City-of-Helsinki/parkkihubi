@@ -41,13 +41,6 @@ def updated_parking_data():
     }
 
 
-def check_parking_data_keys(parking_data):
-    assert set(parking_data.keys()) == {
-        'id', 'created_at', 'modified_at', 'location', 'registration_number', 'time_start', 'time_end', 'zone',
-        'status',
-    }
-
-
 def check_parking_data_matches_parking_object(parking_data, parking_obj):
     """
     Check that a parking data dict and an actual Parking object match.
