@@ -10,10 +10,13 @@ django-environ==0.4.4
 django-filter==1.1.0
 djangorestframework==3.7.7
 djangorestframework-gis==0.12
+djangorestframework-jwt==1.11.0  # via drf-jwt-2fa
+drf-jwt-2fa==0.3.0
 idna==2.6                 # via requests
 lxml==4.1.1
 owslib==0.16.0
 psycopg2==2.7.3.2
+pyjwt==1.5.3              # via djangorestframework-jwt
 pyproj==1.9.5.1           # via owslib
 python-dateutil==2.6.1    # via owslib
 pytz==2017.3

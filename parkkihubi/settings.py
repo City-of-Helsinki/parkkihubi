@@ -153,6 +153,7 @@ WSGI_APPLICATION = 'parkkihubi.wsgi.application'
 vars().update(env.email_url(
     default=('consolemail://' if DEBUG else 'smtp://localhost:25')
 ))
+DEFAULT_FROM_EMAIL = 'no-reply.parkkihubi@fiupparkp01.anders.fi'
 
 #########################
 # Django REST Framework #
@@ -165,6 +166,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'parkings.authentication.ApiKeyAuthentication',
+        'drf_jwt_2fa.authentication.Jwt2faAuthentication',
     ] + ([  # Following two are only for DEBUG mode in dev environment:
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
@@ -176,6 +178,24 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 100,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+}
+
+JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': timedelta(minutes=30),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
+}
+
+JWT2FA_AUTH = {
+    'CODE_TOKEN_THROTTLE_RATE': '5/15m',
+    'AUTH_TOKEN_RETRY_WAIT_TIME': timedelta(seconds=10),
+    'EMAIL_SENDER_SUBJECT_OVERRIDE': '{code} - Varmennuskoodisi',
+    'EMAIL_SENDER_BODY_OVERRIDE': (
+        'Hei!\n'
+        '\n'
+        'Varmennuskoodisi kirjautumista varten on: {code}\n'
+        '\n'
+        't. Parkkihubi'),
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
