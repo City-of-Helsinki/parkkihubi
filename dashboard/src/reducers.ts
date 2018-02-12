@@ -4,8 +4,9 @@ import { combineReducers } from 'redux';
 import { Action } from './actions';
 import * as conv from './converters';
 import {
-    AuthenticationState, ParkingRegionMapState, RegionsMap,
-    RegionUsageHistory, RootState, ViewState } from './types';
+    AuthenticationState, ParkingRegionMapState, ParkingsMap, RegionsMap,
+    RegionUsageHistory, RootState, ValidParkingsHistory,
+    ViewState } from './types';
 
 // Auth state reducer ////////////////////////////////////////////////
 
@@ -140,6 +141,15 @@ function regions(state: RegionsMap = {}, action: Action): RegionsMap {
     return state;
 }
 
+function parkings(state: ParkingsMap = {}, action: Action): ParkingsMap {
+    if (action.type === 'RECEIVE_VALID_PARKINGS') {
+        const newParkings = mapByIdAndApply(
+            action.data.features, conv.convertParking);
+        return {...state, ...newParkings};
+    }
+    return state;
+}
+
 function regionUsageHistory(
     state: RegionUsageHistory = {},
     action: Action
@@ -150,6 +160,20 @@ function regionUsageHistory(
         const newStats = mapByIdAndApply(
             action.data.results, conv.convertRegionStats);
         return {...state, ...{[timestamp]: {...oldStats, ...newStats}}};
+    }
+    return state;
+}
+
+function validParkingsHistory(
+    state: ValidParkingsHistory = {},
+    action: Action
+): ValidParkingsHistory {
+    if (action.type === 'RECEIVE_VALID_PARKINGS') {
+        const timestamp = action.time.valueOf();
+        const oldList = state[timestamp] || [];
+        const newList = action.data.features.map(
+            (feature: {id: string}) => feature.id);
+        return {...state, ...{[timestamp]: [...oldList, ...newList]}};
     }
     return state;
 }
@@ -175,7 +199,9 @@ const rootReducer: ((state: RootState, action: Action) => RootState) =
         autoUpdate,
         selectedRegion,
         regions,
+        parkings,
         regionUsageHistory,
+        validParkingsHistory,
     });
 
 export default rootReducer;
