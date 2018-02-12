@@ -45,10 +45,13 @@ def test_get_list_check_data(api_client, parking_factory, parking_area_factory, 
     results = get(api_client, list_url)['results']
     assert len(results) == 4
 
-    stats_data_1 = next(result for result in results if result['id'] == str(parking_area_1.id))
-    stats_data_2 = next(result for result in results if result['id'] == str(parking_area_2.id))
-    stats_data_3 = next(result for result in results if result['id'] == str(parking_area_3.id))
-    stats_data_4 = next(result for result in results if result['id'] == str(parking_area_4.id))
+    def find_by_obj_id(obj, iterable):
+        return [x for x in iterable if x['id'] == str(obj.id)][0]
+
+    stats_data_1 = find_by_obj_id(parking_area_1, results)
+    stats_data_2 = find_by_obj_id(parking_area_2, results)
+    stats_data_3 = find_by_obj_id(parking_area_3, results)
+    stats_data_4 = find_by_obj_id(parking_area_4, results)
 
     assert stats_data_1.keys() == {'id', 'current_parking_count'}
     assert stats_data_1['current_parking_count'] == 4

@@ -72,7 +72,7 @@ def check_required_fields(api_client, url, expected_required_fields, detail_endp
 
     required_fields = set()
     for (field, errors) in response_data.items():
-        if 'This field is required.' in repr(errors):
+        if 'This field is required.' in repr(errors):  # pragma: no cover
             required_fields.add(field)
 
     assert required_fields == expected_required_fields, '%s != %s' % (required_fields, expected_required_fields)

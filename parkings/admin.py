@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 
-from .models import Operator, Parking, ParkingArea, ParkingTerminal
+from .models import Operator, Parking, ParkingArea, ParkingTerminal, Region
 
 
 class OperatorAdmin(admin.ModelAdmin):
@@ -16,6 +16,11 @@ class ParkingAdmin(OSMGeoAdmin):
         'created_at', 'modified_at']
     list_filter = ['operator', 'zone']
     ordering = ('-created_at',)
+
+
+@admin.register(Region)
+class RegionAdmin(OSMGeoAdmin):
+    ordering = ('name',)
 
 
 class ParkingAreaAdmin(OSMGeoAdmin):

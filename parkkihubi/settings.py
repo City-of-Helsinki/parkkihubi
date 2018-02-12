@@ -18,6 +18,7 @@ env.read_env(os.path.join(BASE_DIR, '.env'))
 # Django core settings #
 ########################
 DEBUG = env.bool('DEBUG', default=False)
+TIER = env.str('TIER', default='dev')
 SECRET_KEY = env.str('SECRET_KEY', default=('' if not DEBUG else 'xxx'))
 ALLOWED_HOSTS = ['*']
 
@@ -71,6 +72,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.gis',
     'raven.contrib.django.raven_compat',
+    'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_gis',
@@ -79,7 +81,7 @@ INSTALLED_APPS = [
     'parkings',
 ]
 
-if DEBUG:
+if DEBUG and TIER == 'dev':
     # shell_plus and other goodies
     INSTALLED_APPS.append("django_extensions")
 
@@ -88,6 +90,7 @@ if DEBUG:
 ##############
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'parkkihubi.middleware.AdminTimezoneMiddleware',
@@ -150,27 +153,62 @@ WSGI_APPLICATION = 'parkkihubi.wsgi.application'
 vars().update(env.email_url(
     default=('consolemail://' if DEBUG else 'smtp://localhost:25')
 ))
+DEFAULT_FROM_EMAIL = 'no-reply.parkkihubi@fiupparkp01.anders.fi'
 
 #########################
 # Django REST Framework #
 #########################
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        # Make nothing accessible to non-admins by default.  Viewsets
+        # should specify permission_classes to override permissions.
+        'rest_framework.permissions.IsAdminUser',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'parkings.authentication.ApiKeyAuthentication',
+        'drf_jwt_2fa.authentication.Jwt2faAuthentication',
+    ] + ([  # Following two are only for DEBUG mode in dev environment:
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ] if (DEBUG and TIER == 'dev') else []),
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.NamespaceVersioning',
     'ALLOWED_VERSIONS': ('v1',),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'EXCEPTION_HANDLER': 'parkings.exception_handler.parkings_exception_handler',
-    'PAGE_SIZE': 20,
+    'PAGE_SIZE': 100,
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
+JWT_AUTH = {
+    'JWT_EXPIRATION_DELTA': timedelta(minutes=30),
+    'JWT_ALLOW_REFRESH': True,
+    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
+}
+
+JWT2FA_AUTH = {
+    'CODE_TOKEN_THROTTLE_RATE': '5/15m',
+    'AUTH_TOKEN_RETRY_WAIT_TIME': timedelta(seconds=10),
+    'EMAIL_SENDER_SUBJECT_OVERRIDE': '{code} - Varmennuskoodisi',
+    'EMAIL_SENDER_BODY_OVERRIDE': (
+        'Hei!\n'
+        '\n'
+        'Varmennuskoodisi kirjautumista varten on: {code}\n'
+        '\n'
+        't. Parkkihubi'),
+}
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 ##############
 # Parkkihubi #
 ##############
+MONITORING_GROUP_NAME = 'monitoring'
 PARKKIHUBI_TIME_PARKINGS_EDITABLE = timedelta(minutes=2)
 PARKKIHUBI_TIME_OLD_PARKINGS_VISIBLE = timedelta(minutes=15)
 PARKKIHUBI_PUBLIC_API_ENABLED = env.bool('PARKKIHUBI_PUBLIC_API_ENABLED', True)
+PARKKIHUBI_MONITORING_API_ENABLED = env.bool(
+    'PARKKIHUBI_MONITORING_API_ENABLED', True)
 PARKKIHUBI_OPERATOR_API_ENABLED = env.bool('PARKKIHUBI_OPERATOR_API_ENABLED', True)
 PARKKIHUBI_ENFORCEMENT_API_ENABLED = (
     env.bool('PARKKIHUBI_ENFORCEMENT_API_ENABLED', True))

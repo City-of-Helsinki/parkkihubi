@@ -25,7 +25,8 @@ def get_url(kind, parking):
         return list_url
     elif kind == 'list_by_reg_num':
         return list_url_for(parking.registration_number)
-    elif kind == 'detail':
+    else:
+        assert kind == 'detail'
         return reverse('enforcement:v1:valid_parking-detail',
                        kwargs={'pk': parking.pk})
 

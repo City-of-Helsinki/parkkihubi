@@ -3,7 +3,8 @@ from pytest_factoryboy import register
 
 from parkings.factories import (
     AdminUserFactory, HistoryParkingFactory, OperatorFactory,
-    ParkingAreaFactory, ParkingFactory, StaffUserFactory, UserFactory)
+    ParkingAreaFactory, ParkingFactory, RegionFactory, StaffUserFactory,
+    UserFactory)
 
 register(OperatorFactory)
 register(ParkingFactory, 'parking')
@@ -12,6 +13,7 @@ register(AdminUserFactory, 'admin_user')
 register(StaffUserFactory, 'staff_user')
 register(UserFactory)
 register(ParkingAreaFactory)
+register(RegionFactory)
 
 
 @pytest.fixture(autouse=True)

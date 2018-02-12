@@ -14,7 +14,8 @@ list_url = reverse('enforcement:v1:operator-list')
 def get_url(kind, operator):
     if kind == 'list':
         return list_url
-    elif kind == 'detail':
+    else:
+        assert kind == 'detail'
         return reverse('enforcement:v1:operator-detail',
                        kwargs={'pk': operator.pk})
 

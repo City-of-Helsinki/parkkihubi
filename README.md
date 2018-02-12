@@ -59,6 +59,7 @@ Create a basic file for development as follows
 #### Parkkihubi settings
 
 - `PARKKIHUBI_PUBLIC_API_ENABLED` default `True`
+- `PARKKIHUBI_MONITORING_API_ENABLED` default `True`
 - `PARKKIHUBI_OPERATOR_API_ENABLED` default `True`
 - `PARKKIHUBI_ENFORCEMENT_API_ENABLED` default `True`
 

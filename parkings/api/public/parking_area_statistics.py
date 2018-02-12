@@ -1,9 +1,9 @@
 from django.db.models import Case, Count, Q, When
 from django.utils import timezone
-from rest_framework import serializers, viewsets
+from rest_framework import permissions, serializers, viewsets
 
 from parkings.models import ParkingArea
-from parkings.pagination import PublicAPIPagination
+from parkings.pagination import Pagination
 
 from ..common import WGS84InBBoxFilter
 
@@ -33,9 +33,10 @@ class ParkingAreaStatisticsSerializer(serializers.ModelSerializer):
 
 
 class PublicAPIParkingAreaStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.AllowAny]
     queryset = ParkingArea.objects.all()
     serializer_class = ParkingAreaStatisticsSerializer
-    pagination_class = PublicAPIPagination
+    pagination_class = Pagination
     bbox_filter_field = 'geom'
     filter_backends = (WGS84InBBoxFilter,)
     bbox_filter_include_overlapping = True
