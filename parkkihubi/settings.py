@@ -32,7 +32,6 @@ VAR_ROOT = env.str('VAR_ROOT', default_var_root)
 
 # Create var root if it doesn't exist
 if not os.path.isdir(VAR_ROOT):
-    print('Creating var root %s' % VAR_ROOT)
     os.makedirs(VAR_ROOT)
 
 MEDIA_ROOT = os.path.join(VAR_ROOT, 'media')

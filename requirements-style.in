@@ -1,1 +1,4 @@
 flake8
+flake8-isort
+flake8-print
+pep8-naming

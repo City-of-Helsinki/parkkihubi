@@ -4,7 +4,9 @@ from rest_framework.status import HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN
 
 from parkings.models import Operator
 
-from ..utils import ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes, get
+from ..utils import (
+    ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes,
+    get)
 
 list_url = reverse('enforcement:v1:operator-list')
 

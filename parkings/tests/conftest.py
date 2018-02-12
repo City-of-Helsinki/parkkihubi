@@ -2,9 +2,8 @@ import pytest
 from pytest_factoryboy import register
 
 from parkings.factories import (
-    AdminUserFactory, HistoryParkingFactory, OperatorFactory, ParkingAreaFactory, ParkingFactory, StaffUserFactory,
-    UserFactory
-)
+    AdminUserFactory, HistoryParkingFactory, OperatorFactory,
+    ParkingAreaFactory, ParkingFactory, StaffUserFactory, UserFactory)
 
 register(OperatorFactory)
 register(ParkingFactory, 'parking')

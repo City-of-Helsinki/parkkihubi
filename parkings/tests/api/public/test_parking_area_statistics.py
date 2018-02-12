@@ -5,7 +5,9 @@ from django.core.urlresolvers import reverse
 
 from parkings.models import Parking
 
-from ..utils import check_list_endpoint_base_fields, check_method_status_codes, get, get_ids_from_results
+from ..utils import (
+    check_list_endpoint_base_fields, check_method_status_codes, get,
+    get_ids_from_results)
 
 list_url = reverse('public:v1:parkingareastatistics-list')
 
