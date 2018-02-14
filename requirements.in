@@ -23,5 +23,6 @@ lxml
 owslib
 
 # Misc
-pytz
 django-cors-headers
+python-memcached
+pytz
