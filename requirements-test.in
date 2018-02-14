@@ -3,6 +3,7 @@ pytest
 pytest-cov
 pytest-django
 pytest-factoryboy
+pyyaml
 
 # Factory Boy 2.9.0 to 2.9.2 don't seem to work.  See
 # https://github.com/pytest-dev/pytest-factoryboy/issues/47
