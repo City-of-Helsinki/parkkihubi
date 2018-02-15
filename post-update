@@ -1,11 +1,25 @@
 #!/bin/sh
 set -e
 
+# Update the dashboard
+if [ "$force_update" = "true" ] || \
+       git diff --name-only "$prev_head..HEAD" | grep -q "^dashboard/"; then
+    cd dashboard
+    yarn install --production=false  # dev deps are needed for @types packages
+    yarn run build
+    if [ -d ../../var ]; then
+        rsync -av --delete build/ ../../var/dashboard/
+    fi
+    cd ..
+fi
+
+# Update the backend
 pip install prequ==1.3.1
 prequ sync requirements.txt
 ./manage.py collectstatic --noinput
 ./manage.py migrate --noinput
 
+# Send notification about succesful update
 if [ -x ../bin/update-notify ]; then
-    ../bin/update-notify "Succesfully updated to $new_ver"
+    ../bin/update-notify "Successfully updated to $new_ver"
 fi
