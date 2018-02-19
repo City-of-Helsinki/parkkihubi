@@ -1,9 +1,18 @@
 #!/bin/sh
 set -e
 
+# Read the environment variables
+if [ -r ../etc/env ]; then
+    . ../etc/env
+fi
+
 # Update the dashboard
 if [ "$force_update" = "true" ] || \
        git diff --name-only "$prev_head..HEAD" | grep -q "^dashboard/"; then
+    if [ "$TIER" != "prod" ]; then
+        export REACT_APP_API_URL="https://testapi.parkkiopas.fi/"
+        echo "Using API base URL: $REACT_APP_API_URL"
+    fi
     cd dashboard
     yarn install --production=false  # dev deps are needed for @types packages
     yarn run build
