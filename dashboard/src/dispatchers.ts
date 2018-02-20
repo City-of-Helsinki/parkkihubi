@@ -84,8 +84,21 @@ export function setDataTime(time?: moment.Moment) {
             const roundedTime = roundTime(time, updateInterval);
             if (!dataTime || roundedTime.valueOf() !== dataTime) {
                 dispatch(actions.setDataTime(roundedTime));
-                dispatch(fetchRegionStats(roundedTime));
+                dispatch(fetchMissingData(roundedTime));
             }
+        }
+    };
+}
+
+function fetchMissingData(time: moment.Moment) {
+    return (dispatch: Dispatch<RootState>, getState: () => RootState) => {
+        const timestamp = time.valueOf();
+        const state: RootState = getState();
+        if (!(timestamp in state.regionUsageHistory)) {
+            dispatch(fetchRegionStats(time));
+        }
+        if (!(timestamp in state.validParkingsHistory)) {
+            dispatch(fetchValidParkings(time));
         }
     };
 }
@@ -108,11 +121,7 @@ export function setSelectedRegion(regionId: string) {
 
 export function fetchRegionStats(time: moment.Moment) {
     return (dispatch: Dispatch<RootState>, getState: () => RootState) => {
-        const {regions, regionUsageHistory} = getState();
-        const timestamp = time.valueOf();
-        if (timestamp in regionUsageHistory) {
-            return;
-        }
+        const {regions} = getState();
         api.fetchRegionStats(
             time,
             (response) => {
@@ -138,6 +147,19 @@ export function fetchRegions() {
             },
             (error) => {
                 alert('Region fetch failed: ' + error);
+            });
+    };
+}
+
+export function fetchValidParkings(time: moment.Moment) {
+    return (dispatch: Dispatch<RootState>) => {
+        api.fetchValidParkings(
+            time,
+            (response) => {
+                dispatch(actions.receiveValidParkings(response.data, time));
+            },
+            (error) => {
+                alert('Valid parkings fetch failed: ' + error);
             });
     };
 }

@@ -46,10 +46,14 @@ def test_with_many_parkings_and_specified_time(monitoring_api_client):
     (parkings, regions) = create_parkings_and_regions(
         parking_count=20, region_count=5)
 
-    # Pick a point in time that is in between the parking times
-    earliest_end_time = min(x.time_end for x in parkings)
-    latest_end_time = max(x.time_end for x in parkings)
-    time = fake.date_time_between(earliest_end_time, latest_end_time,
+    # Select a parking with a region and is not ending first
+    earliest_end_time = min(x.time_end for x in parkings if x.region)
+    parking = [
+        parking for parking in parkings
+        if parking.region and parking.time_end > earliest_end_time][0]
+
+    # Pick a point in time when at least the selected parking is valid
+    time = fake.date_time_between(parking.time_start, parking.time_end,
                                   tzinfo=pytz.utc)
 
     # Calculate some lookup containers

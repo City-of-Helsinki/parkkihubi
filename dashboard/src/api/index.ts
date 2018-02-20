@@ -2,7 +2,7 @@ import * as axios from 'axios';
 import { Moment } from 'moment';
 
 import AuthManager from './auth-manager';
-import { RegionList, RegionStatsList } from './types';
+import { ParkingList, RegionList, RegionStatsList } from './types';
 
 interface SuccessCallback<T> {
     (response: axios.AxiosResponse<T>): void;
@@ -19,6 +19,7 @@ export class Api {
         authRefresh: '/auth/v1/refresh/',
         regions: '/monitoring/v1/region/',
         regionStats: '/monitoring/v1/region_statistics/',
+        validParkings: '/monitoring/v1/valid_parking/',
     };
 
     public auth: AuthManager;
@@ -48,6 +49,16 @@ export class Api {
     ) {
         const timeParam = (time) ? '?time=' + time.toISOString() : '';
         this._fetchAllPages(this.endpoints.regionStats + timeParam,
+                            callback, errorHandler);
+    }
+
+    fetchValidParkings(
+        time: Moment,
+        callback: SuccessCallback<ParkingList>,
+        errorHandler: ErrorHandler,
+    ): void {
+        const timeParam = (time) ? '?time=' + time.toISOString() : '';
+        this._fetchAllPages(this.endpoints.validParkings + timeParam,
                             callback, errorHandler);
     }
 

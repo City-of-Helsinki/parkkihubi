@@ -9,12 +9,10 @@ import {
 
 import * as dispatchers from '../dispatchers';
 import { RootState } from '../types';
+import LastParkingsTable from './LastParkingsTable';
 import ParkingRegionsMap from './ParkingRegionsMap';
 import TimeSelect from './TimeSelect';
 import RegionSelector from  './RegionSelector';
-
-import ReactTable from 'react-table';
-import 'react-table/react-table.css';
 
 import './Dashboard.css';
 
@@ -83,116 +81,6 @@ class Dashboard extends React.Component<Props> {
     }
 
     render() {
-
-        const data = [
-            {
-                'id': '49df2003-ffac-4cf9-82d4-ef152bb0f539',
-                'operator': 'Lippuautomaatit',
-                'zone': 1,
-                'area': 'Parking Area 3526',
-                'terminal': 620,
-                'start': '2.5.2018 14:18:05',
-                'end': '2.5.2018, 15:48:05',
-                'regnum': 'ABC-123',
-                'created': '2.5.2018 14:18:12',
-                'modified': '2.5.2018 14:18:12',
-            },
-            {
-                'id': 'c0e45595-aecd-4c83-b80e-6940dcfee667',
-                'operator': 'Lippuautomaatit',
-                'zone': 2,
-                'area': 'Parking Area 4012',
-                'terminal': 120,
-                'start': '2.5.2018 14:08:35',
-                'end': '2.5.2018, 14:28:35',
-                'regnum': 'CBA-456',
-                'created': '2.5.2018 14:08:42',
-                'modified': '2.5.2018 14:08:42',
-            },
-            {
-                'id': 'b68d7e75-c4d9-49e1-9767-7816b7a24b13',
-                'operator': 'EasyPark',
-                'zone': 1,
-                'area': '-',
-                'terminal': undefined,
-                'start': '2.5.2018 14:02:55',
-                'end': '2.5.2018, 16:32:55',
-                'regnum': 'XYZ-987',
-                'created': '2.5.2018 14:02:59',
-                'modified': '2.5.2018 14:03:05',
-            },
-            {
-                'id': '051dabe8-ae2e-459f-97fe-cde4daf2de3b',
-                'operator': 'Lippuautomaatit',
-                'zone': 1,
-                'area': 'Parking Area 2359',
-                'terminal': 95,
-                'start': '2.5.2018 14:01:22',
-                'end': '2.5.2018, 14:21:22',
-                'regnum': 'KKK-333',
-                'created': '2.5.2018 14:01:23',
-                'modified': '2.5.2018 14:01:23',
-            },
-            {
-                'id': 'e8cd6df7-11d4-4fa2-9343-33450dd29e48',
-                'operator': 'Witrafi',
-                'zone': 2,
-                'area': 'Parking Area 3374',
-                'terminal': undefined,
-                'start': '2.5.2018 13:59:45',
-                'end': '2.5.2018, 15:28:06',
-                'regnum': 'ABC-123',
-                'created': '2.5.2018 13:59:46',
-                'modified': '2.5.2018 15:28:07',
-            },
-            {
-                'id': '78fff1e1-9a76-4870-8637-be32561b6aed',
-                'operator': 'ParkMan',
-                'zone': 3,
-                'area': '-',
-                'terminal': undefined,
-                'start': '2.5.2018 13:59:32',
-                'end': '2.5.2018, 14:38:35',
-                'regnum': 'ZZZ-444',
-                'created': '2.5.2018 13:59:32',
-                'modified': '2.5.2018 14:38:36',
-            },
-        ];
-
-        const columns = [
-            {
-                Header: 'Tunniste',
-                accessor: 'id',
-            }, {
-                Header: 'Rekisterinumero',
-                accessor: 'regnum',
-            }, {
-                Header: 'Operaattori',
-                accessor: 'operator',
-            }, {
-                Header: 'Maksuvyöhyke',
-                accessor: 'zone',
-            }, {
-                Header: 'Pysäköintialue',
-                accessor: 'area',
-            }, {
-                Header: 'Lippuautomaatin numero',
-                accessor: 'terminal',
-            }, {
-                Header: 'Aloitusaika',
-                accessor: 'start',
-            }, {
-                Header: 'Loppumisaika',
-                accessor: 'end',
-            }, {
-                Header: 'Luotu',
-                accessor: 'created',
-            }, {
-                Header: 'Päivitetty',
-                accessor: 'modified',
-            },
-        ];
-
         return (
             <main className="main">
                 <Container fluid={true} className="dashboard">
@@ -233,9 +121,11 @@ class Dashboard extends React.Component<Props> {
                     <Row>
                         <Col>
                             <Card>
-                                <CardHeader>Viimeiset pysäköinnit</CardHeader>
+                                <CardHeader>
+                                    Aktiiviset pysäköinnit
+                                </CardHeader>
                                 <CardBody>
-                                    <ReactTable data={data} columns={columns} />
+                                    <LastParkingsTable/>
                                 </CardBody>
                             </Card>
                         </Col>

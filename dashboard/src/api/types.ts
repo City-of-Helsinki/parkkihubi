@@ -14,9 +14,14 @@ export interface CodeToken {
 type Url = string;
 type ParkingAreaId = string;
 type RegionId = string;
+type ParkingId = string;
 
 //////////////////////////////////////////////////////////////////////
 // Helper interfaces
+
+type GObj = geojson.GeometryObject;
+type Point = geojson.Point;
+type MPoly = geojson.MultiPolygon;
 
 interface PaginatedList {
     count: number;
@@ -25,28 +30,28 @@ interface PaginatedList {
 }
 
 // Type of the Features returned by the API
-interface ApiFeature<I extends string, P> extends
-geojson.Feature<geojson.MultiPolygon, P> {
+interface ApiFeature<G extends GObj, I extends string, P> extends
+geojson.Feature<G, P> {
     type: 'Feature';
-    geometry: geojson.MultiPolygon;
+    geometry: G;
     id: I;
-    properties: P|null;
+    properties: P;
 }
 
 // Type of the Feature Collections returned by the API
-interface ApiFeatureCollection<I extends string, P> extends
-geojson.FeatureCollection<geojson.MultiPolygon, P> {
+interface ApiFeatureCollection<G extends GObj, I extends string, P> extends
+geojson.FeatureCollection<G, P> {
     type: 'FeatureCollection';
-    features: Array<ApiFeature<I, P>>;
+    features: Array<ApiFeature<G, I, P>>;
 }
 
 //////////////////////////////////////////////////////////////////////
 // Exported API interfaces
 
-export type Region = ApiFeature<RegionId, RegionProperties>;
+export type Region = ApiFeature<MPoly, RegionId, RegionProperties>;
 
 export interface RegionList extends
-ApiFeatureCollection<RegionId, RegionProperties>,
+ApiFeatureCollection<MPoly, RegionId, RegionProperties>,
 PaginatedList {
 }
 
@@ -65,4 +70,23 @@ export interface RegionStatsList extends PaginatedList {
 export interface RegionStats {
     id: RegionId;
     parking_count: number;
+}
+
+export interface ParkingList extends
+ApiFeatureCollection<Point, ParkingId, ParkingProperties>,
+PaginatedList {
+}
+
+export type Parking = ApiFeature<Point, ParkingId, ParkingProperties>;
+
+export interface ParkingProperties {
+    registration_number: string;
+    region?: string|null;
+    zone: number;
+    terminal_number?: string|null;
+    operator_name: string;
+    time_start: string;
+    time_end?: string|null;
+    created_at: string;
+    modified_at: string;
 }
