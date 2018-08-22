@@ -1,7 +1,5 @@
-# Postgis doesn't work on older 'precise' platform
-# and the default depends on repo age (parkkihubi is too old)
-sudo: false
-dist: trusty
+sudo: yes
+dist: xenial
 
 language: python
 
@@ -22,13 +20,13 @@ matrix:
       before_script: null
 
 
-# As of 2017-08 the new travis trusty images have broken postgis,
-# so we have to specify the exact postgres version to install right addons
 addons:
-  postgresql: 9.6
+  postgresql: "10"
   apt:
     packages:
-    - postgresql-9.6-postgis-2.3
+    - postgresql-10
+    - postgresql-client-10
+    - postgresql-10-postgis-2.4
 
 install: pip install tox-travis codecov
 
