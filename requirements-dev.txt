@@ -30,3 +30,6 @@ typing==3.6.4             # via django-extensions, ipython
 virtualenv==15.1.0        # via tox
 wcwidth==0.1.7            # via prompt-toolkit
 werkzeug==0.14.1
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools                # via ipython
