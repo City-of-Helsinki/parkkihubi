@@ -7,7 +7,9 @@ if [ -r ../etc/env ]; then
 fi
 
 # Update the dashboard
-if [ "$force_update" = "true" ] || \
+if [ "$DISABLE_DASHBOARD_DEPLOY" = "1" ]; then
+    echo "Not deploying Dashboard, since DISABLE_DASHBOARD_DEPLOY is set."
+elif [ "$force_update" = "true" ] || \
        git diff --name-only "$prev_head..HEAD" | grep -q "^dashboard/"; then
     if [ "$TIER" != "prod" ]; then
         export REACT_APP_API_URL="https://testapi.parkkiopas.fi/"
