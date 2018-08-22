@@ -25,7 +25,10 @@ elif [ "$force_update" = "true" ] || \
 fi
 
 # Update the backend
-pip install prequ==1.3.1
+
+# Note: Keep Pip and Prequ version in sync with tox.ini and .travis.yml
+pip install pip==18.0
+pip install prequ==1.4.2
 prequ sync requirements.txt
 
 ./manage.py collectstatic --noinput
