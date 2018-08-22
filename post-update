@@ -27,8 +27,14 @@ fi
 # Update the backend
 pip install prequ==1.3.1
 prequ sync requirements.txt
+
 ./manage.py collectstatic --noinput
-./manage.py migrate --noinput
+
+if [ "$DISABLE_MIGRATIONS_ON_DEPLOY" = "1" ]; then
+    echo "Skipping migrations, since DISABLE_MIGRATIONS_ON_DEPLOY is set."
+else
+    ./manage.py migrate --noinput
+fi
 
 # Send notification about succesful update
 if [ -x ../bin/update-notify ]; then
