@@ -1,0 +1,304 @@
+swagger: '2.0'
+
+info:
+  title: Parkkihubi Public API
+  description: |
+    Parkkihubi public REST API Documentation
+
+    **NOTE!** The public API is on very initial state. Backward
+    incompatible changes are possible.
+  version: "1.0.0"
+
+host: pubapi.parkkiopas.fi
+schemes:
+  - https
+basePath: /public/v1
+produces:
+  - application/json
+
+paths:
+  /parking_area/:
+    get:
+      tags:
+        - parking_area
+      summary: Get a list of parking areas
+      description: |
+        Fetch info about parking areas as GeoJSON feature collection.
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#feature-collection-objects
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          description: Pagination page number
+        - name: page_size
+          in: query
+          type: integer
+          description: Pagination page size
+      responses:
+        200:
+          description: |
+            An array of parking areas with metadata information
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+                description: Total number of returned objects
+              next:
+                type: string
+                description: Next page URL
+              previous:
+                type: string
+                description: Previous page URL
+              features:
+                type: array
+                items:
+                  $ref: '#/definitions/ParkingArea'
+          examples:
+            application/json:
+              count: 100
+              next: 'https://api.example.com/public/v1/parking_area/?page=2'
+              previous: null
+              features:
+                - id: f27f4cde-f979-470c-9f4e-78e4a8eb0eb4
+                  type: Feature
+                  geometry:
+                    type: MultiPolygon
+                    coordinates:
+                      - - - - 24.948941061040355
+                            - 60.17185685528542
+                          - - 24.948979056682155
+                            - 60.17185759162991
+                          - - 24.948964412438333
+                            - 60.17196642313501
+                          - - 24.948929209240834
+                            - 60.17196510701679
+                          - - 24.948941061040355
+                            - 60.17185685528542
+                  properties:
+                    capacity_estimate: 2
+
+  /parking_area/{parking_area_id}/:
+    get:
+      tags:
+        - parking_area
+      summary: Get a parking area by its ID
+      description: |
+        Fetch info about a parking area as GeoJSON feature.
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#feature-objects
+      parameters:
+        - name: parking_area_id
+          in: path
+          required: true
+          description: ID of the parking area to fetch
+          type: string
+          format: uuid
+      responses:
+        200:
+          description: The requested parking area
+          schema:
+            $ref: '#/definitions/ParkingArea'
+          examples:
+            application/json:
+              id: f27f4cde-f979-470c-9f4e-78e4a8eb0eb4
+              type: Feature
+              geometry:
+                type: MultiPolygon
+                coordinates:
+                  - - - - 24.948941061040355
+                        - 60.17185685528542
+                      - - 24.948979056682155
+                        - 60.17185759162991
+                      - - 24.948964412438333
+                        - 60.17196642313501
+                      - - 24.948929209240834
+                        - 60.17196510701679
+                      - - 24.948941061040355
+                        - 60.17185685528542
+              properties:
+                capacity_estimate: 2
+        404:
+          $ref: '#/responses/NotFound'
+
+  /parking_area_statistics/:
+    get:
+      tags:
+        - parking_area_statistics
+      summary: Get a list of parking area statistics
+      description: Fetch statistics of parking areas.
+      parameters:
+        - name: page
+          in: query
+          type: integer
+          description: Pagination page number
+      responses:
+        200:
+          description: |
+            An array of parking area statistics with metadata information
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+                description: Total number of returned objects
+              next:
+                type: string
+                description: Next page URL
+              previous:
+                type: string
+                description: Previous page URL
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/ParkingAreaStatistics'
+          examples:
+            application/json:
+              count: 10
+              next: 'https://api.example.com/public/v1/parking_area/?page=2'
+              previous: null
+              results:
+                - id: f27f4cde-f979-470c-9f4e-78e4a8eb0eb4
+                  current_parking_count: 5
+
+  /parking_area_statistics/{parking_area_id}/:
+    get:
+      tags:
+        - parking_area_statistics
+      summary: Get parking area statistics by parking area ID
+      description: Fetch statistics of a single parking area.
+      parameters:
+        - name: parking_area_id
+          in: path
+          required: true
+          description: ID of the parking area to fetch
+          type: string
+          format: uuid
+      responses:
+        200:
+          description: The requested parking area statistics
+          schema:
+            $ref: '#/definitions/ParkingAreaStatistics'
+          examples:
+            application/json:
+              id: f27f4cde-f979-470c-9f4e-78e4a8eb0eb4
+              current_parking_count: 5
+        404:
+          $ref: '#/responses/NotFound'
+
+definitions:
+  Parking:
+    type: object
+    example:
+      id: 70fb01a8-a17f-4b14-9b99-0060c748411c
+      location:
+        type: Point
+        coordinates: [24.938466, 60.170014]
+      time_start: "2016-12-24T21:00:00Z"
+      time_end: "2016-12-24T22:00:00Z"
+      zone: 2
+    properties:
+      id:
+        description: Unique identifier for the parking
+        type: string
+        format: uuid
+        readOnly: true
+      location:
+        $ref: '#/definitions/Location'
+      time_start:
+        description: Start time for the parking
+        type: string
+        format: dateTime
+      time_end:
+        description: End time for the parking
+        type: string
+        format: dateTime
+      zone:
+        description: Parking zone
+        type: integer
+        enum: [1, 2, 3]
+    required:
+      - time_start
+      - time_end
+      - zone
+
+  Location:
+    description: Point location in GeoJSON format
+    type: object
+    example:
+      type: Point
+      coordinates: [24.938466, 60.170014]
+    properties:
+      type:
+        description: Location geometry type.
+        type: string
+      coordinates:
+        description: |
+          An array of coordinates describing the location geometry
+          (longitude, latitude)
+        type: array
+        items:
+          type: number
+          format: float
+
+  ParkingArea:
+    type: object
+    example:
+      id: f27f4cde-f979-470c-9f4e-78e4a8eb0eb4
+      type: Feature
+      geometry:
+        type: MultiPolygon
+        coordinates:
+          [
+            [
+              [
+                [
+                    24.948941061040355,
+                    60.17185685528542
+                ],
+                [
+                    24.948979056682155,
+                    60.17185759162991
+                ],
+                [
+                    24.948964412438333,
+                    60.17196642313501
+                ],
+                [
+                    24.948929209240834,
+                    60.17196510701679
+                ],
+                [
+                    24.948941061040355,
+                    60.17185685528542
+                ]
+              ]
+            ]
+          ]
+      properties:
+        capacity_estimate: 2
+
+  ParkingAreaStatistics:
+    description: |
+      Statistics of a single parking area.
+    type: object
+    example:
+      id: f27f4cde-f979-470c-9f4e-78e4a8eb0eb4
+      current_parking_count: 5
+    properties:
+      id:
+        description: Parking area ID
+        type: string
+      current_parking_count:
+        description: |
+          Number of parkings on the area at the moment, if it is greater
+          than 3.
+
+          **NOTE!** The value is always returned as 0 if the number of
+           parkings is 3 or less.
+        type: integer
+
+responses:
+  NotFound:
+    description: Object not found

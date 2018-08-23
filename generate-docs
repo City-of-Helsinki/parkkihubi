@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -e
+
+docs="
+api/enforcement
+api/operator
+api/public
+"
+
+docs_dir=$(cd "$(dirname "$0")" && pwd)/docs
+generator_dir=$docs_dir/doc-generator
+bootprint=$generator_dir/node_modules/.bin/bootprint
+
+default_output_dir=$docs_dir/generated
+
+if [ "$1" = "-h" -o "$1" = "--help" ]; then
+    echo "Usage: $0 [OUTPUT_DIR]"
+    echo "       $0 [-h|--help]"
+    exit 0
+fi
+
+if [ -n "$1" ]; then
+    output_dir=$1
+else
+    output_dir=$default_output_dir
+fi
+
+if [ ! -e "$bootprint" ]; then
+    echo "Installing bootprint"
+    old_dir=$(pwd)
+    cd "$generator_dir"
+    NODE_ENV=production npm install
+    cd "$old_dir"
+    echo
+fi
+
+for name in $docs; do
+    echo "Generating $name documentation"
+    "$bootprint" openapi "$docs_dir/$name.yaml" "$output_dir/$name"
+    echo
+done
+
+echo "Documentation generated to $output_dir"
