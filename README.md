@@ -126,7 +126,15 @@ Public API will be available at [http://127.0.0.1:8000/public/v1/](http://127.0.
 
 The API documentation conforms to [Swagger Specification 2.0](http://swagger.io/specification/).
 
-Two possible ways (out of many) to generate the documentation:
+Three possible ways (out of many) to generate the documentation:
+
+- Run the documentation generating script:
+
+      ./generate-docs
+
+  The output will be in `docs/generated` directory by default.  If you
+  want to generate to a different directory, give that directory as the
+  first argument to the script.
 
 - [bootprint-openapi](https://github.com/bootprint/bootprint-openapi)
 

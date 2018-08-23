@@ -1,0 +1,11 @@
+{
+  "name": "parkkihubi-doc-generator-utils",
+  "version": "1.0.0",
+  "description": "Parkkihubi Documentation Generator Utils",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bootprint": "^1.0.2",
+    "bootprint-openapi": "^1.1.0"
+  }
+}
