@@ -280,6 +280,8 @@ definitions:
         capacity_estimate: 2
 
   ParkingAreaStatistics:
+    description: |
+      Statistics of a single parking area.
     type: object
     example:
       id: f27f4cde-f979-470c-9f4e-78e4a8eb0eb4
@@ -290,7 +292,11 @@ definitions:
         type: string
       current_parking_count:
         description: |
-          (near) real time number of parkings on the area at the moment
+          Number of parkings on the area at the moment, if it is greater
+          than 3.
+
+          **NOTE!** The value is always returned as 0 if the number of
+           parkings is 3 or less.
         type: integer
 
 responses:
