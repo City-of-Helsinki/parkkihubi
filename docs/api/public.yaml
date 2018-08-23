@@ -15,6 +15,7 @@ schemes:
 basePath: /public/v1
 produces:
   - application/json
+
 paths:
   /parking/:
     get:
@@ -113,12 +114,14 @@ paths:
               zone: 2
         404:
           $ref: '#/responses/NotFound'
+
   /parking_area/:
     get:
       tags:
         - parking_area
       summary: Get a list of parking areas
-      description: Fetch info about parking areas as GeoJSON feature collection.
+      description: |
+        Fetch info about parking areas as GeoJSON feature collection.
       externalDocs:
         url: http://geojson.org/geojson-spec.html#feature-collection-objects
       parameters:
@@ -132,7 +135,8 @@ paths:
           description: Pagination page size
       responses:
         200:
-          description: An array of parking areas with metadata information
+          description: |
+            An array of parking areas with metadata information
           schema:
             type: object
             properties:
@@ -178,7 +182,8 @@ paths:
       tags:
         - parking_area
       summary: Get a parking area by its ID
-      description: Fetch info about a parking area as GeoJSON feature.
+      description: |
+        Fetch info about a parking area as GeoJSON feature.
       externalDocs:
         url: http://geojson.org/geojson-spec.html#feature-objects
       parameters:
@@ -214,6 +219,7 @@ paths:
                 capacity_estimate: 2
         404:
           $ref: '#/responses/NotFound'
+
   /parking_area_statistics/:
     get:
       tags:
@@ -227,7 +233,8 @@ paths:
           description: Pagination page number
       responses:
         200:
-          description: An array of parking area statistics with metadata information
+          description: |
+            An array of parking area statistics with metadata information
           schema:
             type: object
             properties:
@@ -252,6 +259,7 @@ paths:
               results:
                 - id: f27f4cde-f979-470c-9f4e-78e4a8eb0eb4
                   current_parking_count: 5
+
   /parking_area_statistics/{parking_area_id}/:
     get:
       tags:
@@ -276,6 +284,7 @@ paths:
               current_parking_count: 5
         404:
           $ref: '#/responses/NotFound'
+
 definitions:
   Parking:
     type: object
@@ -311,6 +320,7 @@ definitions:
       - time_start
       - time_end
       - zone
+
   Location:
     description: Point location in GeoJSON format
     type: object
@@ -322,11 +332,14 @@ definitions:
         description: Location geometry type.
         type: string
       coordinates:
-        description: An array of coordinates describing the location geometry (longitude, latitude)
+        description: |
+          An array of coordinates describing the location geometry
+          (longitude, latitude)
         type: array
         items:
           type: number
           format: float
+
   ParkingArea:
     type: object
     example:
@@ -363,6 +376,7 @@ definitions:
           ]
       properties:
         capacity_estimate: 2
+
   ParkingAreaStatistics:
     type: object
     example:
@@ -373,8 +387,10 @@ definitions:
         description: Parking area ID
         type: string
       current_parking_count:
-        description: (near) real time number of parkings on the area at the moment
+        description: |
+          (near) real time number of parkings on the area at the moment
         type: integer
+
 responses:
   NotFound:
     description: Object not found
