@@ -1,7 +1,7 @@
 swagger: '2.0'
 
 info:
-  title: Parkkihubi
+  title: Parkkihubi Public API
   description: |
     Parkkihubi public REST API Documentation
 
