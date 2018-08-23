@@ -8,7 +8,8 @@ info:
     **NOTE!** The public API is on very initial state. Backward
     incompatible changes are possible.
   version: "0.0.1"
-host: api.parkkiopas.fi
+
+host: pubapi.parkkiopas.fi
 schemes:
   - https
 basePath: /public/v1
