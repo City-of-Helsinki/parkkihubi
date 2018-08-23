@@ -7,7 +7,7 @@ info:
 
     **NOTE!** The public API is on very initial state. Backward
     incompatible changes are possible.
-  version: "0.0.1"
+  version: "1.0.0"
 
 host: pubapi.parkkiopas.fi
 schemes:
