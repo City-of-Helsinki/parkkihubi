@@ -12,7 +12,7 @@ matrix:
     - env: TOXENV=requirements
       python: "3.5"
       addons: null
-      before_script: pip install pip==18.0  # See also post-update script
+      before_script: null
     - env: TOXENV=style
       python: "3.5"
       addons: null
