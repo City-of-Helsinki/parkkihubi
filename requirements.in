@@ -11,9 +11,9 @@ raven>=5.2.0
 psycopg2
 
 # Django REST Framework
-djangorestframework
-djangorestframework-gis
-django-filter
+djangorestframework>=3.9
+djangorestframework-gis>=0.14
+django-filter>=2.1.0
 drf-jwt-2fa
 
 # XML parsing
