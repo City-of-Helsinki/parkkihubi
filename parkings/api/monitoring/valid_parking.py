@@ -12,7 +12,7 @@ from .serializers import ParkingSerializer
 
 class ValidParkingFilter(django_filters.rest_framework.FilterSet):
     time = django_filters.IsoDateTimeFilter(
-        name='time', label=_("Time"), method='filter_time', required=True)
+        label=_("Time"), method='filter_time', required=True)
 
     class Meta:
         model = Parking
@@ -21,7 +21,6 @@ class ValidParkingFilter(django_filters.rest_framework.FilterSet):
             'region',
             'zone',
         ]
-        strict = django_filters.STRICTNESS.RAISE_VALIDATION_ERROR
 
     def filter_time(self, queryset, name, value):
         return queryset.valid_at(value)

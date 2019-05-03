@@ -29,16 +29,13 @@ class ValidParkingSerializer(serializers.ModelSerializer):
 
 class ValidParkingFilter(django_filters.rest_framework.FilterSet):
     reg_num = django_filters.CharFilter(
-        name='reg_num', label=_("Registration number"),
-        method='filter_reg_num', required=True)
+        label=_("Registration number"), method='filter_reg_num', required=True)
     time = django_filters.IsoDateTimeFilter(
-        name='time', label=_("Time"),
-        method='filter_time')
+        label=_("Time"), method='filter_time')
 
     class Meta:
         model = Parking
         fields = []
-        strict = django_filters.STRICTNESS.RAISE_VALIDATION_ERROR
 
     def __init__(self, data=None, *args, **kwargs):
         """

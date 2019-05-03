@@ -7,9 +7,9 @@ chardet==3.0.4            # via requests
 django==1.11.9
 django-cors-headers==2.1.0
 django-environ==0.4.4
-django-filter==1.1.0
-djangorestframework==3.7.7
-djangorestframework-gis==0.12
+django-filter==2.1.0
+djangorestframework==3.9.3
+djangorestframework-gis==0.14
 djangorestframework-jwt==1.11.0  # via drf-jwt-2fa
 drf-jwt-2fa==0.3.0
 idna==2.6                 # via requests
@@ -23,5 +23,5 @@ python-memcached==1.59
 pytz==2017.3
 raven==6.5.0
 requests==2.18.4          # via owslib
-six==1.11.0               # via django-environ, djangorestframework-gis, python-dateutil, python-memcached
+six==1.11.0               # via django-environ, python-dateutil, python-memcached
 urllib3==1.22             # via requests
