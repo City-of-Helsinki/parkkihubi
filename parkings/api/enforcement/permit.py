@@ -54,14 +54,6 @@ class PermitListSerializer(serializers.ListSerializer):
 
 
 class PermitSerializer(serializers.ModelSerializer):
-    subjects = serializers.ListField(
-        child=serializers.CharField(max_length=20),
-        max_length=40)
-
-    areas = serializers.ListField(
-        child=serializers.CharField(max_length=5),
-        max_length=33)
-
     class Meta:
         list_serializer_class = PermitListSerializer
         model = Permit
@@ -69,12 +61,21 @@ class PermitSerializer(serializers.ModelSerializer):
             'id',
             'series',
             'external_id',
-            'start_time',
-            'end_time',
             'subjects',
             'areas',
         ]
-        read_only_fields = ['id', 'series']
+        read_only_fields = ['id']
+
+    def validate(self, attrs):
+        if self.instance is None:
+            instance = Permit(self.instance, **attrs)
+            instance.clean()
+        else:
+            instance = self.instance
+            for key in attrs:
+                setattr(instance, key, attrs[key])
+            instance.clean()
+        return super(PermitSerializer, self).validate(attrs)
 
 
 class PermitViewSet(viewsets.ModelViewSet):
