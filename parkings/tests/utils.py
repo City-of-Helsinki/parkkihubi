@@ -1,8 +1,10 @@
 import io
 
+import pytz
 from django.core import management
 
 from parkings.factories import ParkingFactory, RegionFactory
+from parkings.factories.faker import fake
 
 
 def call_mgmt_cmd_with_output(command_cls, *args, **kwargs):
@@ -47,3 +49,61 @@ def intersects_with_any(point, regions):
 def intersects(point, region):
     geom = region.geom
     return point.transform(geom.srid, clone=True).intersects(geom)
+
+
+CAPITAL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'
+
+
+def generate_registration_number():
+    letters = ''.join(fake.random.choice(CAPITAL_LETTERS) for _ in range(3))
+    numbers = ''.join(fake.random.choice('0123456789') for _ in range(3))
+    return '%s-%s' % (letters, numbers)
+
+
+def generate_subjects(count=1):
+    subjects = []
+    for c in range(count):
+        subjects.append({
+            'registration_number': generate_registration_number(),
+            'start_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
+            'end_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+        })
+    return subjects
+
+
+def generate_areas(count=1):
+    areas = []
+    for c in range(count):
+        areas.append({
+            'start_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
+            'end_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'area': fake.random.choice(CAPITAL_LETTERS),
+        })
+    return areas
+
+
+def generate_external_ids(id_length=11):
+    external_id = ''.join(fake.random.choice('0123456789') for _ in range(id_length))
+    return external_id
+
+
+def generate_subjects_with_startdate_gt_endate(count=1):
+    subjects = []
+    for c in range(count):
+        subjects.append({
+            'registration_number': generate_registration_number(),
+            'start_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'end_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
+        })
+    return subjects
+
+
+def generate_areas_with_startdate_gt_endate(count=1):
+    areas = []
+    for c in range(count):
+        areas.append({
+            'start_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'end_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
+            'area': fake.random.choice(CAPITAL_LETTERS),
+        })
+    return areas
