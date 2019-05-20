@@ -57,46 +57,540 @@ paths:
                   $ref: '#/definitions/Parking'
         401:
           $ref: '#/responses/Unauthorized'
+  /permitseries/:
+    get:
+      tags:
+        - Permit series
+      summary: Get a list of permit series
+      responses:
+        200:
+          description: An array of permit series
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+              previous:
+                type: integer
+              next:
+                type: interger
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/PermitSeries'
+  /permitseries/{permitseries_id}/:
+    get:
+      tags:
+        - Permit series
+      summary: Get the detail of a permit series
+      parameters:
+        - name: permitseries_id
+          in: path
+          description: >-
+            Id of permit series
+          type: string
+          required: yes
+      responses:
+        200:
+          description: A permit series object
+          schema:
+            $ref: '#/definitions/PermitSeries'
+        404:
+          schema:
+            $ref: '#/responses/NotFound'
+  /permitseries/{permitseries_id}/activate/:
+    post:
+      tags:
+        - Permit series
+      summary: Activate the given permit series
+      parameters:
+        - name: permitseries_id
+          in: path
+          description: >-
+            Id of permit series
+          type: string
+          required: yes
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              status: OK
+  /operator/:
+    get:
+      tags:
+        - Operator
+      summary: Get a list of parking operators
+      responses:
+        200:
+          description: A list of parking opertors
+          schema:
+          type: array
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+              previous:
+                type: integer
+              next:
+                type: interger
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/Operator'
+  /operator/{operator_id}/:
+    get:
+      tags:
+        - Operator
+      summary: Get the detail of parking operator
+      parameters:
+        - name: operator_id
+          in: path
+          description: >-
+            Id of operator
+          type: string
+          required: yes
+      responses:
+        200:
+          description: A parking operator
+          schema:
+            $ref: '#/definitions/Operator'
+        404:
+          schema:
+            $ref: '#/responses/NotFound'
+  /permit/:
+    get:
+      tags:
+        - Permit
+      summary: Get a list of parking permits
+      responses:
+        200:
+          description: An array of permit objects
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: integer
+              previous:
+                type: integer
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/Permit'
+    post:
+      tags:
+        - Permit
+      summary: Create a permit object
+      parameters:
+        - name: Permit
+          in: body
+          required: true
+          description: Permit to add to the system
+          schema:
+            type: object
+            properties:
+              series:
+                description: Active permit series id
+                type: integer
+              external_id:
+                description: External id of permit
+                type: string
+              subjects:
+                type: array
+                items:
+                  $ref: '#/definitions/Subjects'
+              areas:
+                type: array
+                items:
+                  $ref: '#/definitions/Areas'
+            required:
+              - series
+              - external_id
+              - subjects
+              - areas
+      responses:
+        201:
+          description: Permit object is created successfully.
+          schema:
+            $ref: '#/definitions/Permit'
+        403:
+          $ref: '#/responses/Forbidden'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+  /permit/{permit_id}/:
+    get:
+      tags:
+        - Permit
+      summary: Get the detail of a permit
+      parameters:
+        - name: permit_id
+          in: path
+          description: >-
+            Id of permit
+          type: string
+          required: yes
+      responses:
+        200:
+          description: A permit object
+          schema:
+            $ref: '#/definitions/Permit'
+        401:
+          $ref: '#/responses/Unauthorized'
+        404:
+          description: Permit object with given id not found
+          $ref: '#/responses/NotFound'
+    put:
+      tags:
+        - Permit
+      summary: Update the permit by its id
+      parameters:
+        - name: permit_id
+          in: path
+          required: true
+          description: Id of permit to update
+          type: string
+        - name:
+          in: body
+          schema:
+            $ref: '#/definitions/Permit'
+      responses:
+        200:
+          description: The permit object was updated successfully
+          schema:
+            $ref: '#/definitions/Permit'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+    patch:
+      tags:
+        - Permit
+      summary: Partial update the permit by its id
+      parameters:
+        - name: permit_id
+          in: path
+          required: true
+          description: Id of permit to update
+          type: string
+        - name:
+          in: body
+          schema:
+            type: object
+            properties:
+              series:
+                type: integer
+              external_id:
+                type: integer
+              subjects:
+                type: array
+                items:
+                  $ref: '#/definitions/Subjects'
+              areas:
+                type: array
+                items:
+                  $ref: '#/definitions/Areas'
+      responses:
+        200:
+          description: Permit was updated successfully
+          schema:
+            $ref: '#/definitions/Permit'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+  /active_permit_by_external_id/:
+    get:
+      tags:
+        - Permit by external id
+      summary: Get a list of parking permits
+      responses:
+        200:
+          description: An array of permit objects
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: integer
+              previous:
+                type: integer
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/Permit'
+    post:
+      tags:
+        - Permit by external id
+      summary: Create permit object for given external id
+      parameters:
+        - name: permit
+          in: body
+          required: true
+          description: Permit to add to the system
+          schema:
+            type: object
+            properties:
+              external_id:
+                description: External id of the permit
+                type: string
+              subjects:
+                $ref: '#/definitions/Subjects'
+              areas:
+                $ref: '#/definitions/Areas'
+  /active_permit_by_external_id/{external_id}/:
+    get:
+      tags:
+        - Permit by external id
+      summary: Get the detail of permit for given external id
+      parameters:
+        - name: external_id
+          in: path
+          description: >-
+            External id of permit
+          type: string
+          required: yes
+      responses:
+        200:
+          description: A permit object
+          schema:
+            $ref: '#/definitions/Permit'
+        401:
+          $ref: '#/responses/Unauthorized'
+        404:
+          description: Permit object with given external id not found
+          $ref: '#/responses/NotFound'
+    patch:
+      tags:
+        - Permit by external id
+      summary: Partial update the permit by its external id
+      parameters:
+        - name: external_id
+          in: path
+          description: >-
+            External id of permit
+          type: string
+          required: yes
+      parameters:
+        - name: external_id
+          in: path
+          required: true
+          description: External id of permit to update
+          type: string
+        - name:
+          in: body
+          schema:
+            type: object
+            properties:
+              subjects:
+                type: array
+                items:
+                  $ref: '#/definitions/Subjects'
+              areas:
+                type: array
+                items:
+                  $ref: '#/definitions/Areas'
+      responses:
+        200:
+          description: Permit was updated successfully
+          schema:
+            $ref: '#/definitions/Permit'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
+    put:
+      tags:
+        - Permit by external id
+      summary: Update the permit by its external id
+      parameters:
+        - name: external_id
+          in: path
+          required: true
+          description: External id of permit to update
+          type: string
+        - name:
+          in: body
+          schema:
+            $ref: '#/definitions/Permit'
+      responses:
+        200:
+          description: The permit object was updated successfully
+          schema:
+            $ref: '#/definitions/Permit'
+        400:
+          $ref: '#/responses/BadRequest'
+        401:
+          $ref: '#/responses/Unauthorized'
+        403:
+          $ref: '#/responses/Forbidden'
+        404:
+          $ref: '#/responses/NotFound'
 definitions:
   Parking:
     type: object
     properties:
       id:
-        description: Unique identifier for the parking
+        description: Unique identifier for the parking object
         type: string
         format: uuid
       created_at:
-        description: Creation time for the parking
+        description: Creation time of the parking
         type: string
         format: dateTime
       modified_at:
-        description: Modification time for the parking
+        description: Modification time of the parking
         type: string
         format: dateTime
       registration_number:
-        description: Registration number for the parking
+        description: Registration number of vehicle for the parking
         type: string
       time_start:
-        description: Start time for the parking
+        description: Start time of the parking
         type: string
         format: dateTime
       time_end:
-        description: End time for the parking
+        description: End time of the parking
         type: string
         format: dateTime
       zone:
-        description: Parking zone of the parking
+        description: Parking zone id
         type: integer
       operator_name:
         description: Name of the operator
         type: string
-  Unauthorized:
+  PermitSeries:
+    type:
+      object
+    properties:
+      id:
+        description: Unique identifier for the permit series
+        type: integer
+      created_at:
+        description: Creation time for the permit series
+        type: string
+        format: dateTime
+      modified_at:
+        description: Modification time for the permit series
+        type: string
+        format: dateTime
+      active:
+        description: Boolean field for bulk update
+        type: string
+        format: Boolean
+  Permit:
     type: object
     properties:
-      detail:
+      id:
+        description: Unique identifier for the permit object
+        type: integer
+      series:
+        description: Permit series id
+        type: integer
+      subjects:
+        description: Array of license plate numbers with start and end date time
+        type: array
+        items:
+          $ref: '#/definitions/Subjects'
+      areas:
+        description: Array of parking areas with start and end date time
+        type: array
+        items:
+          $ref: '#/definitions/Areas'
+  Subjects:
+    type: object
+    properties:
+      start_time:
+        description: Start time of the parking
+        type: string
+        format: dateTime
+      end_date:
+        description: End time of the parking
+        type: string
+        format: dateTime
+      registration_number:
+        description: Registration number of vehicle
+        type: string
+  Areas:
+    type: object
+    properties:
+      start_time:
+        description: Start time of the parking
+        type: string
+        format: dateTime
+      end_date:
+        description: End time of the parking
+        type: string
+        format: dateTime
+      area:
+        description: Name of the area
+        type: string
+  Operator:
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the operator object
+        type: string
+        format: uuid
+        readOnly: true
+      created_at:
+        description: Creation time of the operator
+        type: string
+        format: dateTime
+        readOnly: true
+      modified_at:
+        description: Modification time of the operator
+        type: string
+        format: dateTime
+        readOnly: true
+      name:
+        description: Name of the parking operator
         type: string
 responses:
+  Forbidden:
+    description: Forbidden request
+    schema:
+      type: object
+      properties:
+        code:
+          type: string
+          enum: [permission_denied]
+        detail:
+          type: string
+  BadRequest:
+    description: Bad request, details in request body
+    schema:
+      example:
+        areas: [Areas is not valid.]
+        subjects: [Subjects is not valid]
   Unauthorized:
     description: Unauthorized access
     schema:
-      $ref: '#/definitions/Unauthorized'
+      type: object
+      properties:
+        detail:
+          type: string
+  NotFound:
+    description: Not found
+    schema:
+      type: object
+      properties:
+        detail:
+          type: string
