@@ -4,6 +4,7 @@ from .parking_area import ParkingArea
 from .parking_terminal import ParkingTerminal
 from .permit import Permit, PermitCacheItem, PermitSeries
 from .region import Region
+from .zone import PaymentZone
 
 __all__ = [
     'Operator',
@@ -11,6 +12,7 @@ __all__ = [
     'ParkingArea',
     'ParkingTerminal',
     'ParkingQuerySet',
+    'PaymentZone',
     'Permit',
     'PermitSeries',
     'PermitCacheItem',
