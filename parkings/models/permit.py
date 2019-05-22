@@ -1,9 +1,24 @@
+from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils.translation import gettext_lazy as _
 
-from .mixins import TimestampedModelMixin
+from .constants import GK25FIN_SRID
+from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
+
+
+class PermitArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
+    name = models.CharField(max_length=40, verbose_name=_('name'))
+    identifier = models.CharField(max_length=10, verbose_name=_('identifier'))
+    geom = gis_models.MultiPolygonField(
+        srid=GK25FIN_SRID, verbose_name=_('geometry'))
+
+    class Meta:
+        ordering = ('identifier',)
+
+    def __str__(self):
+        return '{}: {}'.format(self.identifier, self.name)
 
 
 class PermitSeries(TimestampedModelMixin, models.Model):
