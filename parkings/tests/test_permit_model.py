@@ -2,7 +2,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from ..models import Permit, PermitCacheItem
+from ..models import Parking, Permit, PermitCacheItem
 from .utils import (
     generate_areas, generate_areas_with_startdate_gt_endate,
     generate_external_ids, generate_subjects,
@@ -61,13 +61,13 @@ def test_permit_instance_creation_errors_with_invalid_areas(permit_series):
 @pytest.mark.django_db
 def test_permit_by_subject_manager_method(active_permit):
     registration_number = active_permit.subjects[0]['registration_number']
+    normalized_reg_num = Parking.normalize_reg_num(registration_number)
 
-    filtered_permit_qs = Permit.objects.by_subject(registration_number)
+    filtered_permit_qs = Permit.objects.by_subject(normalized_reg_num)
 
-    assert filtered_permit_qs.count() != 0
-    for permit in filtered_permit_qs:
-        assert any(registration_number == subject['registration_number'] for subject in permit.subjects)
-        assert not any(registration_number + 'XYZ' == subject['registration_number'] for subject in permit.subjects)
+    assert filtered_permit_qs.count() == 1
+    permit = filtered_permit_qs.first()
+    assert permit.subjects[0]['registration_number'] == registration_number
 
 
 @pytest.mark.django_db

@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 from .constants import GK25FIN_SRID
 from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
+from .parking import Parking
 
 
 class PermitArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
@@ -104,7 +105,8 @@ class Permit(TimestampedModelMixin, models.Model):
                     continue
                 self.cache_items.create(
                     permit=self,
-                    registration_number=subject['registration_number'],
+                    registration_number=Parking.normalize_reg_num(
+                        subject['registration_number']),
                     area_identifier=area['area'],
                     start_time=max_start_time,
                     end_time=min_end_time
