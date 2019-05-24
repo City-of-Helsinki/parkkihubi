@@ -8,8 +8,9 @@ from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 
 
 class PaymentZone(TimestampedModelMixin, UUIDPrimaryKeyMixin):
-    number = models.IntegerField(verbose_name=_('zone number'), validators=[
-        MinValueValidator(1), MaxValueValidator(3)])
+    number = models.IntegerField(
+        unique=True, validators=[MinValueValidator(1), MaxValueValidator(3)],
+        verbose_name=_('zone number'))
     name = models.CharField(max_length=40, verbose_name=_('name'))
     geom = gis_models.MultiPolygonField(
         srid=GK25FIN_SRID, verbose_name=_('geometry'))
