@@ -1,0 +1,17 @@
+<wfs:FeatureCollection xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:avoindata="https://www.hel.fi/avoindata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" numberMatched="1" numberReturned="1">
+  <wfs:member>
+    <avoindata:Asukas_ja_yrityspysakointivyohykkeet_alue gml:id="Asukas_ja_yrityspysakointivyohykkeet_alue.1">
+      <avoindata:asukaspysakointitunnus>A</avoindata:asukaspysakointitunnus>
+      <avoindata:alueen_nimi>Kamppi</avoindata:alueen_nimi>
+      <avoindata:geom>
+            <gml:Polygon gml:id="Asukas_ja_yrityspysakointivyohykkeet_alue.1.geom.1">
+              <gml:exterior>
+                <gml:LinearRing>
+                  <gml:posList>2.5497165701059E7 6673221.131005 2.5497167810273E7 6673221.211415 2.5497167006736E7 6673233.337525 2.5497165052488E7 6673233.1924 2.5497165701059E7 6673221.131005</gml:posList>
+                </gml:LinearRing>
+              </gml:exterior>
+            </gml:Polygon>
+      </avoindata:geom>
+    </avoindata:Asukas_ja_yrityspysakointivyohykkeet_alue>
+  </wfs:member>
+</wfs:FeatureCollection>
