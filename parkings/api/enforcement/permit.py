@@ -5,7 +5,6 @@ from rest_framework import mixins, permissions, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
 from rest_framework.response import Response
-from rest_framework.status import HTTP_201_CREATED
 
 from ...models import Permit, PermitSeries
 
@@ -105,16 +104,8 @@ class ActivePermitByExternalIdViewSet(viewsets.ModelViewSet):
     serializer_class = ActivePermitByExternalIdSerializer
     lookup_field = 'external_id'
 
-    def perform_create(self, serializer, latest_active_permit_series):
-        serializer.save(series=latest_active_permit_series)
-
-    def create(self, request, *args, **kwargs):
-        try:
-            latest_active_permit_series = PermitSeries.objects.filter(active=True).latest('modified_at')
-        except PermitSeries.DoesNotExist:
+    def perform_create(self, serializer):
+        latest_active_permit_series = PermitSeries.objects.latest_active()
+        if not latest_active_permit_series:
             raise ParseError(_('Active permit series doesn\'t exist'))
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer, latest_active_permit_series)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=HTTP_201_CREATED, headers=headers)
+        serializer.save(series=latest_active_permit_series)

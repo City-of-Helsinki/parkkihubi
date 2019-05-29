@@ -23,8 +23,18 @@ class PermitArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         return '{}: {}'.format(self.identifier, self.name)
 
 
+class PermitSeriesQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(active=True)
+
+    def latest_active(self):
+        return self.active().order_by('-modified_at').first()
+
+
 class PermitSeries(TimestampedModelMixin, models.Model):
     active = models.BooleanField(default=False)
+
+    objects = PermitSeriesQuerySet.as_manager()
 
     class Meta:
         ordering = ('created_at', 'id')
