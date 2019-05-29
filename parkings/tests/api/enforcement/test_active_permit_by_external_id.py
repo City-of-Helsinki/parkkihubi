@@ -1,7 +1,7 @@
 import pytest
 from django.core.urlresolvers import reverse
 from rest_framework.status import (
-    HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST)
+    HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND)
 
 from ....factories.permit import (
     generate_areas, generate_external_ids, generate_subjects)
@@ -61,8 +61,8 @@ def test_post_active_permit_by_external_id_fails_if_no_active_series_exists(staf
 
     response = staff_api_client.post(list_url, data=data)
 
-    assert response.status_code == HTTP_400_BAD_REQUEST
-    assert response.data['detail'].title() == 'Active Permit Series Doesn\'T Exist'
+    assert response.status_code == HTTP_404_NOT_FOUND
+    assert response.data == {'detail': "Active permit series doesn't exist"}
 
 
 def test_invalid_put_active_permit_by_external_id(staff_api_client, active_permit):

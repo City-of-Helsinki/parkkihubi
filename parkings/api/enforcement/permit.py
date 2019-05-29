@@ -1,9 +1,9 @@
 from django.db import transaction
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, permissions, serializers, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
 from ...models import Permit, PermitSeries
@@ -107,5 +107,5 @@ class ActivePermitByExternalIdViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         latest_active_permit_series = PermitSeries.objects.latest_active()
         if not latest_active_permit_series:
-            raise ParseError(_('Active permit series doesn\'t exist'))
+            raise NotFound(_("Active permit series doesn't exist"))
         serializer.save(series=latest_active_permit_series)
