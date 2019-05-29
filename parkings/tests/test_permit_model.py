@@ -94,8 +94,7 @@ def test_permit_by_time_manager_method_valid_time(active_permit):
     valid_start_time = active_permit.subjects[0]['start_time']
     filtered_permit_qs = Permit.objects.by_time(valid_start_time)
 
-    assert filtered_permit_qs.count() != 0
-    assert filtered_permit_qs.count() == PermitCacheItem.objects.filter(start_time__lte=valid_start_time).count()
+    assert filtered_permit_qs.count() == 1
 
 
 @pytest.mark.django_db
