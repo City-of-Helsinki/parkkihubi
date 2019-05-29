@@ -36,4 +36,4 @@ def test_parse_timestamp_with_valid_data():
 def test_parse_timestamp_with_invalid_data():
     with pytest.raises(DrfValidationError) as excinfo:
         parse_timestamp('foobar')
-    assert str(excinfo.value) == "['Invalid timestamp: foobar']"
+    assert excinfo.value.detail == ['Invalid timestamp: foobar']

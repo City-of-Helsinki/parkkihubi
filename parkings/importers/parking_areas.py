@@ -1,12 +1,13 @@
 import logging
 import time
 
-from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
 from lxml import etree
 from owslib.wfs import WebFeatureService
 
 from parkings.models import ParkingArea
+
+from .utils import get_polygons
 
 logger = logging.getLogger(__name__)
 
@@ -189,29 +190,13 @@ class ParkingAreaImporter(object):
             )
         except Exception:
             capacity_estimate = None
-        geom = self._get_polygons(data.find('avoindata:geom', self.ns))
+        geom = get_polygons(data.find('avoindata:geom', self.ns))
 
         return {
             'origin_id': origin_id,
             'capacity_estimate': capacity_estimate,
             'geom': geom,
         }
-
-    def _get_polygons(self, geom):
-        """
-        Turns the XML containing coordinates into a multipolygon
-        """
-        polygons = []
-        for pos in geom.iter('*'):
-            # get leaf nodes. Treat LinearRing and MultiSurface the same way
-            if len(pos) == 0:
-                positions = list(filter(None, pos.text.split(' ')))
-                points = []
-                points_as_pairs = zip(positions[1::2], positions[::2])
-                for latitude, longitude in points_as_pairs:
-                    points.append(Point(float(latitude), float(longitude)))
-                polygons.append(Polygon(points))
-        return MultiPolygon(polygons)
 
     def _separate_members(self, xml_tree):
         members = xml_tree.findall('wfs:member', self.ns)
