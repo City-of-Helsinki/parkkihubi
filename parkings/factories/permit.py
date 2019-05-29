@@ -1,21 +1,68 @@
+# -*- coding: utf-8 -*-
+
 import factory
+import pytz
 
 from parkings.models import Permit, PermitSeries
 
+from .faker import fake
 
-def generate_areas(count=3):
-    from parkings.tests.utils import generate_areas
-    return generate_areas(count)
-
-
-def generate_external_ids():
-    from parkings.tests.utils import generate_external_ids
-    return generate_external_ids()
+CAPITAL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'
 
 
-def generate_subjects(count=2):
-    from parkings.tests.utils import generate_subjects
-    return generate_subjects()
+def generate_registration_number():
+    letters = ''.join(fake.random.choice(CAPITAL_LETTERS) for _ in range(3))
+    numbers = ''.join(fake.random.choice('0123456789') for _ in range(3))
+    return '%s-%s' % (letters, numbers)
+
+
+def generate_subjects(count=1):
+    subjects = []
+    for c in range(count):
+        subjects.append({
+            'registration_number': generate_registration_number(),
+            'start_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
+            'end_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+        })
+    return subjects
+
+
+def generate_areas(count=1):
+    areas = []
+    for c in range(count):
+        areas.append({
+            'start_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
+            'end_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'area': fake.random.choice(CAPITAL_LETTERS),
+        })
+    return areas
+
+
+def generate_external_ids(id_length=11):
+    external_id = ''.join(fake.random.choice('0123456789') for _ in range(id_length))
+    return external_id
+
+
+def generate_subjects_with_startdate_gt_endate(count=1):
+    subjects = []
+    for c in range(count):
+        subjects.append({
+            'registration_number': generate_registration_number(),
+            'start_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'end_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
+        })
+    return subjects
+
+
+def generate_areas_with_startdate_gt_endate(count=1):
+    areas = []
+    for c in range(count):
+        areas.append({
+            'start_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'end_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
+            'area': fake.random.choice(CAPITAL_LETTERS),
+        })
+    return areas
 
 
 class PermitSeriesFactory(factory.django.DjangoModelFactory):

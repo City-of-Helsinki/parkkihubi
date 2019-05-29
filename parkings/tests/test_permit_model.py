@@ -2,11 +2,11 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from ..models import Permit, PermitCacheItem
-from .utils import (
+from ..factories.permit import (
     generate_areas, generate_areas_with_startdate_gt_endate,
     generate_external_ids, generate_subjects,
     generate_subjects_with_startdate_gt_endate)
+from ..models import Permit, PermitCacheItem
 
 
 @pytest.mark.django_db

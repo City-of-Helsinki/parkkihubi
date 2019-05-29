@@ -3,7 +3,7 @@ from django.core.urlresolvers import reverse
 from rest_framework.status import (
     HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST)
 
-from parkings.tests.utils import (
+from ....factories.permit import (
     generate_areas, generate_external_ids, generate_subjects)
 
 list_url = reverse('enforcement:v1:activepermit-list')
