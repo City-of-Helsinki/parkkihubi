@@ -3,7 +3,7 @@
 #   prequ update
 #
 click==7.0                # via prequ
-prequ==1.4.4
+prequ==1.4.6
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip                       # via prequ
