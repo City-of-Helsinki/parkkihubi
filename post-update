@@ -25,10 +25,8 @@ elif [ "$force_update" = "true" ] || \
 fi
 
 # Update the backend
-
-# Note: Keep Pip and Prequ version in sync with tox.ini
-pip install pip==19.0.3
-pip install prequ==1.4.4
+pip install -r requirements-pip.txt
+pip install -r requirements-prequ.txt
 prequ sync requirements.txt
 
 ./manage.py collectstatic --noinput
