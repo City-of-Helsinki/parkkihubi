@@ -3,6 +3,8 @@ import json
 from django.urls import reverse
 from rest_framework import status
 
+from ...utils import approx
+
 WGS84_SRID = 4326
 
 
@@ -41,13 +43,13 @@ def test_get_regions_with_data(monitoring_api_client, region, parking_area):
     properties = features[0].pop('properties', None)
     assert features[0] == {'id': str(region.id), 'type': 'Feature'}
     km2 = region.geom.area / 1000000.0
-    assert properties == {
+    assert properties == approx({
         'name': region.name,
         'capacity_estimate': region.capacity_estimate,
         'area_km2': km2,
         'spots_per_km2': region.capacity_estimate / km2,
         'parking_areas': [parking_area.id],
-    }
+    })
     coordinates = geometry.pop('coordinates', None)
     assert geometry == {'type': 'MultiPolygon'}
     wgs84_geom = region.geom.transform(WGS84_SRID, clone=True)
