@@ -1,8 +1,22 @@
 import io
+from decimal import Decimal
+from uuid import UUID
 
+import pytest
 from django.core import management
 
 from parkings.factories import ParkingFactory, RegionFactory
+
+
+def approx(x, **kwargs):
+    if isinstance(x, float):
+        return pytest.approx(x, **kwargs)
+    elif x is None or isinstance(x, (str, bytes, UUID, int, Decimal)):
+        return x
+    elif callable(getattr(x, 'items', None)):
+        return type(x)((key, approx(value)) for (key, value) in x.items())
+    else:
+        return type(x)(approx(item) for item in x)
 
 
 def call_mgmt_cmd_with_output(command_cls, *args, **kwargs):
