@@ -2,6 +2,8 @@
 #
 #   prequ update
 #
+--no-binary psycopg2
+
 click==7.0                # via prequ
 prequ==1.4.6
 

@@ -9,6 +9,7 @@ raven>=5.2.0
 
 # PostgreSQL
 psycopg2
+--no-binary psycopg2
 
 # Django REST Framework
 djangorestframework>=3.9

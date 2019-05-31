@@ -2,6 +2,8 @@
 #
 #   prequ update
 #
+--no-binary psycopg2
+
 certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
 django==1.11.20
