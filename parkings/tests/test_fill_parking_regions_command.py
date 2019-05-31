@@ -44,7 +44,7 @@ def test_fill_parking_regions_mgmt_cmd():
     block_count = len(parkings) // target_block_size
     for (n, line) in enumerate(stdout.splitlines(), 1):
         match = re.match(
-            '^Processing block +(\d+)/ *(\d+), size +(\d+), ([^.]*)(\.+)$',
+            r'^Processing block +(\d+)/ *(\d+), size +(\d+), ([^.]*)(\.+)$',
             line)
         assert match, 'Invalid output line {}: {!r}'.format(n, line)
         assert match.group(1) == str(n)
