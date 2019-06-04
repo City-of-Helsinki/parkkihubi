@@ -6,7 +6,7 @@ from parkings.importers.regions import ShapeFileToRegionImporter
 from parkings.management.commands import import_regions
 from parkings.models import Region
 
-from .utils import call_mgmt_cmd_with_output
+from .utils import approx, call_mgmt_cmd_with_output
 
 directory = os.path.abspath(os.path.dirname(__file__))
 
@@ -79,37 +79,16 @@ def check_imported_regions():
     (reg1, reg2) = list(Region.objects.order_by('name'))
     assert reg1.name == 'Feature 1 - Center'
     assert reg2.name == 'Feature 2 - North'
-    check_coords_equality(reg1.geom.coords, (((
+    assert reg1.geom.coords == approx((((
         (25494876.99362251, 6677378.512999998),
         (25494929.966569535, 6677389.664999997),
         (25495159.757339746, 6677117.191999998),
         (25494819.72517978, 6677425.432),
         (25494876.99362251, 6677378.512999998),
-    ),),), delta=0.0000001)
-    check_coords_equality(reg2.geom.coords, (((
+    ),),))
+    assert reg2.geom.coords == approx((((
         (25494360.817638688, 6684192.751999998),
         (25494493.262506243, 6684249.482999996),
         (25494337.233162273, 6684151.803999996),
         (25494360.817638688, 6684192.751999998)
-    ),),), delta=0.0000001)
-
-
-def check_coords_equality(x1, x2, delta=0, pos=()):  # pragma: no cover
-    at_pos = ' at position {}'.format(pos) if pos else ''
-    if type(x1) != type(x2):
-        raise ValueError('Type mismatch: {} vs {}{}'.format(
-            type(x1), type(x2), at_pos))
-    if isinstance(x1, (float, int)):
-        diff = abs(x1 - x2)
-        if diff > delta:
-            raise ValueError(
-                'Values differ too much {} vs {} (diff={}){}'.format(
-                    x1, x2, diff, at_pos))
-    elif len(x1) != len(x2):
-        raise ValueError(
-            'Length mismatch: {} vs {}{}'.format(
-                len(x1), len(x2), at_pos))
-    else:
-        for (i, pair) in enumerate(zip(x1, x2)):
-            (x1i, x2i) = pair
-            check_coords_equality(x1i, x2i, delta, pos + (i,))
+    ),),))
