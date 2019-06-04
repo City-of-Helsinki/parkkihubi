@@ -48,7 +48,7 @@ class CheckParking(APIView):
         if serializer.is_valid(raise_exception=True):
 
             time = timezone.now()
-            registration_number = request.data.get("registration_number")
+            registration_number = Parking.normalize_reg_num(request.data.get("registration_number"))
             location = request.data.get("location")
             longitude = location.get("longitude")
             latitude = location.get("latitude")
