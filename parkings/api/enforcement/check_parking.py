@@ -27,8 +27,8 @@ def parking_zone_by_location(longitude, latitude):
 
 
 class LocationSerializer(serializers.Serializer):
-    latitude = serializers.CharField(max_length=200)
-    longitude = serializers.CharField(max_length=200)
+    latitude = serializers.FloatField()
+    longitude = serializers.FloatField()
 
 
 class CheckParkingSerializer(serializers.Serializer):
@@ -50,10 +50,9 @@ class CheckParking(APIView):
 
             time = serializer.validated_data.get('time') or timezone.now()
             registration_number = Parking.normalize_reg_num(
-                request.data.get("registration_number"))
-            location = request.data.get("location")
-            longitude = location.get("longitude")
-            latitude = location.get("latitude")
+                serializer.validated_data.get("registration_number"))
+            longitude = serializer.validated_data["location"]["longitude"]
+            latitude = serializer.validated_data["location"]["latitude"]
 
             zone = parking_zone_by_location(longitude, latitude)
             area = permit_area_by_location(longitude, latitude)
@@ -61,48 +60,33 @@ class CheckParking(APIView):
                 raise UnknownLocationException()
 
             if zone:
-                is_valid = (
+                valid_parking_instance = (
                     Parking.objects.filter(zone__lte=zone.number)
                     .registration_number_like(registration_number)
                     .valid_at(time)
-                    .exists()
+                    .order_by("-time_end")
+                    .first()
                 )
-                if is_valid:
-                    end_time = (
-                        Parking.objects.filter(zone__lte=zone.number)
-                        .registration_number_like(registration_number)
-                        .valid_at(time)
-                        .order_by("-time_end")
-                        .first()
-                        .time_end
-                    )
-                    return Response({"status": "valid", "end_time": end_time})
+                if valid_parking_instance:
+                    return Response({"status": "valid", "end_time": valid_parking_instance.time_end})
 
             if area:
-                is_valid = (
+                valid_permits = (
                     Permit.objects.active()
                     .by_time(time)
                     .by_subject(registration_number)
                     .by_area(area.identifier)
-                    .exists()
                 )
-                if is_valid:
-                    permits = (
-                        Permit.objects.active()
-                        .by_time(time)
-                        .by_subject(registration_number)
-                        .by_area(area.identifier)
+                valid_permitcache = (
+                    PermitCacheItem.objects.filter(
+                        permit__in=valid_permits,
+                        registration_number=registration_number,
+                        area_identifier=area.identifier,
                     )
-                    end_time = (
-                        PermitCacheItem.objects.filter(
-                            permit__in=permits,
-                            registration_number=registration_number,
-                            area_identifier=area.identifier,
-                        )
-                        .order_by("-end_time")
-                        .first()
-                        .end_time
-                    )
-                    return Response({"status": "valid", "end_time": end_time})
+                    .order_by("-end_time")
+                    .first()
+                )
+                if valid_permitcache:
+                    return Response({"status": "valid", "end_time": valid_permitcache.end_time})
 
             return Response({"status": "invalid"})
