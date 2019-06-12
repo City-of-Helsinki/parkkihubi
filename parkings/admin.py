@@ -1,11 +1,23 @@
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 
-from .models import Operator, Parking, ParkingArea, ParkingTerminal, Region
+from parkings.models import PaymentZone, PermitArea
+
+from .models import (
+    Operator, Parking, ParkingArea, ParkingTerminal, Permit, PermitCacheItem,
+    Region)
 
 
 class OperatorAdmin(admin.ModelAdmin):
     pass
+
+
+class PermitAreaAdmin(admin.ModelAdmin):
+    ordering = ('identifier',)
+
+
+class PaymentZoneAdmin(admin.ModelAdmin):
+    ordering = ('number',)
 
 
 @admin.register(Parking)
@@ -34,3 +46,7 @@ class ParkingTerminalAdmin(OSMGeoAdmin):
 
 admin.site.register(Operator, OperatorAdmin)
 admin.site.register(ParkingArea, ParkingAreaAdmin)
+admin.site.register(Permit)
+admin.site.register(PermitCacheItem)
+admin.site.register(PermitArea, PermitAreaAdmin)
+admin.site.register(PaymentZone, PaymentZoneAdmin)
