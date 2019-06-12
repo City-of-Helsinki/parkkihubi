@@ -104,3 +104,26 @@ def test_permit_data_matches_permit_object(staff_api_client, permit):
     check_permit_object_keys(response.data)
     check_permit_subject_keys(response.data['subjects'][0])
     check_permit_areas_keys(response.data['areas'][0])
+
+
+def test_permit_bulk_create_creates_cache_items(staff_api_client, permit_series):
+    permit_data = [
+        {
+            "series": permit_series.id,
+            "external_id": "E1",
+            "subjects": generate_subjects(),
+            "areas": generate_areas(),
+        },
+        {
+            "series": permit_series.id,
+            "external_id": "E2",
+            "subjects": generate_subjects(),
+            "areas": generate_areas(),
+        },
+    ]
+
+    assert PermitCacheItem.objects.count() == 0
+    response = staff_api_client.post(list_url, data=permit_data)
+
+    assert response.status_code == HTTP_201_CREATED
+    assert PermitCacheItem.objects.count() == 2

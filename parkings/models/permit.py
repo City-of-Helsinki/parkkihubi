@@ -60,6 +60,16 @@ class PermitQuerySet(models.QuerySet):
         cache_items = PermitCacheItem.objects.by_area(area_identifier)
         return self.filter(cache_items__in=cache_items).distinct()
 
+    def bulk_create(self, permits, *args, **kwargs):
+        with transaction.atomic(using=self.db, savepoint=False):
+            created_permits = super().bulk_create(permits, *args, **kwargs)
+            cache_items = []
+            for permit in created_permits:
+                assert isinstance(permit, Permit)
+                cache_items.extend(permit._make_cache_items())
+            PermitCacheItem.objects.using(self.db).bulk_create(cache_items)
+            return created_permits
+
 
 class Permit(TimestampedModelMixin, models.Model):
     series = models.ForeignKey(PermitSeries, on_delete=models.PROTECT)
@@ -100,14 +110,13 @@ class Permit(TimestampedModelMixin, models.Model):
         self.clean()
         with transaction.atomic():
             super(Permit, self).save(*args, **kwargs)
-            self._create_cache_items()
+            self._update_cache_items()
 
-    def _create_cache_items(self):
-        """
-        Create the combination of subject and areas for each permit instance
-        for fast lookup. Save it as the instance of PermitCacheItem.
-        """
+    def _update_cache_items(self):
         self.cache_items.all().delete()
+        PermitCacheItem.objects.bulk_create(self._make_cache_items())
+
+    def _make_cache_items(self):
         for area in self.areas:
             for subject in self.subjects:
                 max_start_time = max(subject['start_time'], area['start_time'])
@@ -115,7 +124,7 @@ class Permit(TimestampedModelMixin, models.Model):
 
                 if max_start_time >= min_end_time:
                     continue
-                self.cache_items.create(
+                yield PermitCacheItem(
                     permit=self,
                     registration_number=Parking.normalize_reg_num(
                         subject['registration_number']),
