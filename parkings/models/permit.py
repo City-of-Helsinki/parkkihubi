@@ -1,7 +1,9 @@
+from django.conf import settings
 from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from .constants import GK25FIN_SRID
@@ -29,6 +31,10 @@ class PermitSeriesQuerySet(models.QuerySet):
 
     def latest_active(self):
         return self.active().order_by('-modified_at').first()
+
+    def prunable(self):
+        pruneable_after_date = timezone.now() - settings.PARKKIHUBI_PERMITS_PRUNABLE_AFTER_DAYS
+        return self.filter(created_at__lt=pruneable_after_date, active=False)
 
 
 class PermitSeries(TimestampedModelMixin, models.Model):

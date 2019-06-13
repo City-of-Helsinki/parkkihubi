@@ -46,6 +46,10 @@ class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
                 obj.active = False
                 obj.save()
 
+            prunable_series = PermitSeries.objects.prunable()
+            Permit.objects.filter(series__in=prunable_series).delete()
+            prunable_series.delete()
+
             return Response({'status': 'OK'})
 
 
