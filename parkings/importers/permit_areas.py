@@ -1,36 +1,30 @@
 import logging
 
 from django.db import transaction
-from lxml import etree
-from owslib.wfs import WebFeatureService
 
 from parkings.models import PermitArea
 
-from .utils import get_polygons
+from .utils import BaseImporterMixin
 
 logger = logging.getLogger(__name__)
 
 
-class PermitAreaImporter(object):
+class PermitAreaImporter(BaseImporterMixin):
 
     """
     Imports permit area data from kartta.hel.fi.
     """
 
     def __init__(self, overwrite=False):
-        self.ns = {
-            'wfs': 'http://www.opengis.net/wfs/2.0',
-            'avoindata': 'https://www.hel.fi/avoindata',
-            'gml': 'http://www.opengis.net/gml/3.2',
-        }
-        self.created = 0
+        super().__init__(overwrite=overwrite)
+        self.typename = 'Asukas_ja_yrityspysakointivyohykkeet_alue'
 
     def import_permit_areas(self):
-        response = self._download()
+        response = self._download(self.typename)
         permit_areas_dict = None
 
         if response is not None:
-            permit_areas_dict = self._parse_permit_areas(response)
+            permit_areas_dict = self._parse_data(response)
         else:
             logger.error("Download failed.")
             return False
@@ -54,31 +48,6 @@ class PermitAreaImporter(object):
             self.created += 1
         PermitArea.objects.exclude(pk__in=permit_area_ids).delete()
 
-    def _parse_permit_areas(self, root):
-        members = self._separate_members(root)
-        logger.info('Parsing permit areas.')
-        parsed_members = []
-
-        for index, member in enumerate(members):
-            parsed_members.append(self._parse_member(member))
-
-        return parsed_members
-
-    def _download(self):
-        logger.info('Getting data from the server.')
-
-        try:
-            wfs = WebFeatureService(
-                url='https://kartta.hel.fi/ws/geoserver/avoindata/wfs',
-                version='2.0.0',
-            )
-            response = wfs.getfeature(
-                typename='Asukas_ja_yrityspysakointivyohykkeet_alue',
-            )
-            return etree.fromstring(bytes(response.getvalue(), 'UTF-8'))
-        except Exception:
-            logger.error('Unable to get data from the server.', exc_info=True)
-
     def _parse_member(self, member):
         data = member.find(
             'avoindata:Asukas_ja_yrityspysakointivyohykkeet_alue',
@@ -86,14 +55,10 @@ class PermitAreaImporter(object):
         )
         identifier = data.find('avoindata:asukaspysakointitunnus', self.ns).text
         name = data.find('avoindata:alueen_nimi', self.ns).text
-        geom = get_polygons(data.find('avoindata:geom', self.ns))
+        geom = self.get_polygons(data.find('avoindata:geom', self.ns))
 
         return {
             'name': name,
             'identifier': identifier,
             'geom': geom,
         }
-
-    def _separate_members(self, xml_tree):
-        members = xml_tree.findall('wfs:member', self.ns)
-        return members
