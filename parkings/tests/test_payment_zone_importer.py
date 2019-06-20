@@ -1,7 +1,5 @@
 import os
 
-from lxml import etree
-
 from parkings.importers import PaymentZoneImporter
 
 mydir = os.path.dirname(__file__)
@@ -9,10 +7,10 @@ mydir = os.path.dirname(__file__)
 
 def test_payment_zone_importer():
     filename = os.path.join(mydir, 'payment_zone_importer_data.xml')
-    root = etree.fromstring(open(filename, 'r', encoding='utf8').read())
     importer = PaymentZoneImporter()
-    members = importer._separate_members(root)
-    payment_zone = importer._parse_member(members[0])
+    with open(filename, 'rb') as fp:
+        data = importer._parse_response(fp.read())
+    payment_zone = next(iter(data))
 
     assert payment_zone['name'] == 'Maksuvyöhyke 1'
     assert payment_zone['number'] == '1'

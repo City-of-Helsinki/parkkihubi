@@ -5,13 +5,12 @@ from django.db import transaction
 
 from parkings.models import ParkingArea
 
-from .utils import BaseImporterMixin
+from .wfs_importer import WfsImporter
 
 logger = logging.getLogger(__name__)
 
 
-class ParkingAreaImporter(BaseImporterMixin):
-
+class ParkingAreaImporter(WfsImporter):
     """
     Imports parking area data from kartta.hel.fi.
 
@@ -23,28 +22,20 @@ class ParkingAreaImporter(BaseImporterMixin):
     However this only takes a few seconds currently and will probably be ran
     at most daily so such optimization is probably premature at this point.
     """
+    wfs_typename = 'avoindata:liikennemerkkipilotti_pysakointipaikat'
 
     def __init__(self, overwrite=False):
-        super().__init__(overwrite=overwrite)
-
+        self.overwrite = overwrite
         self.refusals = 0
         self.overwrites = 0
         self.created = 0
-        self.typename = 'avoindata:liikennemerkkipilotti_pysakointipaikat'
 
     def import_areas(self):
         start = time.time()
 
-        response = self._download(self.typename)
-        areas_dict = None
-        if response is not None:
-            areas_dict = self._parse_data(response)
-        else:
-            logger.error("Download failed.")
-            return False
+        area_dicts = self.download_and_parse()
 
-        if areas_dict is not None:
-            self._save_areas(areas_dict)
+        self._save_areas(area_dicts)
 
         if self.refusals:
             logger.warning(

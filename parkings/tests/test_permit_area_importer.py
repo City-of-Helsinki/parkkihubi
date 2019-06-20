@@ -1,7 +1,5 @@
 import os
 
-from lxml import etree
-
 from parkings.importers import PermitAreaImporter
 
 mydir = os.path.dirname(__file__)
@@ -9,10 +7,10 @@ mydir = os.path.dirname(__file__)
 
 def test_permit_area_importer():
     filename = os.path.join(mydir, 'permit_area_importer_data.xml')
-    root = etree.fromstring(open(filename, 'r', encoding='utf8').read())
     importer = PermitAreaImporter()
-    members = importer._separate_members(root)
-    permit_area = importer._parse_member(members[0])
+    with open(filename, 'rb') as fp:
+        data = importer._parse_response(fp.read())
+    permit_area = next(iter(data))
 
     assert permit_area['name'] == 'Kamppi'
     assert permit_area['identifier'] == 'A'
