@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wfs:WFS_Capabilities
+    xmlns="http://www.opengis.net/wfs/2.0"
+    xmlns:wfs="http://www.opengis.net/wfs/2.0"
+    xmlns:ows="http://www.opengis.net/ows/1.1"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    version="2.0.0"
+    updateSequence="23940"
+>
+    <ows:OperationsMetadata>
+        <ows:Operation name="GetCapabilities">
+            <ows:DCP>
+                <ows:HTTP>
+                    <ows:Get xlink:href="https://kartta.hel.fi/ws/geoserver/avoindata/wfs"/>
+                    <ows:Post xlink:href="https://kartta.hel.fi/ws/geoserver/avoindata/wfs"/>
+                </ows:HTTP>
+            </ows:DCP>
+            <ows:Parameter name="AcceptVersions">
+                <ows:AllowedValues>
+                    <ows:Value>1.0.0</ows:Value>
+                    <ows:Value>1.1.0</ows:Value>
+                    <ows:Value>2.0.0</ows:Value>
+                </ows:AllowedValues>
+            </ows:Parameter>
+            <ows:Parameter name="AcceptFormats">
+                <ows:AllowedValues>
+                    <ows:Value>text/xml</ows:Value>
+                </ows:AllowedValues>
+            </ows:Parameter>
+            <ows:Parameter name="Sections">
+                <ows:AllowedValues>
+                    <ows:Value>ServiceIdentification</ows:Value>
+                    <ows:Value>ServiceProvider</ows:Value>
+                    <ows:Value>OperationsMetadata</ows:Value>
+                    <ows:Value>FeatureTypeList</ows:Value>
+                    <ows:Value>Filter_Capabilities</ows:Value>
+                </ows:AllowedValues>
+            </ows:Parameter>
+        </ows:Operation>
+        <ows:Operation name="GetFeature">
+            <ows:DCP>
+                <ows:HTTP>
+                    <ows:Get xlink:href="https://kartta.hel.fi/ws/geoserver/avoindata/wfs"/>
+                    <ows:Post xlink:href="https://kartta.hel.fi/ws/geoserver/avoindata/wfs"/>
+                </ows:HTTP>
+            </ows:DCP>
+            <ows:Parameter name="resultType">
+                <ows:AllowedValues>
+                    <ows:Value>results</ows:Value>
+                    <ows:Value>hits</ows:Value>
+                </ows:AllowedValues>
+            </ows:Parameter>
+            <ows:Parameter name="outputFormat">
+                <ows:AllowedValues>
+                    <ows:Value>application/gml+xml; version=3.2</ows:Value>
+                    <ows:Value>GML2</ows:Value>
+                    <ows:Value>KML</ows:Value>
+                    <ows:Value>SHAPE-ZIP</ows:Value>
+                    <ows:Value>application/json</ows:Value>
+                    <ows:Value>application/vnd.google-earth.kml xml</ows:Value>
+                    <ows:Value>application/vnd.google-earth.kml+xml</ows:Value>
+                    <ows:Value>csv</ows:Value>
+                    <ows:Value>gml3</ows:Value>
+                    <ows:Value>gml32</ows:Value>
+                    <ows:Value>json</ows:Value>
+                    <ows:Value>text/javascript</ows:Value>
+                    <ows:Value>text/xml; subtype=gml/2.1.2</ows:Value>
+                    <ows:Value>text/xml; subtype=gml/3.1.1</ows:Value>
+                    <ows:Value>text/xml; subtype=gml/3.2</ows:Value>
+                </ows:AllowedValues>
+            </ows:Parameter>
+            <ows:Parameter name="resolve">
+                <ows:AllowedValues>
+                    <ows:Value>none</ows:Value>
+                    <ows:Value>local</ows:Value>
+                </ows:AllowedValues>
+            </ows:Parameter>
+            <ows:Constraint name="PagingIsTransactionSafe">
+                <ows:NoValues/>
+                <ows:DefaultValue>FALSE</ows:DefaultValue>
+            </ows:Constraint>
+            <ows:Constraint name="CountDefault">
+                <ows:NoValues/>
+                <ows:DefaultValue>1000000</ows:DefaultValue>
+            </ows:Constraint>
+        </ows:Operation>
+    </ows:OperationsMetadata>
+    <FeatureTypeList>
+        <FeatureType xmlns:avoindata="https://www.hel.fi/avoindata">
+            <Name>avoindata:liikennemerkkipilotti_pysakointipaikat</Name>
+            <Title>liikennemerkkipilotti_pysakointipaikat</Title>
+            <Abstract/>
+            <DefaultCRS>urn:ogc:def:crs:EPSG::3879</DefaultCRS>
+            <OtherCRS>urn:ogc:def:crs:EPSG::3067</OtherCRS>
+            <OtherCRS>urn:ogc:def:crs:EPSG::4326</OtherCRS>
+            <OtherCRS>urn:ogc:def:crs:EPSG::3857</OtherCRS>
+            <ows:WGS84BoundingBox>
+                <ows:LowerCorner>24.764732945863038 60.008010752315066</ows:LowerCorner>
+                <ows:UpperCorner>25.289558715996225 60.32245985552241</ows:UpperCorner>
+            </ows:WGS84BoundingBox>
+            <MetadataURL xlink:href="https://kartta.hel.fi/paikkatietohakemisto/?id=305"/>
+            <MetadataURL xlink:href="https://kartta.hel.fi/ws/geoserver/avoindata/wfs?SERVICE=WFS&amp;VERSION=2.0.0&amp;REQUEST=DescribeFeatureType&amp;TYPENAME=liikennemerkkipilotti_pysakointipaikat"/>
+        </FeatureType>
+    </FeatureTypeList>
+</wfs:WFS_Capabilities>
