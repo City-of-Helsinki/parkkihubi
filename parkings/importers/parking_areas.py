@@ -2,17 +2,15 @@ import logging
 import time
 
 from django.db import transaction
-from lxml import etree
-from owslib.wfs import WebFeatureService
 
 from parkings.models import ParkingArea
 
-from .utils import get_polygons
+from .utils import BaseImporterMixin
 
 logger = logging.getLogger(__name__)
 
 
-class ParkingAreaImporter(object):
+class ParkingAreaImporter(BaseImporterMixin):
 
     """
     Imports parking area data from kartta.hel.fi.
@@ -27,25 +25,20 @@ class ParkingAreaImporter(object):
     """
 
     def __init__(self, overwrite=False):
-        # namespaces for lxml
-        self.ns = {
-            'wfs': 'http://www.opengis.net/wfs/2.0',
-            'avoindata': 'https://www.hel.fi/avoindata',
-            'gml': 'http://www.opengis.net/gml/3.2',
-        }
-        self.overwrite = overwrite
+        super().__init__(overwrite=overwrite)
 
         self.refusals = 0
         self.overwrites = 0
         self.created = 0
+        self.typename = 'avoindata:liikennemerkkipilotti_pysakointipaikat'
 
     def import_areas(self):
         start = time.time()
 
-        response = self._download()
+        response = self._download(self.typename)
         areas_dict = None
         if response is not None:
-            areas_dict = self._parse_areas(response)
+            areas_dict = self._parse_data(response)
         else:
             logger.error("Download failed.")
             return False
@@ -94,21 +87,6 @@ class ParkingAreaImporter(object):
 
             parking_area.save()
 
-    def _parse_areas(self, root):
-        """
-        param1: XML root element that contains a list of members, which in turn
-        contain the data that we're interested in.
-        :returns: A list of all the found areas as a dict.
-        """
-        members = self._separate_members(root)
-
-        logger.info('Parsing areas.')
-        parsed_members = []
-        for index, member in enumerate(members):
-            parsed_members.append(self._parse_member(member))
-
-        return parsed_members
-
     def _create_parking_area(self, area_dict):
         parking_area = ParkingArea(
             origin_id=area_dict['origin_id'],
@@ -133,25 +111,6 @@ class ParkingAreaImporter(object):
             else:
                 self.refusals += 1
         return parking_area
-
-    def _download(self):
-        """
-        Downloads the data from the WFS.
-        :return: Top element of the parsed XML document.
-        :rtype: xml.etree.ElementTree
-        """
-        logger.info('Getting data from the server.')
-        try:
-            wfs = WebFeatureService(
-                url='https://kartta.hel.fi/ws/geoserver/avoindata/wfs',
-                version='2.0.0',
-            )
-            response = wfs.getfeature(
-                typename='avoindata:liikennemerkkipilotti_pysakointipaikat',
-            )
-            return etree.fromstring(bytes(response.getvalue(), 'UTF-8'))
-        except Exception:
-            logger.error('Unable to get data from the server.', exc_info=True)
 
     def _parse_member(self, member):
         """
@@ -190,14 +149,10 @@ class ParkingAreaImporter(object):
             )
         except Exception:
             capacity_estimate = None
-        geom = get_polygons(data.find('avoindata:geom', self.ns))
+        geom = self.get_polygons(data.find('avoindata:geom', self.ns))
 
         return {
             'origin_id': origin_id,
             'capacity_estimate': capacity_estimate,
             'geom': geom,
         }
-
-    def _separate_members(self, xml_tree):
-        members = xml_tree.findall('wfs:member', self.ns)
-        return members
