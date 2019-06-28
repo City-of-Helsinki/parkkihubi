@@ -43,28 +43,6 @@ def generate_external_ids(id_length=11):
     return external_id
 
 
-def generate_subjects_with_startdate_gt_endate(count=1):
-    subjects = []
-    for c in range(count):
-        subjects.append({
-            'registration_number': generate_registration_number(),
-            'start_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
-            'end_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
-        })
-    return subjects
-
-
-def generate_areas_with_startdate_gt_endate(count=1):
-    areas = []
-    for c in range(count):
-        areas.append({
-            'start_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
-            'end_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
-            'area': fake.random.choice(CAPITAL_LETTERS),
-        })
-    return areas
-
-
 class PermitSeriesFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PermitSeries
