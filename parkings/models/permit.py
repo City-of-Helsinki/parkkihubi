@@ -33,8 +33,8 @@ class PermitSeriesQuerySet(models.QuerySet):
         return self.active().order_by('-modified_at').first()
 
     def prunable(self):
-        pruneable_after_date = timezone.now() - settings.PARKKIHUBI_PERMITS_PRUNABLE_AFTER_DAYS
-        return self.filter(created_at__lt=pruneable_after_date, active=False)
+        limit = timezone.now() - settings.PARKKIHUBI_PERMITS_PRUNABLE_AFTER
+        return self.filter(created_at__lt=limit, active=False)
 
 
 class PermitSeries(TimestampedModelMixin, models.Model):
