@@ -1,18 +1,16 @@
 import os
 
-from lxml import etree
-
 from parkings.importers import ParkingAreaImporter
 
 mydir = os.path.dirname(__file__)
+sample_xml_file = os.path.join(mydir, 'parking_area_importer_data.xml')
 
 
-def test_parking_area_importer():
-    filename = os.path.join(mydir, 'parking_area_importer_data.xml')
-    root = etree.fromstring(open(filename, 'r', encoding='utf8').read())
+def test_parse_response():
     importer = ParkingAreaImporter()
-    members = importer._separate_members(root)
-    area = importer._parse_member(members[0])
+    with open(sample_xml_file, 'rb') as fp:
+        data = importer._parse_response(fp.read())
+    area = next(iter(data))
 
     assert area['origin_id'] == '3508'
     assert area['capacity_estimate'] == 2
