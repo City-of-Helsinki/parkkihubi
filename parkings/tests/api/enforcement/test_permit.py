@@ -1,5 +1,5 @@
 import pytest
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from rest_framework.status import (
     HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN)
 
@@ -38,21 +38,91 @@ def test_permit_is_created_with_valid_post_data(staff_api_client, permit_series)
     assert response.status_code == HTTP_201_CREATED
 
 
+TS1 = '2019-01-01T12:00:00Z'
+TS2 = '2019-06-30T12:00:00Z'
+INVALID_DATA_TEST_CASES = {
+    'non-list': (
+        {'foo': 'bar'},
+        'Must be a list'),
+    'item-not-dict': (
+        [123, 456, 789],
+        'Each list item must be a dictionary'),
+    'invalid-field': (
+        [{'start_time': 1, 'end_time': 2, 'registration_number': 3, 'foo': 4}],
+        'Unknown fields in item: foo'),
+    'missing-regnum': (
+        [{'start_time': TS1, 'end_time': TS2}],
+        'Field "registration_number" is missing from an item'),
+    'non-string-regnum': (
+        [{'start_time': TS1, 'end_time': TS2, 'registration_number': 666}],
+        'Invalid "registration_number" value 666: Not a string'),
+    'too-long-regnum': (
+        [{'start_time': TS1, 'end_time': TS2,
+          'registration_number': 21 * 'A'}],
+        'Invalid "registration_number" value \'AAAAAAAAAAAAAAAAAAAAA\':'
+        ' Value longer than 20 characters'),
+    'missing-endtime': (
+        [{'start_time': TS1, 'registration_number': 'X-14'}],
+        'Field "end_time" is missing from an item'),
+    'non-string-timestamp': (
+        [{'start_time': TS1, 'end_time': 2019, 'registration_number': 'X-14'}],
+        'Invalid "end_time" value 2019: Not a string'),
+    'invalid-timestamp': (
+        [{'start_time': TS1, 'end_time': '', 'registration_number': 'X-14'}],
+        'Invalid "end_time" value \'\': Not a timestamp string'),
+    'no-timezone': (
+        [{'start_time': TS1, 'end_time': '2019-12-31T00:00:00',
+          'registration_number': 'X-14'}],
+        'Invalid "end_time" value \'2019-12-31T00:00:00\': Missing timezone'),
+}
+@pytest.mark.parametrize('test_case', INVALID_DATA_TEST_CASES.keys())
 @pytest.mark.django_db
-def test_permit_is_not_created_with_invalid_post_data(staff_api_client, permit_series):
-    valid_subject = generate_subjects()
-    del valid_subject[0]['start_time']
+def test_permit_is_not_created_with_invalid_post_data(
+        staff_api_client, permit_series, test_case):
+    (subjects, error) = INVALID_DATA_TEST_CASES[test_case]
     invalid_permit_data = {
         'series': permit_series.id,
-        'external_id': generate_external_ids(),
-        'subjects': valid_subject,
+        'external_id': 'EXT-1',
+        'subjects': subjects,
         'areas': generate_areas()
     }
 
     response = staff_api_client.post(list_url, data=invalid_permit_data)
 
     assert response.status_code == HTTP_400_BAD_REQUEST
-    assert response.data['subjects'] == ['Subjects is not valid']
+    assert response.data['subjects'] == [error]
+
+
+@pytest.mark.parametrize('input_timestamp,normalized_timestamp', [
+    ('1995-01-01 12:00Z', '1995-01-01T12:00:00+00:00'),
+    ('2030-06-30T12:00+03:00', '2030-06-30T09:00:00+00:00'),
+    ('1995-01-01 12:00:00 UTC', '1995-01-01T12:00:00+00:00'),
+    ('2019-05-30T12:00:00.123Z', '2019-05-30T12:00:00.123000+00:00'),
+    ('2019-05-30T12:00:00.999999 +00:00', '2019-05-30T12:00:00.999999+00:00'),
+])
+@pytest.mark.django_db
+def test_permit_creation_normalizes_timestamps(
+        staff_api_client, permit_series, input_timestamp, normalized_timestamp):
+    permit_data = {
+        'series': permit_series.id,
+        'external_id': 'E123',
+        'subjects': [{
+            'start_time': '1970-01-01T00:00:00+00:00',
+            'end_time': input_timestamp,
+            'registration_number': 'abc-123',
+        }],
+        'areas': [{
+            'start_time': '1970-01-01T00:00:00+00:00',
+            'end_time': input_timestamp,
+            'area': 'area name',
+        }],
+    }
+
+    response = staff_api_client.post(list_url, data=permit_data)
+
+    assert response.status_code == HTTP_201_CREATED
+    assert response.data['subjects'][0]['end_time'] == normalized_timestamp
+    assert response.data['areas'][0]['end_time'] == normalized_timestamp
 
 
 @pytest.mark.django_db

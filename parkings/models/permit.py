@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.contrib.gis.db import models as gis_models
-from django.contrib.postgres.fields import JSONField
-from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from ..fields import CleaningJsonField
+from ..validators import DictListValidator, TextField, TimestampField
 from .constants import GK25FIN_SRID
 from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from .parking import Parking
@@ -80,8 +80,16 @@ class PermitQuerySet(models.QuerySet):
 class Permit(TimestampedModelMixin, models.Model):
     series = models.ForeignKey(PermitSeries, on_delete=models.PROTECT)
     external_id = models.CharField(max_length=50, null=True, blank=True)
-    subjects = JSONField()
-    areas = JSONField()
+    subjects = CleaningJsonField(validators=[DictListValidator({
+        'start_time': TimestampField(),
+        'end_time': TimestampField(),
+        'registration_number': TextField(max_length=20),
+    })])
+    areas = CleaningJsonField(validators=[DictListValidator({
+        'start_time': TimestampField(),
+        'end_time': TimestampField(),
+        'area': TextField(max_length=10),
+    })])
 
     objects = PermitQuerySet.as_manager()
 
@@ -95,25 +103,8 @@ class Permit(TimestampedModelMixin, models.Model):
     def __str__(self):
         return ('Permit {}'.format(self.id))
 
-    def clean(self):
-        super(Permit, self).clean()
-        for subject in self.subjects:
-            if (
-                'start_time' not in subject
-                or 'end_time' not in subject
-                or 'registration_number' not in subject
-            ):
-                raise ValidationError({'subjects': _('Subjects is not valid')})
-        for area in self.areas:
-            if (
-                'start_time' not in area
-                or 'end_time' not in area
-                or 'area' not in area
-            ):
-                raise ValidationError({'areas': _('Areas is not valid')})
-
     def save(self, *args, **kwargs):
-        self.clean()
+        self.full_clean()
         with transaction.atomic():
             super(Permit, self).save(*args, **kwargs)
             self._update_cache_items()

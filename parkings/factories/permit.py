@@ -16,13 +16,19 @@ def generate_registration_number():
     return '%s-%s' % (letters, numbers)
 
 
+def generate_timestamp_string(start, end):
+    dt = fake.date_time_between(
+        start_date=start, end_date=end, tzinfo=pytz.utc)
+    return '{}'.format(dt).replace(' ', 'T')
+
+
 def generate_subjects(count=1):
     subjects = []
     for c in range(count):
         subjects.append({
             'registration_number': generate_registration_number(),
-            'start_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
-            'end_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'start_time': generate_timestamp_string('-2h', '-1h'),
+            'end_time': generate_timestamp_string('+1h', '+2h'),
         })
     return subjects
 
@@ -31,8 +37,8 @@ def generate_areas(count=1):
     areas = []
     for c in range(count):
         areas.append({
-            'start_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
-            'end_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'start_time': generate_timestamp_string('-2h', '-1h'),
+            'end_time': generate_timestamp_string('+1h', '+2h'),
             'area': fake.random.choice(CAPITAL_LETTERS),
         })
     return areas
