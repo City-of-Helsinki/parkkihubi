@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib.gis.db import models as gis_models
-from django.db import models, transaction
+from django.db import models, router, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -103,15 +103,14 @@ class Permit(TimestampedModelMixin, models.Model):
     def __str__(self):
         return ('Permit {}'.format(self.id))
 
-    def save(self, *args, **kwargs):
+    def save(self, using=None, *args, **kwargs):
         self.full_clean()
-        with transaction.atomic():
-            super(Permit, self).save(*args, **kwargs)
-            self._update_cache_items()
-
-    def _update_cache_items(self):
-        self.cache_items.all().delete()
-        PermitCacheItem.objects.bulk_create(self._make_cache_items())
+        using = using or router.db_for_write(type(self), instance=self)
+        with transaction.atomic(using=using, savepoint=False):
+            super(Permit, self).save(using=using, *args, **kwargs)
+            self.cache_items.all().using(using).delete()
+            new_cache_items = self._make_cache_items()
+            PermitCacheItem.objects.using(using).bulk_create(new_cache_items)
 
     def _make_cache_items(self):
         for area in self.areas:
