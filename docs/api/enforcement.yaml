@@ -22,7 +22,7 @@ paths:
       security:
         - ApiKey: []
       tags:
-        - parking
+        - Parking
       summary: Get a list of valid parkings by registration number
       operationId: getParkingList
       parameters:
@@ -57,65 +57,6 @@ paths:
                   $ref: '#/definitions/Parking'
         401:
           $ref: '#/responses/Unauthorized'
-  /permitseries/:
-    get:
-      tags:
-        - Permit series
-      summary: Get a list of permit series
-      responses:
-        200:
-          description: An array of permit series
-          schema:
-            type: object
-            properties:
-              count:
-                type: integer
-              previous:
-                type: integer
-              next:
-                type: interger
-              results:
-                type: array
-                items:
-                  $ref: '#/definitions/PermitSeries'
-  /permitseries/{permitseries_id}/:
-    get:
-      tags:
-        - Permit series
-      summary: Get the detail of a permit series
-      parameters:
-        - name: permitseries_id
-          in: path
-          description: >-
-            Id of permit series
-          type: string
-          required: yes
-      responses:
-        200:
-          description: A permit series object
-          schema:
-            $ref: '#/definitions/PermitSeries'
-        404:
-          schema:
-            $ref: '#/responses/NotFound'
-  /permitseries/{permitseries_id}/activate/:
-    post:
-      tags:
-        - Permit series
-      summary: Activate the given permit series
-      parameters:
-        - name: permitseries_id
-          in: path
-          description: >-
-            Id of permit series
-          type: string
-          required: yes
-      responses:
-        200:
-          schema:
-            type: object
-            properties:
-              status: OK
   /operator/:
     get:
       tags:
@@ -124,7 +65,6 @@ paths:
       responses:
         200:
           description: A list of parking opertors
-          schema:
           type: array
           schema:
             type: object
@@ -159,6 +99,65 @@ paths:
         404:
           schema:
             $ref: '#/responses/NotFound'
+  /permitseries/:
+    get:
+      tags:
+        - Permit Series
+      summary: Get a list of permit series
+      responses:
+        200:
+          description: An array of permit series
+          schema:
+            type: object
+            properties:
+              count:
+                type: integer
+              previous:
+                type: integer
+              next:
+                type: interger
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/PermitSeries'
+  /permitseries/{permitseries_id}/:
+    get:
+      tags:
+        - Permit Series
+      summary: Get the detail of a permit series
+      parameters:
+        - name: permitseries_id
+          in: path
+          description: >-
+            Id of permit series
+          type: string
+          required: yes
+      responses:
+        200:
+          description: A permit series object
+          schema:
+            $ref: '#/definitions/PermitSeries'
+        404:
+          schema:
+            $ref: '#/responses/NotFound'
+  /permitseries/{permitseries_id}/activate/:
+    post:
+      tags:
+        - Permit Series
+      summary: Activate the given permit series
+      parameters:
+        - name: permitseries_id
+          in: path
+          description: >-
+            Id of permit series
+          type: string
+          required: yes
+      responses:
+        200:
+          schema:
+            type: object
+            properties:
+              status: OK
   /permit/:
     get:
       tags:
@@ -314,7 +313,7 @@ paths:
   /active_permit_by_external_id/:
     get:
       tags:
-        - Permit by external id
+        - Active Permit by External Id
       summary: Get a list of parking permits
       responses:
         200:
@@ -334,7 +333,7 @@ paths:
                   $ref: '#/definitions/Permit'
     post:
       tags:
-        - Permit by external id
+        - Active Permit by External Id
       summary: Create permit object for given external id
       parameters:
         - name: permit
@@ -354,7 +353,7 @@ paths:
   /active_permit_by_external_id/{external_id}/:
     get:
       tags:
-        - Permit by external id
+        - Active Permit by External Id
       summary: Get the detail of permit for given external id
       parameters:
         - name: external_id
@@ -375,15 +374,8 @@ paths:
           $ref: '#/responses/NotFound'
     patch:
       tags:
-        - Permit by external id
+        - Active Permit by External Id
       summary: Partial update the permit by its external id
-      parameters:
-        - name: external_id
-          in: path
-          description: >-
-            External id of permit
-          type: string
-          required: yes
       parameters:
         - name: external_id
           in: path
@@ -418,7 +410,7 @@ paths:
           $ref: '#/responses/NotFound'
     put:
       tags:
-        - Permit by external id
+        - Active Permit by External Id
       summary: Update the permit by its external id
       parameters:
         - name: external_id
@@ -475,6 +467,27 @@ definitions:
         type: integer
       operator_name:
         description: Name of the operator
+        type: string
+  Operator:
+    type: object
+    properties:
+      id:
+        description: Unique identifier for the operator object
+        type: string
+        format: uuid
+        readOnly: true
+      created_at:
+        description: Creation time of the operator
+        type: string
+        format: dateTime
+        readOnly: true
+      modified_at:
+        description: Modification time of the operator
+        type: string
+        format: dateTime
+        readOnly: true
+      name:
+        description: Name of the parking operator
         type: string
   PermitSeries:
     type:
@@ -541,27 +554,6 @@ definitions:
         format: dateTime
       area:
         description: Name of the area
-        type: string
-  Operator:
-    type: object
-    properties:
-      id:
-        description: Unique identifier for the operator object
-        type: string
-        format: uuid
-        readOnly: true
-      created_at:
-        description: Creation time of the operator
-        type: string
-        format: dateTime
-        readOnly: true
-      modified_at:
-        description: Modification time of the operator
-        type: string
-        format: dateTime
-        readOnly: true
-      name:
-        description: Name of the parking operator
         type: string
 responses:
   Forbidden:
