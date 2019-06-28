@@ -15,8 +15,12 @@ class Router(DefaultRouter):
 
 
 router = Router()
-router.register(r'parking_area', PublicAPIParkingAreaViewSet, base_name='parkingarea')
-router.register(r'parking_area_statistics', PublicAPIParkingAreaStatisticsViewSet, base_name='parkingareastatistics')
+router.register(
+    r'parking_area',
+    PublicAPIParkingAreaViewSet, basename='parkingarea')
+router.register(
+    r'parking_area_statistics',
+    PublicAPIParkingAreaStatisticsViewSet, basename='parkingareastatistics')
 
 urlpatterns = [
     url(r'^', include(router.urls, namespace='v1')),
