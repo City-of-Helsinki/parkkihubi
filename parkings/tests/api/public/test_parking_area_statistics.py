@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from parkings.models import Parking
 

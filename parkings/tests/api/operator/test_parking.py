@@ -3,7 +3,7 @@ import json
 
 import pytest
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from freezegun import freeze_time
 
 from parkings.models import Parking

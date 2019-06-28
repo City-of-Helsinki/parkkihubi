@@ -1,5 +1,5 @@
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from ..utils import check_method_status_codes, get, get_ids_from_results
 
