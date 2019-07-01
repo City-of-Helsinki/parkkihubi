@@ -26,7 +26,7 @@ paths:
             Registration number of parkings. Dashes are ignored.
           schema:
             type: string
-          required: yes
+          required: true
         - name: time
           in: query
           description: >-
@@ -96,7 +96,7 @@ paths:
             Id of operator
           schema:
             type: string
-          required: yes
+          required: true
       responses:
         '200':
           description: A parking operator
@@ -139,7 +139,7 @@ paths:
       operationId: createPermitSeries
       requestBody:
         description: Permit series to add to the system
-        required: yes
+        required: true
         content:
           application/json:
             schema:
@@ -168,7 +168,7 @@ paths:
             Id of permit series
           schema:
             type: string
-          required: yes
+          required: true
       responses:
         '200':
           description: A permit series object
@@ -191,9 +191,10 @@ paths:
             Id of the permit series
           schema:
             type: integer
-          required: yes
+          required: true
       responses:
         '200':
+          description: Activation succeeded
           content:
             application/json:
               schema:
@@ -237,7 +238,7 @@ paths:
       operationId: createPermit
       requestBody:
         description: Permit to add to the system
-        required: yes
+        required: true
         content:
           application/json:
             schema:
@@ -283,7 +284,7 @@ paths:
           Id of permit
         schema:
           type: string
-        required: yes
+        required: true
       responses:
         '200':
           description: A permit object
@@ -303,12 +304,12 @@ paths:
       parameters:
       - name: permit_id
         in: path
-        required: yes
+        required: true
         description: Id of permit to update
         schema:
           type: string
       requestBody:
-        required: yes
+        required: true
         content:
           application/json:
             schema:
@@ -337,7 +338,7 @@ paths:
         - name: permit_id
           in: path
           description: Id of permit to update
-          required: yes
+          required: true
           schema:
             type: string
       requestBody:
@@ -403,7 +404,7 @@ paths:
       operationId: createActivePermit
       requestBody:
         description: Permit to add to the system
-        required: yes
+        required: true
         content:
           application/json:
             schema:
@@ -416,6 +417,13 @@ paths:
                   $ref: '#/components/schemas/PermitSubjects'
                 areas:
                   $ref: '#/components/schemas/PermitAreas'
+      responses:
+        '200':
+          description: Creation of the permit succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
   /active_permit_by_external_id/{external_id}/:
     get:
       tags:
@@ -429,7 +437,7 @@ paths:
             External id of permit
           schema:
             type: string
-          required: yes
+          required: true
       responses:
         '200':
           description: A permit object
@@ -450,11 +458,11 @@ paths:
         - name: external_id
           in: path
           description: External id of the permit to update
-          required: yes
+          required: true
           schema:
             type: string
       requestBody:
-        required: yes
+        required: true
         content:
           application/json:
             schema:
@@ -488,11 +496,11 @@ paths:
         - name: external_id
           in: path
           description: External id of permit to update
-          required: yes
+          required: true
           schema:
             type: string
       requestBody:
-        required: yes
+        required: true
         content:
           application/json:
             schema:
@@ -558,17 +566,17 @@ components:
           description: Unique identifier of the operator object
           type: string
           format: uuid
-          readOnly: yes
+          readOnly: true
         created_at:
           description: Creation time of the operator
           type: string
           format: date-time
-          readOnly: yes
+          readOnly: true
         modified_at:
           description: Modification time of the operator
           type: string
           format: date-time
-          readOnly: yes
+          readOnly: true
         name:
           description: Name of the parking operator
           type: string
@@ -582,12 +590,12 @@ components:
           description: Creation time of the permit series
           type: string
           format: date-time
-          readOnly: yes
+          readOnly: true
         modified_at:
           description: Modification time of the permit series
           type: string
           format: date-time
-          readOnly: yes
+          readOnly: true
         active:
           description: Specifies whether the series is currently active
           type: boolean
