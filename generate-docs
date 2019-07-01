@@ -10,7 +10,7 @@ api/public
 
 docs_dir=$(cd "$(dirname "$0")" && pwd)/docs
 generator_dir=$docs_dir/doc-generator
-bootprint=$generator_dir/node_modules/.bin/bootprint
+redoc_cli=$generator_dir/node_modules/.bin/redoc-cli
 
 default_output_dir=$docs_dir/generated
 
@@ -26,18 +26,18 @@ else
     output_dir=$default_output_dir
 fi
 
-if [ ! -e "$bootprint" ]; then
-    echo "Installing bootprint"
+if [ ! -e "$redoc_cli" ]; then
+    echo "Installing redoc-cli"
     old_dir=$(pwd)
     cd "$generator_dir"
-    NODE_ENV=production npm install
+    NODE_ENV=production yarn
     cd "$old_dir"
     echo
 fi
 
 for name in $docs; do
     echo "Generating $name documentation"
-    "$bootprint" openapi "$docs_dir/$name.yaml" "$output_dir/$name"
+    "$redoc_cli" bundle "$docs_dir/$name.yaml" -o "$output_dir/$name/index.html"
     echo
 done
 
