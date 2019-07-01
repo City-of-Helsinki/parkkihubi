@@ -9,10 +9,10 @@ flake8==3.7.7
 flake8-isort==2.7.0
 flake8-polyfill==1.0.2    # via pep8-naming
 flake8-print==3.1.0
-isort==4.3.20             # via flake8-isort
+isort==4.3.21             # via flake8-isort
 mccabe==0.6.1             # via flake8
 pep8-naming==0.8.2
 pycodestyle==2.5.0        # via flake8, flake8-print
 pyflakes==2.1.1           # via flake8
 six==1.12.0               # via flake8-print
-testfixtures==6.8.2       # via flake8-isort
+testfixtures==6.10.0      # via flake8-isort
