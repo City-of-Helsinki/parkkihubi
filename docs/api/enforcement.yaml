@@ -129,6 +129,28 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/PermitSeries'
+    post:
+      tags:
+        - Permit Series
+      summary: Create a permit series object
+      requestBody:
+        description: Permit series to add to the system
+        required: yes
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Permit series was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermitSeries'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
   /permitseries/{permitseries_id}/:
     get:
       tags:
