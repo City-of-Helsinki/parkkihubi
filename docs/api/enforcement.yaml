@@ -38,7 +38,7 @@ paths:
             Time when parking should be valid.  If not given, default
             is current time.
           type: string
-          format: dateTime
+          format: date-time
       responses:
         200:
           description: An array of parkings with metadata information
@@ -49,8 +49,10 @@ paths:
                 type: integer
               next:
                 type: string
+                format: uri
               previous:
                 type: string
+                format: uri
               results:
                 type: array
                 items:
@@ -71,10 +73,12 @@ paths:
             properties:
               count:
                 type: integer
-              previous:
-                type: integer
               next:
-                type: interger
+                type: string
+                format: uri
+              previous:
+                type: string
+                format: uri
               results:
                 type: array
                 items:
@@ -112,10 +116,12 @@ paths:
             properties:
               count:
                 type: integer
-              previous:
-                type: integer
               next:
-                type: interger
+                type: string
+                format: uri
+              previous:
+                type: string
+                format: uri
               results:
                 type: array
                 items:
@@ -149,8 +155,8 @@ paths:
         - name: permitseries_id
           in: path
           description: >-
-            Id of permit series
-          type: string
+            Id of the permit series
+          type: integer
           required: yes
       responses:
         200:
@@ -158,6 +164,9 @@ paths:
             type: object
             properties:
               status: OK
+        404:
+          schema:
+            $ref: '#/responses/NotFound'
   /permit/:
     get:
       tags:
@@ -172,9 +181,11 @@ paths:
               count:
                 type: integer
               next:
-                type: integer
+                type: string
+                format: uri
               previous:
-                type: integer
+                type: string
+                format: uri
               results:
                 type: array
                 items:
@@ -186,28 +197,21 @@ paths:
       parameters:
         - name: Permit
           in: body
-          required: true
+          required: yes
           description: Permit to add to the system
           schema:
             type: object
             properties:
               series:
-                description: Active permit series id
+                description: Permit series id
                 type: integer
               external_id:
-                description: External id of permit
+                description: External id of the permit
                 type: string
-              subjects:
-                type: array
-                items:
-                  $ref: '#/definitions/Subjects'
-              areas:
-                type: array
-                items:
-                  $ref: '#/definitions/Areas'
+              subjects: {$ref: '#/definitions/PermitSubjects'}
+              areas: {$ref: '#/definitions/PermitAreas'}
             required:
               - series
-              - external_id
               - subjects
               - areas
       responses:
@@ -289,14 +293,8 @@ paths:
                 type: integer
               external_id:
                 type: integer
-              subjects:
-                type: array
-                items:
-                  $ref: '#/definitions/Subjects'
-              areas:
-                type: array
-                items:
-                  $ref: '#/definitions/Areas'
+              subjects: {$ref: '#/definitions/PermitSubjects'}
+              areas: {$ref: '#/definitions/PermitAreas'}
       responses:
         200:
           description: Permit was updated successfully
@@ -314,7 +312,7 @@ paths:
     get:
       tags:
         - Active Permit by External Id
-      summary: Get a list of parking permits
+      summary: Get a list of active permits
       responses:
         200:
           description: An array of permit objects
@@ -324,9 +322,11 @@ paths:
               count:
                 type: integer
               next:
-                type: integer
+                type: string
+                format: uri
               previous:
-                type: integer
+                type: string
+                format: uri
               results:
                 type: array
                 items:
@@ -334,7 +334,8 @@ paths:
     post:
       tags:
         - Active Permit by External Id
-      summary: Create permit object for given external id
+      summary: >-
+        Create a permit with given external id to the active series
       parameters:
         - name: permit
           in: body
@@ -346,10 +347,8 @@ paths:
               external_id:
                 description: External id of the permit
                 type: string
-              subjects:
-                $ref: '#/definitions/Subjects'
-              areas:
-                $ref: '#/definitions/Areas'
+              subjects: {$ref: '#/definitions/PermitSubjects'}
+              areas: {$ref: '#/definitions/PermitAreas'}
   /active_permit_by_external_id/{external_id}/:
     get:
       tags:
@@ -380,21 +379,15 @@ paths:
         - name: external_id
           in: path
           required: true
-          description: External id of permit to update
+          description: External id of the permit to update
           type: string
         - name:
           in: body
           schema:
             type: object
             properties:
-              subjects:
-                type: array
-                items:
-                  $ref: '#/definitions/Subjects'
-              areas:
-                type: array
-                items:
-                  $ref: '#/definitions/Areas'
+              subjects: {$ref: '#/definitions/PermitSubjects'}
+              areas: {$ref: '#/definitions/PermitAreas'}
       responses:
         200:
           description: Permit was updated successfully
@@ -446,22 +439,22 @@ definitions:
       created_at:
         description: Creation time of the parking
         type: string
-        format: dateTime
+        format: date-time
       modified_at:
         description: Modification time of the parking
         type: string
-        format: dateTime
+        format: date-time
       registration_number:
         description: Registration number of vehicle for the parking
         type: string
       time_start:
         description: Start time of the parking
         type: string
-        format: dateTime
+        format: date-time
       time_end:
         description: End time of the parking
         type: string
-        format: dateTime
+        format: date-time
       zone:
         description: Parking zone id
         type: integer
@@ -472,19 +465,19 @@ definitions:
     type: object
     properties:
       id:
-        description: Unique identifier for the operator object
+        description: Unique identifier of the operator object
         type: string
         format: uuid
         readOnly: true
       created_at:
         description: Creation time of the operator
         type: string
-        format: dateTime
+        format: date-time
         readOnly: true
       modified_at:
         description: Modification time of the operator
         type: string
-        format: dateTime
+        format: date-time
         readOnly: true
       name:
         description: Name of the parking operator
@@ -494,67 +487,83 @@ definitions:
       object
     properties:
       id:
-        description: Unique identifier for the permit series
+        description: Unique identifier of the permit series
         type: integer
       created_at:
-        description: Creation time for the permit series
+        description: Creation time of the permit series
         type: string
-        format: dateTime
+        format: date-time
+        readOnly: true
       modified_at:
-        description: Modification time for the permit series
+        description: Modification time of the permit series
         type: string
-        format: dateTime
+        format: date-time
+        readOnly: true
       active:
-        description: Boolean field for bulk update
-        type: string
-        format: Boolean
+        description: Specifies whether the series is currently active
+        type: boolean
   Permit:
     type: object
     properties:
       id:
-        description: Unique identifier for the permit object
+        description: Unique identifier of the permit object
         type: integer
+      external_id:
+        description: External id of the permit
+        type: string
       series:
         description: Permit series id
         type: integer
-      subjects:
-        description: Array of license plate numbers with start and end date time
-        type: array
-        items:
-          $ref: '#/definitions/Subjects'
-      areas:
-        description: Array of parking areas with start and end date time
-        type: array
-        items:
-          $ref: '#/definitions/Areas'
-  Subjects:
+      subjects: {$ref: '#/definitions/PermitSubjects'}
+      areas: {$ref: '#/definitions/PermitAreas'}
+  PermitSubjects:
+    description: >-
+      List of subjects of a permit with validity time ranges.  Each
+      subject is identified by its registration number.
+    type: array
+    items:
+      $ref: '#/definitions/PermitSubject'
+  PermitSubject:
+    description: >-
+      Subject of a permit, i.e. a vehicle.  The permit applies to the
+      specified subject for validity period specified by the start and
+      end times.
     type: object
     properties:
       start_time:
-        description: Start time of the parking
+        description: Start time of the validity period
         type: string
-        format: dateTime
+        format: date-time
       end_date:
-        description: End time of the parking
+        description: End time of the validity period
         type: string
-        format: dateTime
+        format: date-time
       registration_number:
-        description: Registration number of vehicle
+        description: >-
+          Registration number of vehicle, which is subject to the permit
         type: string
-  Areas:
+        maxLength: 20
+  PermitAreas:
+    description: >-
+      List of permit area identifiers with validity time ranges
+    type: array
+    items:
+      $ref: '#/definitions/PermitArea'
+  PermitArea:
     type: object
     properties:
       start_time:
         description: Start time of the parking
         type: string
-        format: dateTime
+        format: date-time
       end_date:
         description: End time of the parking
         type: string
-        format: dateTime
+        format: date-time
       area:
         description: Name of the area
         type: string
+        maxLength: 10
 responses:
   Forbidden:
     description: Forbidden request
