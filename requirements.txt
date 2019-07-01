@@ -4,9 +4,10 @@
 #
 --no-binary psycopg2
 
-certifi==2019.3.9         # via requests
+aenum==2.1.2              # via pyproj
+certifi==2019.6.16        # via requests
 chardet==3.0.4            # via requests
-django==1.11.20
+django==1.11.21
 django-cors-headers==3.0.2
 django-environ==0.4.5
 django-filter==2.1.0
@@ -15,11 +16,11 @@ djangorestframework-gis==0.14
 djangorestframework-jwt==1.11.0  # via drf-jwt-2fa
 drf-jwt-2fa==0.3.0
 idna==2.8                 # via requests
-lxml==4.3.3
-owslib==0.17.1
-psycopg2==2.8.2
+lxml==4.3.4
+owslib==0.18.0
+psycopg2==2.8.3
 pyjwt==1.7.1              # via djangorestframework-jwt
-pyproj==2.1.3             # via owslib
+pyproj==2.2.1             # via owslib
 python-dateutil==2.8.0    # via owslib
 python-memcached==1.59
 pytz==2019.1
