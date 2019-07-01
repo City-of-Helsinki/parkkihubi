@@ -172,7 +172,8 @@ paths:
                 type: object
                 properties:
                   status:
-                    type: object
+                    type: string
+                    enum: ["OK", "No change"]
         '404':
           $ref: '#/components/responses/NotFound'
   /permit/:
