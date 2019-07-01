@@ -17,7 +17,7 @@ paths:
         - ApiKey: []
       tags:
         - Parking
-      summary: Get a list of valid parkings by registration number
+      summary: Get list of valid parkings by registration number
       operationId: getParkingList
       parameters:
         - name: reg_num
@@ -61,7 +61,7 @@ paths:
     get:
       tags:
         - Operator
-      summary: Get a list of parking operators
+      summary: Get list of parking operators
       responses:
         '200':
           description: A list of parking opertors
@@ -86,7 +86,7 @@ paths:
     get:
       tags:
         - Operator
-      summary: Get the detail of parking operator
+      summary: Get details of a parking operator
       parameters:
         - name: operator_id
           in: path
@@ -108,7 +108,7 @@ paths:
     get:
       tags:
         - Permit Series
-      summary: Get a list of permit series
+      summary: Get list of permit series
       responses:
         '200':
           description: An array of permit series
@@ -133,7 +133,7 @@ paths:
     get:
       tags:
         - Permit Series
-      summary: Get the detail of a permit series
+      summary: Get details of a permit series
       parameters:
         - name: permitseries_id
           in: path
@@ -155,7 +155,7 @@ paths:
     post:
       tags:
         - Permit Series
-      summary: Activate the given permit series
+      summary: Activate a permit series
       parameters:
         - name: permitseries_id
           in: path
@@ -180,7 +180,7 @@ paths:
     get:
       tags:
         - Permit
-      summary: Get a list of parking permits
+      summary: Get list of parking permits
       responses:
         '200':
           description: An array of permit objects
@@ -229,7 +229,7 @@ paths:
                 - areas
       responses:
         '201':
-          description: Permit object is created successfully.
+          description: Permit object was created successfully.
           content:
             application/json:
               schema:
@@ -244,7 +244,7 @@ paths:
     get:
       tags:
       - Permit
-      summary: Get the detail of a permit
+      summary: Get details of a permit
       parameters:
       - name: permit_id
         in: path
@@ -267,7 +267,7 @@ paths:
     put:
       tags:
       - Permit
-      summary: Update the permit by its id
+      summary: Replace a permit
       parameters:
       - name: permit_id
         in: path
@@ -299,7 +299,7 @@ paths:
     patch:
       tags:
         - Permit
-      summary: Partial update the permit by its id
+      summary: Update a permit
       parameters:
         - name: permit_id
           in: path
@@ -341,7 +341,7 @@ paths:
     get:
       tags:
         - Active Permit by External Id
-      summary: Get a list of active permits
+      summary: Get list of permits in the active series
       responses:
         '200':
           description: An array of permit objects
@@ -365,8 +365,7 @@ paths:
     post:
       tags:
         - Active Permit by External Id
-      summary: >-
-        Create a permit with given external id to the active series
+      summary: Create a permit to the active series
       requestBody:
         description: Permit to add to the system
         required: yes
@@ -386,7 +385,7 @@ paths:
     get:
       tags:
         - Active Permit by External Id
-      summary: Get the detail of permit for given external id
+      summary: Get details of a permit in the active series
       parameters:
         - name: external_id
           in: path
@@ -409,7 +408,7 @@ paths:
     patch:
       tags:
         - Active Permit by External Id
-      summary: Partial update the permit by its external id
+      summary: Update a permit in the active series
       parameters:
         - name: external_id
           in: path
@@ -446,7 +445,7 @@ paths:
     put:
       tags:
         - Active Permit by External Id
-      summary: Update the permit by its external id
+      summary: Replace a permit in the active series
       parameters:
         - name: external_id
           in: path
