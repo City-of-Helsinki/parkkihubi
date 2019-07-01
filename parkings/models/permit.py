@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.contrib.gis.db import models as gis_models
-from django.contrib.postgres.fields import JSONField
-from django.core.exceptions import ValidationError
-from django.db import models, transaction
+from django.db import models, router, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
+from ..fields import CleaningJsonField
+from ..validators import DictListValidator, TextField, TimestampField
 from .constants import GK25FIN_SRID
 from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from .parking import Parking
@@ -33,8 +33,8 @@ class PermitSeriesQuerySet(models.QuerySet):
         return self.active().order_by('-modified_at').first()
 
     def prunable(self):
-        pruneable_after_date = timezone.now() - settings.PARKKIHUBI_PERMITS_PRUNABLE_AFTER_DAYS
-        return self.filter(created_at__lt=pruneable_after_date, active=False)
+        limit = timezone.now() - settings.PARKKIHUBI_PERMITS_PRUNABLE_AFTER
+        return self.filter(created_at__lt=limit, active=False)
 
 
 class PermitSeries(TimestampedModelMixin, models.Model):
@@ -80,8 +80,16 @@ class PermitQuerySet(models.QuerySet):
 class Permit(TimestampedModelMixin, models.Model):
     series = models.ForeignKey(PermitSeries, on_delete=models.PROTECT)
     external_id = models.CharField(max_length=50, null=True, blank=True)
-    subjects = JSONField()
-    areas = JSONField()
+    subjects = CleaningJsonField(validators=[DictListValidator({
+        'start_time': TimestampField(),
+        'end_time': TimestampField(),
+        'registration_number': TextField(max_length=20),
+    })])
+    areas = CleaningJsonField(validators=[DictListValidator({
+        'start_time': TimestampField(),
+        'end_time': TimestampField(),
+        'area': TextField(max_length=10),
+    })])
 
     objects = PermitQuerySet.as_manager()
 
@@ -95,32 +103,14 @@ class Permit(TimestampedModelMixin, models.Model):
     def __str__(self):
         return ('Permit {}'.format(self.id))
 
-    def clean(self):
-        super(Permit, self).clean()
-        for subject in self.subjects:
-            if (
-                'start_time' not in subject
-                or 'end_time' not in subject
-                or 'registration_number' not in subject
-            ):
-                raise ValidationError({'subjects': _('Subjects is not valid')})
-        for area in self.areas:
-            if (
-                'start_time' not in area
-                or 'end_time' not in area
-                or 'area' not in area
-            ):
-                raise ValidationError({'areas': _('Areas is not valid')})
-
-    def save(self, *args, **kwargs):
-        self.clean()
-        with transaction.atomic():
-            super(Permit, self).save(*args, **kwargs)
-            self._update_cache_items()
-
-    def _update_cache_items(self):
-        self.cache_items.all().delete()
-        PermitCacheItem.objects.bulk_create(self._make_cache_items())
+    def save(self, using=None, *args, **kwargs):
+        self.full_clean()
+        using = using or router.db_for_write(type(self), instance=self)
+        with transaction.atomic(using=using, savepoint=False):
+            super(Permit, self).save(using=using, *args, **kwargs)
+            self.cache_items.all().using(using).delete()
+            new_cache_items = self._make_cache_items()
+            PermitCacheItem.objects.using(using).bulk_create(new_cache_items)
 
     def _make_cache_items(self):
         for area in self.areas:

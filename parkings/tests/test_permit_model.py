@@ -3,9 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from ..factories.permit import (
-    generate_areas, generate_areas_with_startdate_gt_endate,
-    generate_external_ids, generate_subjects,
-    generate_subjects_with_startdate_gt_endate)
+    generate_areas, generate_external_ids, generate_subjects)
 from ..models import Permit, PermitCacheItem
 
 
@@ -102,8 +100,16 @@ def test_permitcacheitem_creation_ignored_for_start_date_gte_end_date(permit_ser
     permit_data = {
         'series': permit_series,
         'external_id': generate_external_ids(),
-        'subjects': generate_subjects_with_startdate_gt_endate(),
-        'areas': generate_areas_with_startdate_gt_endate(),
+        'subjects': [{
+            'registration_number': 'ABC-123',
+            'start_time': '2019-05-01T12:00:00+00:00',
+            'end_time': '2019-05-01T11:55:00+00:00',
+        }],
+        'areas': [{
+            'start_time': '2019-05-01T12:00:00+00:00',
+            'end_time': '2019-05-30T12:00:00+00:00',
+            'area': 'A',
+        }],
     }
     Permit.objects.create(**permit_data)
 

@@ -3,8 +3,11 @@
 from __future__ import unicode_literals
 
 import django.contrib.postgres.fields.jsonb
-from django.db import migrations, models
 import django.db.models.deletion
+from django.db import migrations, models
+
+from ..fields import CleaningJsonField
+from ..validators import DictListValidator, TextField, TimestampField
 
 
 class Migration(migrations.Migration):
@@ -21,8 +24,18 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='time created')),
                 ('modified_at', models.DateTimeField(auto_now=True, verbose_name='time modified')),
                 ('external_id', models.CharField(blank=True, max_length=50, null=True)),
-                ('subjects', django.contrib.postgres.fields.jsonb.JSONField()),
-                ('areas', django.contrib.postgres.fields.jsonb.JSONField()),
+                ('subjects', CleaningJsonField(validators=[
+                    DictListValidator({
+                        'start_time': TimestampField(),
+                        'end_time': TimestampField(),
+                        'registration_number': TextField(max_length=20),
+                    })])),
+                ('areas', CleaningJsonField(validators=[
+                    DictListValidator({
+                        'start_time': TimestampField(),
+                        'end_time': TimestampField(),
+                        'area': TextField(max_length=10),
+                    })])),
             ],
             options={
                 'ordering': ('series', 'id'),

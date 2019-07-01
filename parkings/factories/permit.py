@@ -16,13 +16,19 @@ def generate_registration_number():
     return '%s-%s' % (letters, numbers)
 
 
+def generate_timestamp_string(start, end):
+    dt = fake.date_time_between(
+        start_date=start, end_date=end, tzinfo=pytz.utc)
+    return '{}'.format(dt).replace(' ', 'T')
+
+
 def generate_subjects(count=1):
     subjects = []
     for c in range(count):
         subjects.append({
             'registration_number': generate_registration_number(),
-            'start_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
-            'end_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'start_time': generate_timestamp_string('-2h', '-1h'),
+            'end_time': generate_timestamp_string('+1h', '+2h'),
         })
     return subjects
 
@@ -31,8 +37,8 @@ def generate_areas(count=1):
     areas = []
     for c in range(count):
         areas.append({
-            'start_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
-            'end_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
+            'start_time': generate_timestamp_string('-2h', '-1h'),
+            'end_time': generate_timestamp_string('+1h', '+2h'),
             'area': fake.random.choice(CAPITAL_LETTERS),
         })
     return areas
@@ -41,28 +47,6 @@ def generate_areas(count=1):
 def generate_external_ids(id_length=11):
     external_id = ''.join(fake.random.choice('0123456789') for _ in range(id_length))
     return external_id
-
-
-def generate_subjects_with_startdate_gt_endate(count=1):
-    subjects = []
-    for c in range(count):
-        subjects.append({
-            'registration_number': generate_registration_number(),
-            'start_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
-            'end_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
-        })
-    return subjects
-
-
-def generate_areas_with_startdate_gt_endate(count=1):
-    areas = []
-    for c in range(count):
-        areas.append({
-            'start_time': str(fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc)),
-            'end_time': str(fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc)),
-            'area': fake.random.choice(CAPITAL_LETTERS),
-        })
-    return areas
 
 
 class PermitSeriesFactory(factory.django.DjangoModelFactory):
