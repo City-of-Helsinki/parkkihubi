@@ -62,6 +62,7 @@ paths:
       tags:
         - Operator
       summary: Get list of parking operators
+      operationId: getOperatorList
       responses:
         '200':
           description: A list of parking opertors
@@ -87,6 +88,7 @@ paths:
       tags:
         - Operator
       summary: Get details of a parking operator
+      operationId: getOperatorDetails
       parameters:
         - name: operator_id
           in: path
@@ -109,6 +111,7 @@ paths:
       tags:
         - Permit Series
       summary: Get list of permit series
+      operationId: getPermitSeriesList
       responses:
         '200':
           description: An array of permit series
@@ -133,6 +136,7 @@ paths:
       tags:
         - Permit Series
       summary: Create a permit series object
+      operationId: createPermitSeries
       requestBody:
         description: Permit series to add to the system
         required: yes
@@ -156,6 +160,7 @@ paths:
       tags:
         - Permit Series
       summary: Get details of a permit series
+      operationId: getPermitSeriesDetails
       parameters:
         - name: permitseries_id
           in: path
@@ -178,6 +183,7 @@ paths:
       tags:
         - Permit Series
       summary: Activate a permit series
+      operationId: activatePermitSeries
       parameters:
         - name: permitseries_id
           in: path
@@ -203,6 +209,7 @@ paths:
       tags:
         - Permit
       summary: Get list of parking permits
+      operationId: getPermitList
       responses:
         '200':
           description: An array of permit objects
@@ -227,6 +234,7 @@ paths:
       tags:
         - Permit
       summary: Create a permit object
+      operationId: createPermit
       requestBody:
         description: Permit to add to the system
         required: yes
@@ -265,8 +273,9 @@ paths:
   /permit/{permit_id}/:
     get:
       tags:
-      - Permit
+        - Permit
       summary: Get details of a permit
+      operationId: getPermitDetails
       parameters:
       - name: permit_id
         in: path
@@ -288,8 +297,9 @@ paths:
           $ref: '#/components/responses/NotFound'
     put:
       tags:
-      - Permit
+        - Permit
       summary: Replace a permit
+      operationId: replacePermit
       parameters:
       - name: permit_id
         in: path
@@ -322,6 +332,7 @@ paths:
       tags:
         - Permit
       summary: Update a permit
+      operationId: updatePermit
       parameters:
         - name: permit_id
           in: path
@@ -364,6 +375,7 @@ paths:
       tags:
         - Active Permit by External Id
       summary: Get list of permits in the active series
+      operationId: getActivePermitList
       responses:
         '200':
           description: An array of permit objects
@@ -388,6 +400,7 @@ paths:
       tags:
         - Active Permit by External Id
       summary: Create a permit to the active series
+      operationId: createActivePermit
       requestBody:
         description: Permit to add to the system
         required: yes
@@ -408,6 +421,7 @@ paths:
       tags:
         - Active Permit by External Id
       summary: Get details of a permit in the active series
+      operationId: getActivePermit
       parameters:
         - name: external_id
           in: path
@@ -431,6 +445,7 @@ paths:
       tags:
         - Active Permit by External Id
       summary: Update a permit in the active series
+      operationId: updateActivePermit
       parameters:
         - name: external_id
           in: path
@@ -468,6 +483,7 @@ paths:
       tags:
         - Active Permit by External Id
       summary: Replace a permit in the active series
+      operationId: replaceActivePermit
       parameters:
         - name: external_id
           in: path
