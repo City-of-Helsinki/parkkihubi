@@ -1,10 +1,15 @@
 openapi: 3.0.1
 info:
-  title: Parkkihubi
+  title: Parkkihubi Enforcement API
   description: Parkkihubi Enforcement REST API Documentation
   version: 0.1.0
 servers:
-- url: https://127.0.0.1:8000/enforcement/v1
+  - url: https://api.parkkiopas.fi/enforcement/v1/
+    description: Production server
+  - url: https://testapi.parkkiopas.fi/enforcement/v1/
+    description: Test server
+  - url: http://localhost:8000/enforcement/v1/
+    description: Local development server
 paths:
   /valid_parking/:
     get:
