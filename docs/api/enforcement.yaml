@@ -10,11 +10,27 @@ servers:
     description: Test server
   - url: http://localhost:8000/enforcement/v1/
     description: Local development server
+tags:
+  - name: Parking Validation
+    description: >-
+      Endpoints for validating parkings
+  - name: Operators
+    description: >-
+      Information about parking operators
+  - name: Permit Series
+    description: >-
+      Creating, listing and activating permit series
+  - name: Permits
+    description: >-
+      Parking permit management
+  - name: Active Permits by External Id
+    description: >-
+      Managing parking permits in the currently active series by the
+      external identifiers of the permits
 paths:
   /valid_parking/:
     get:
-      tags:
-        - Parking
+      tags: ['Parking Validation']
       summary: Get list of valid parkings by registration number
       operationId: getParkingList
       security: [{ApiKey: []}]
@@ -58,8 +74,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /operator/:
     get:
-      tags:
-        - Operator
+      tags: ['Operators']
       summary: Get list of parking operators
       operationId: getOperatorList
       security: [{ApiKey: []}]
@@ -85,8 +100,7 @@ paths:
                       $ref: '#/components/schemas/Operator'
   /operator/{operator_id}/:
     get:
-      tags:
-        - Operator
+      tags: ['Operators']
       summary: Get details of a parking operator
       operationId: getOperatorDetails
       security: [{ApiKey: []}]
@@ -109,8 +123,7 @@ paths:
           $ref: '#/components/responses/NotFound'
   /permitseries/:
     get:
-      tags:
-        - Permit Series
+      tags: ['Permit Series']
       summary: Get list of permit series
       operationId: getPermitSeriesList
       security: [{ApiKey: []}]
@@ -135,8 +148,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/PermitSeries'
     post:
-      tags:
-        - Permit Series
+      tags: ['Permit Series']
       summary: Create a permit series object
       operationId: createPermitSeries
       security: [{ApiKey: []}]
@@ -160,8 +172,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
   /permitseries/{permitseries_id}/:
     get:
-      tags:
-        - Permit Series
+      tags: ['Permit Series']
       summary: Get details of a permit series
       operationId: getPermitSeriesDetails
       security: [{ApiKey: []}]
@@ -184,8 +195,7 @@ paths:
           $ref: '#/components/responses/NotFound'
   /permitseries/{permitseries_id}/activate/:
     post:
-      tags:
-        - Permit Series
+      tags: ['Permit Series']
       summary: Activate a permit series
       operationId: activatePermitSeries
       security: [{ApiKey: []}]
@@ -212,8 +222,7 @@ paths:
           $ref: '#/components/responses/NotFound'
   /permit/:
     get:
-      tags:
-        - Permit
+      tags: ['Permits']
       summary: Get list of parking permits
       operationId: getPermitList
       security: [{ApiKey: []}]
@@ -238,8 +247,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/Permit'
     post:
-      tags:
-        - Permit
+      tags: ['Permits']
       summary: Create a permit object
       operationId: createPermit
       security: [{ApiKey: []}]
@@ -280,8 +288,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
   /permit/{permit_id}/:
     get:
-      tags:
-        - Permit
+      tags: ['Permits']
       summary: Get details of a permit
       operationId: getPermitDetails
       security: [{ApiKey: []}]
@@ -305,8 +312,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     put:
-      tags:
-        - Permit
+      tags: ['Permits']
       summary: Replace a permit
       operationId: replacePermit
       parameters:
@@ -338,8 +344,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     patch:
-      tags:
-        - Permit
+      tags: ['Permits']
       summary: Update a permit
       operationId: updatePermit
       security: [{ApiKey: []}]
@@ -382,8 +387,7 @@ paths:
           $ref: '#/components/responses/NotFound'
   /active_permit_by_external_id/:
     get:
-      tags:
-        - Active Permit by External Id
+      tags: ['Active Permits by External Id']
       summary: Get list of permits in the active series
       operationId: getActivePermitList
       security: [{ApiKey: []}]
@@ -408,8 +412,7 @@ paths:
                     items:
                       $ref: '#/components/schemas/Permit'
     post:
-      tags:
-        - Active Permit by External Id
+      tags: ['Active Permits by External Id']
       summary: Create a permit to the active series
       operationId: createActivePermit
       security: [{ApiKey: []}]
@@ -437,8 +440,7 @@ paths:
                 $ref: '#/components/schemas/Permit'
   /active_permit_by_external_id/{external_id}/:
     get:
-      tags:
-        - Active Permit by External Id
+      tags: ['Active Permits by External Id']
       summary: Get details of a permit in the active series
       operationId: getActivePermit
       security: [{ApiKey: []}]
@@ -462,8 +464,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     patch:
-      tags:
-        - Active Permit by External Id
+      tags: ['Active Permits by External Id']
       summary: Update a permit in the active series
       operationId: updateActivePermit
       security: [{ApiKey: []}]
@@ -501,8 +502,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     put:
-      tags:
-        - Active Permit by External Id
+      tags: ['Active Permits by External Id']
       summary: Replace a permit in the active series
       operationId: replaceActivePermit
       security: [{ApiKey: []}]
