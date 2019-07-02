@@ -57,13 +57,16 @@ paths:
             application/json:
               schema:
                 type: object
-                properties:
+                properties: &paginatedResult
                   count:
+                    description: Total number of objects
                     type: integer
                   next:
+                    description: Link to the next result page
                     type: string
                     format: uri
                   previous:
+                    description: Link to the previous result page
                     type: string
                     format: uri
                   results:
@@ -86,14 +89,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                    format: uri
-                  previous:
-                    type: string
-                    format: uri
+                  << : *paginatedResult
                   results:
                     type: array
                     items:
@@ -135,14 +131,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                    format: uri
-                  previous:
-                    type: string
-                    format: uri
+                  << : *paginatedResult
                   results:
                     type: array
                     items:
@@ -234,14 +223,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                    format: uri
-                  previous:
-                    type: string
-                    format: uri
+                  << : *paginatedResult
                   results:
                     type: array
                     items:
@@ -399,14 +381,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  count:
-                    type: integer
-                  next:
-                    type: string
-                    format: uri
-                  previous:
-                    type: string
-                    format: uri
+                  << : *paginatedResult
                   results:
                     type: array
                     items:
