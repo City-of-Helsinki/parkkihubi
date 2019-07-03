@@ -28,6 +28,65 @@ tags:
       Managing parking permits in the currently active series by the
       external identifiers of the permits
 paths:
+  /check_parking/:
+    post:
+      tags: ['Parking Validation']
+      summary: Check validity of a parking
+      operationId: checkParking
+      security: [{ApiKey: []}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [registration_number, location]
+              properties:
+                registration_number:
+                  description: Registration number to check
+                  type: string
+                  maxLength: 30
+                location:
+                  description: Location of the parked vehicle
+                  type: object
+                  required: [latitude, longitude]
+                  properties:
+                    latitude:
+                      description: WGS84 latitude of the location
+                      type: number
+                      minimum: -90.0
+                      maximum: 90.0
+                    longitude:
+                      description: WGS84 longitude of the location
+                      type: number
+                      minimum: -180.0
+                      maximum: 180.0
+      responses:
+        '200':
+          description: OK. Validity check succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status:
+                    description: Validity status of the parking
+                    type: string
+                    enum: ["valid", "invalid"]
+                  end_time:
+                    description: Time when the valid time ends
+                    type: string
+                    format: date-time
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Location was not found
+          $ref: '#/components/responses/NotFound'
   /valid_parking/:
     get:
       tags: ['Parking Validation']
