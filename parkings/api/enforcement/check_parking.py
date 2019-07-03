@@ -34,6 +34,7 @@ class LocationSerializer(serializers.Serializer):
 class CheckParkingSerializer(serializers.Serializer):
     registration_number = serializers.CharField(max_length=30)
     location = LocationSerializer()
+    time = serializers.DateTimeField(required=False)
 
 
 class CheckParking(APIView):
@@ -47,7 +48,7 @@ class CheckParking(APIView):
 
         if serializer.is_valid(raise_exception=True):
 
-            time = timezone.now()
+            time = serializer.validated_data.get('time') or timezone.now()
             registration_number = Parking.normalize_reg_num(
                 request.data.get("registration_number"))
             location = request.data.get("location")

@@ -61,6 +61,12 @@ paths:
                       type: number
                       minimum: -180.0
                       maximum: 180.0
+                time:
+                  description: >-
+                    Optional timestamp to use for the check. If not
+                    given, defaults to current time.
+                  type: string
+                  format: date-time
       responses:
         '200':
           description: OK. Validity check succeeded.
