@@ -653,8 +653,33 @@ components:
           type: string
           maxLength: 10
   responses:
-    Forbidden:
-      description: Forbidden request
+    BadRequest:  # 400
+      description: >-
+        Bad Request. Request was invalid. Field specific errors
+        available in the body.
+      content:
+        application/json:
+          schema:
+            type: object
+            example:
+              non_field_errors:
+                - 'The fields series, external_id must make a unique set.'
+              subjects:
+                - 'Each list item must be a dictionary'
+    Unauthorized:  # 401
+      description: >-
+        Unauthorized.  No authentication credentials were provided or
+        they were incorrect.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+    Forbidden:  # 403
+      description: >-
+        Forbidden. Not enough permissions to perform the action.
       content:
         application/json:
           schema:
@@ -666,28 +691,9 @@ components:
                   - permission_denied
               detail:
                 type: string
-    BadRequest:
-      description: Bad request, details in request body
-      content:
-        application/json:
-          schema:
-            type: object
-            example:
-              areas:
-                - Areas is not valid.
-              subjects:
-                - Subjects is not valid
-    Unauthorized:
-      description: Unauthorized access
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              detail:
-                type: string
-    NotFound:
-      description: Not found
+    NotFound:  # 404
+      description: >-
+        Not Found.  The specified resource was not found.
       content:
         application/json:
           schema:
