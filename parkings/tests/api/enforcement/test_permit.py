@@ -38,6 +38,20 @@ def test_permit_is_created_with_valid_post_data(staff_api_client, permit_series)
     assert response.status_code == HTTP_201_CREATED
 
 
+@pytest.mark.django_db
+def test_permit_is_created_with_empty_lists(staff_api_client, permit_series):
+    permit_data = {
+        'series': permit_series.id,
+        'external_id': "E-123",
+        'subjects': [],
+        'areas': [],
+    }
+
+    response = staff_api_client.post(list_url, data=permit_data)
+
+    assert response.status_code == HTTP_201_CREATED
+
+
 TS1 = '2019-01-01T12:00:00Z'
 TS2 = '2019-06-30T12:00:00Z'
 INVALID_DATA_TEST_CASES = {

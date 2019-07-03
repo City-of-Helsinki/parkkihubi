@@ -24,13 +24,13 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='time created')),
                 ('modified_at', models.DateTimeField(auto_now=True, verbose_name='time modified')),
                 ('external_id', models.CharField(blank=True, max_length=50, null=True)),
-                ('subjects', CleaningJsonField(validators=[
+                ('subjects', CleaningJsonField(blank=True, validators=[
                     DictListValidator({
                         'start_time': TimestampField(),
                         'end_time': TimestampField(),
                         'registration_number': TextField(max_length=20),
                     })])),
-                ('areas', CleaningJsonField(validators=[
+                ('areas', CleaningJsonField(blank=True, validators=[
                     DictListValidator({
                         'start_time': TimestampField(),
                         'end_time': TimestampField(),
