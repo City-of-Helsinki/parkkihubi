@@ -72,6 +72,7 @@ class PermitQuerySet(models.QuerySet):
             cache_items = []
             for permit in created_permits:
                 assert isinstance(permit, Permit)
+                permit.full_clean()
                 cache_items.extend(permit._make_cache_items())
             PermitCacheItem.objects.using(self.db).bulk_create(cache_items)
             return created_permits
@@ -80,12 +81,12 @@ class PermitQuerySet(models.QuerySet):
 class Permit(TimestampedModelMixin, models.Model):
     series = models.ForeignKey(PermitSeries, on_delete=models.PROTECT)
     external_id = models.CharField(max_length=50, null=True, blank=True)
-    subjects = CleaningJsonField(validators=[DictListValidator({
+    subjects = CleaningJsonField(blank=True, validators=[DictListValidator({
         'start_time': TimestampField(),
         'end_time': TimestampField(),
         'registration_number': TextField(max_length=20),
     })])
-    areas = CleaningJsonField(validators=[DictListValidator({
+    areas = CleaningJsonField(blank=True, validators=[DictListValidator({
         'start_time': TimestampField(),
         'end_time': TimestampField(),
         'area': TextField(max_length=10),

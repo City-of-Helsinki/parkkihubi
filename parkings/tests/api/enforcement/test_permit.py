@@ -38,6 +38,20 @@ def test_permit_is_created_with_valid_post_data(staff_api_client, permit_series)
     assert response.status_code == HTTP_201_CREATED
 
 
+@pytest.mark.django_db
+def test_permit_is_created_with_empty_lists(staff_api_client, permit_series):
+    permit_data = {
+        'series': permit_series.id,
+        'external_id': "E-123",
+        'subjects': [],
+        'areas': [],
+    }
+
+    response = staff_api_client.post(list_url, data=permit_data)
+
+    assert response.status_code == HTTP_201_CREATED
+
+
 TS1 = '2019-01-01T12:00:00Z'
 TS2 = '2019-06-30T12:00:00Z'
 INVALID_DATA_TEST_CASES = {
@@ -75,10 +89,11 @@ INVALID_DATA_TEST_CASES = {
           'registration_number': 'X-14'}],
         'Invalid "end_time" value \'2019-12-31T00:00:00\': Missing timezone'),
 }
+@pytest.mark.parametrize('kind', ['single', 'bulk'])
 @pytest.mark.parametrize('test_case', INVALID_DATA_TEST_CASES.keys())
 @pytest.mark.django_db
 def test_permit_is_not_created_with_invalid_post_data(
-        staff_api_client, permit_series, test_case):
+        staff_api_client, kind, permit_series, test_case):
     (subjects, error) = INVALID_DATA_TEST_CASES[test_case]
     invalid_permit_data = {
         'series': permit_series.id,
@@ -87,12 +102,18 @@ def test_permit_is_not_created_with_invalid_post_data(
         'areas': generate_areas()
     }
 
-    response = staff_api_client.post(list_url, data=invalid_permit_data)
+    if kind == 'single':
+        response = staff_api_client.post(list_url, data=invalid_permit_data)
+        data = response.data
+    else:
+        response = staff_api_client.post(list_url, data=[invalid_permit_data])
+        data = response.data[0]
 
     assert response.status_code == HTTP_400_BAD_REQUEST
-    assert response.data['subjects'] == [error]
+    assert data['subjects'] == [error]
 
 
+@pytest.mark.parametrize('kind', ['single', 'bulk'])
 @pytest.mark.parametrize('input_timestamp,normalized_timestamp', [
     ('1995-01-01 12:00Z', '1995-01-01T12:00:00+00:00'),
     ('2030-06-30T12:00+03:00', '2030-06-30T09:00:00+00:00'),
@@ -102,7 +123,9 @@ def test_permit_is_not_created_with_invalid_post_data(
 ])
 @pytest.mark.django_db
 def test_permit_creation_normalizes_timestamps(
-        staff_api_client, permit_series, input_timestamp, normalized_timestamp):
+        staff_api_client, permit_series,
+        kind,
+        input_timestamp, normalized_timestamp):
     permit_data = {
         'series': permit_series.id,
         'external_id': 'E123',
@@ -118,11 +141,16 @@ def test_permit_creation_normalizes_timestamps(
         }],
     }
 
-    response = staff_api_client.post(list_url, data=permit_data)
+    if kind == 'single':
+        response = staff_api_client.post(list_url, data=permit_data)
+        data = response.data
+    else:
+        response = staff_api_client.post(list_url, data=[permit_data])
+        data = response.data[0]
 
     assert response.status_code == HTTP_201_CREATED
-    assert response.data['subjects'][0]['end_time'] == normalized_timestamp
-    assert response.data['areas'][0]['end_time'] == normalized_timestamp
+    assert data['subjects'][0]['end_time'] == normalized_timestamp
+    assert data['areas'][0]['end_time'] == normalized_timestamp
 
 
 @pytest.mark.django_db
