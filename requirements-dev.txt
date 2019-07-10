@@ -11,7 +11,7 @@ decorator==4.4.0          # via ipython, traitlets
 django-extensions==2.1.9
 filelock==3.0.12          # via tox
 importlib-metadata==0.18  # via pluggy, tox
-ipython==7.6.0
+ipython==7.6.1
 ipython-genutils==0.2.0   # via traitlets
 isort==4.3.21
 jedi==0.14.0              # via ipython
@@ -24,19 +24,19 @@ prompt-toolkit==2.0.9     # via ipython
 ptyprocess==0.6.0         # via pexpect
 py==1.8.0                 # via tox
 pycodestyle==2.5.0        # via autopep8
-pydocstyle==3.0.0
+pydocstyle==4.0.0
 pyflakes==2.1.1           # via autoflake
 pygments==2.4.2           # via ipython
 pyparsing==2.4.0          # via packaging
-six==1.12.0               # via django-extensions, packaging, prompt-toolkit, pydocstyle, tox, traitlets
+six==1.12.0               # via django-extensions, packaging, prompt-toolkit, tox, traitlets
 snowballstemmer==1.9.0    # via pydocstyle
 toml==0.10.0              # via tox
-tox==3.13.1
+tox==3.13.2
 traitlets==4.3.2          # via ipython
 virtualenv==16.6.1        # via tox
 wcwidth==0.1.7            # via prompt-toolkit
 werkzeug==0.15.4
-zipp==0.5.1               # via importlib-metadata
+zipp==0.5.2               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools                # via ipython
