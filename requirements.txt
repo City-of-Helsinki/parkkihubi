@@ -7,12 +7,12 @@
 aenum==2.1.2              # via pyproj
 certifi==2019.6.16        # via requests
 chardet==3.0.4            # via requests
-database-sanitizer==1.0.0  # via django-sanitized-dump
-django==1.11.21
+database-sanitizer==1.1.0  # via django-sanitized-dump
+django==1.11.22
 django-cors-headers==3.0.2
 django-environ==0.4.5
 django-filter==2.1.0
-django-sanitized-dump==1.1.0
+django-sanitized-dump==1.2.0
 djangorestframework==3.9.4
 djangorestframework-gis==0.14
 djangorestframework-jwt==1.11.0  # via drf-jwt-2fa

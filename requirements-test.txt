@@ -21,16 +21,16 @@ pathlib2==2.3.4           # via pytest
 pluggy==0.12.0            # via pytest
 py==1.8.0                 # via pytest
 pyparsing==2.4.0          # via packaging
-pytest==4.6.4
+pytest==5.0.1
 pytest-cov==2.7.1
 pytest-django==3.5.1
-pytest-factoryboy==2.0.2
+pytest-factoryboy==2.0.3
 python-dateutil==2.8.0    # via faker, freezegun
 pyyaml==5.1.1
 requests==2.22.0          # via requests-mock
 requests-mock==1.6.0
-six==1.12.0               # via faker, freezegun, packaging, pathlib2, pytest, python-dateutil, requests-mock
+six==1.12.0               # via faker, freezegun, packaging, pathlib2, python-dateutil, requests-mock
 text-unidecode==1.2       # via faker
 urllib3==1.25.3           # via requests
 wcwidth==0.1.7            # via pytest
-zipp==0.5.1               # via importlib-metadata
+zipp==0.5.2               # via importlib-metadata
