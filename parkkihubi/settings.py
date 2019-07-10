@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     'django_filters',
     'parkkihubi',
     'parkings',
+    'sanitized_dump',
 ]
 
 if DEBUG and TIER == 'dev':

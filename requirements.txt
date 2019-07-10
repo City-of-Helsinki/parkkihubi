@@ -7,10 +7,12 @@
 aenum==2.1.2              # via pyproj
 certifi==2019.6.16        # via requests
 chardet==3.0.4            # via requests
+database-sanitizer==1.0.0  # via django-sanitized-dump
 django==1.11.21
 django-cors-headers==3.0.2
 django-environ==0.4.5
 django-filter==2.1.0
+django-sanitized-dump==1.1.0
 djangorestframework==3.9.4
 djangorestframework-gis==0.14
 djangorestframework-jwt==1.11.0  # via drf-jwt-2fa
@@ -24,7 +26,8 @@ pyproj==2.2.1             # via owslib
 python-dateutil==2.8.0    # via owslib
 python-memcached==1.59
 pytz==2019.1
+pyyaml==5.1.1             # via database-sanitizer, django-sanitized-dump
 raven==6.10.0
 requests==2.22.0          # via owslib
-six==1.12.0               # via python-dateutil, python-memcached
+six==1.12.0               # via database-sanitizer, django-sanitized-dump, python-dateutil, python-memcached
 urllib3==1.25.3           # via requests

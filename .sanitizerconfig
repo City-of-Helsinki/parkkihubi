@@ -1,0 +1,146 @@
+config:
+  addons: []
+strategy:
+  auth_group:
+    id: null
+    name: null
+  auth_group_permissions:
+    group_id: null
+    id: null
+    permission_id: null
+  auth_permission:
+    codename: null
+    content_type_id: null
+    id: null
+    name: null
+  auth_user:
+    date_joined: times.random_past_timestamp
+    email: user.email
+    first_name: user.given_name_en_gb
+    id: null
+    is_active: null
+    is_staff: null
+    is_superuser: null
+    last_login: constant.null
+    last_name: user.surname_en_gb
+    password: constant.invalid_django_password
+    username: user.username
+  auth_user_groups:
+    group_id: null
+    id: null
+    user_id: null
+  auth_user_user_permissions:
+    id: null
+    permission_id: null
+    user_id: null
+  authtoken_token:
+    created: null
+    key: string.random
+    user_id: null
+  django_admin_log:
+    action_flag: null
+    action_time: null
+    change_message: string.empty
+    content_type_id: null
+    id: null
+    object_id: null
+    object_repr: string.empty
+    user_id: null
+  django_content_type:
+    app_label: null
+    id: null
+    model: null
+  django_session:
+    expire_date: null
+    session_data: string.empty
+    session_key: string.random
+  geometry_columns:
+    coord_dimension: null
+    f_geometry_column: null
+    f_table_catalog: null
+    f_table_name: null
+    f_table_schema: null
+    srid: null
+    type: null
+  parkings_operator:
+    created_at: null
+    id: null
+    modified_at: null
+    name: null
+    user_id: null
+  parkings_parking:
+    created_at: null
+    id: null
+    location: null
+    modified_at: null
+    normalized_reg_num: parkkihubi.registration_number
+    operator_id: null
+    parking_area_id: null
+    region_id: null
+    registration_number: parkkihubi.registration_number
+    terminal_id: null
+    terminal_number: null
+    time_end: null
+    time_start: null
+    zone: null
+  parkings_parkingarea:
+    capacity_estimate: null
+    created_at: null
+    geom: null
+    id: null
+    modified_at: null
+    origin_id: null
+  parkings_parkingterminal:
+    created_at: null
+    id: null
+    location: null
+    modified_at: null
+    name: null
+    number: null
+  parkings_paymentzone:
+    created_at: null
+    geom: null
+    id: null
+    modified_at: null
+    name: null
+    number: null
+  parkings_permit:
+    areas: null
+    created_at: null
+    external_id: null
+    id: null
+    modified_at: null
+    series_id: null
+    subjects: parkkihubi.permit_subjects
+  parkings_permitarea:
+    created_at: null
+    geom: null
+    id: null
+    identifier: null
+    modified_at: null
+    name: null
+  parkings_permitcacheitem:
+    area_identifier: null
+    end_time: null
+    id: null
+    permit_id: null
+    registration_number: parkkihubi.registration_number
+    start_time: null
+  parkings_permitseries:
+    active: null
+    created_at: null
+    id: null
+    modified_at: null
+  parkings_region:
+    capacity_estimate: null
+    created_at: null
+    geom: null
+    id: null
+    modified_at: null
+    name: null
+  spatial_ref_sys:
+    auth_name: null
+    auth_srid: null
+    proj4text: null
+    srid: null
+    srtext: null
