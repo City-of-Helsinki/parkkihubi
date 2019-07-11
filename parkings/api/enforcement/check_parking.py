@@ -1,9 +1,8 @@
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import exceptions, permissions, serializers
+from rest_framework import exceptions, generics, permissions, serializers
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from ...models import (
     Parking, PaymentZone, Permit, PermitArea, PermitLookupItem)
@@ -38,14 +37,15 @@ class CheckParkingSerializer(serializers.Serializer):
     time = serializers.DateTimeField(required=False)
 
 
-class CheckParking(APIView):
+class CheckParking(generics.GenericAPIView):
     """
     Check if parking is valid at the current time for given registration number and location.
     """
     permission_classes = [permissions.IsAdminUser]
+    serializer_class = CheckParkingSerializer
 
     def post(self, request):
-        serializer = CheckParkingSerializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid(raise_exception=True):
 
