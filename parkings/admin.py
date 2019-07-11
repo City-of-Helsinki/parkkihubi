@@ -3,20 +3,19 @@ from django.contrib.gis.admin import OSMGeoAdmin
 
 from parkings.models import PaymentZone, PermitArea
 
+from .admin_utils import ReadOnlyAdmin
 from .models import (
     Operator, Parking, ParkingArea, ParkingTerminal, Permit, PermitCacheItem,
     Region)
 
 
+@admin.register(Operator)
 class OperatorAdmin(admin.ModelAdmin):
     pass
 
 
-class PermitAreaAdmin(admin.ModelAdmin):
-    ordering = ('identifier',)
-
-
-class PaymentZoneAdmin(admin.ModelAdmin):
+@admin.register(PaymentZone)
+class PaymentZoneAdmin(OSMGeoAdmin):
     ordering = ('number',)
 
 
@@ -35,6 +34,7 @@ class RegionAdmin(OSMGeoAdmin):
     ordering = ('name',)
 
 
+@admin.register(ParkingArea)
 class ParkingAreaAdmin(OSMGeoAdmin):
     ordering = ('origin_id',)
 
@@ -44,9 +44,16 @@ class ParkingTerminalAdmin(OSMGeoAdmin):
     list_display = ['id', 'number', 'name']
 
 
-admin.site.register(Operator, OperatorAdmin)
-admin.site.register(ParkingArea, ParkingAreaAdmin)
-admin.site.register(Permit)
-admin.site.register(PermitCacheItem)
-admin.site.register(PermitArea, PermitAreaAdmin)
-admin.site.register(PaymentZone, PaymentZoneAdmin)
+@admin.register(Permit)
+class PermitAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(PermitArea)
+class PermitAreaAdmin(OSMGeoAdmin):
+    ordering = ('identifier',)
+
+
+@admin.register(PermitCacheItem)
+class PermitCacheItemAdmin(ReadOnlyAdmin):
+    pass
