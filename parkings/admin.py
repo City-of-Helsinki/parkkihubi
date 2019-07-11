@@ -5,7 +5,7 @@ from parkings.models import PaymentZone, PermitArea
 
 from .admin_utils import ReadOnlyAdmin
 from .models import (
-    Operator, Parking, ParkingArea, ParkingTerminal, Permit, PermitCacheItem,
+    Operator, Parking, ParkingArea, ParkingTerminal, Permit, PermitLookupItem,
     Region)
 
 
@@ -54,6 +54,6 @@ class PermitAreaAdmin(OSMGeoAdmin):
     ordering = ('identifier',)
 
 
-@admin.register(PermitCacheItem)
-class PermitCacheItemAdmin(ReadOnlyAdmin):
+@admin.register(PermitLookupItem)
+class PermitLookupItemAdmin(ReadOnlyAdmin):
     pass

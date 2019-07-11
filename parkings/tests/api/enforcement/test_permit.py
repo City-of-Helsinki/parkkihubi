@@ -5,7 +5,7 @@ from rest_framework.status import (
 
 from ....factories.permit import (
     generate_areas, generate_external_ids, generate_subjects)
-from ....models import PermitCacheItem
+from ....models import PermitLookupItem
 
 list_url = reverse('enforcement:v1:permit-list')
 
@@ -154,18 +154,18 @@ def test_permit_creation_normalizes_timestamps(
 
 
 @pytest.mark.django_db
-def test_cache_item_is_created_for_permit(staff_api_client, permit_series):
+def test_lookup_item_is_created_for_permit(staff_api_client, permit_series):
     permit_data = {
         'series': permit_series.id,
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
         'areas': generate_areas(),
     }
-    assert PermitCacheItem.objects.count() == 0
+    assert PermitLookupItem.objects.count() == 0
     response = staff_api_client.post(list_url, data=permit_data)
 
     assert response.status_code == HTTP_201_CREATED
-    assert PermitCacheItem.objects.count() == 1
+    assert PermitLookupItem.objects.count() == 1
 
 
 def test_api_endpoint_returns_correct_data(staff_api_client, permit):
@@ -204,7 +204,7 @@ def test_permit_data_matches_permit_object(staff_api_client, permit):
     check_permit_areas_keys(response.data['areas'][0])
 
 
-def test_permit_bulk_create_creates_cache_items(staff_api_client, permit_series):
+def test_permit_bulk_create_creates_lookup_items(staff_api_client, permit_series):
     permit_data = [
         {
             "series": permit_series.id,
@@ -220,8 +220,8 @@ def test_permit_bulk_create_creates_cache_items(staff_api_client, permit_series)
         },
     ]
 
-    assert PermitCacheItem.objects.count() == 0
+    assert PermitLookupItem.objects.count() == 0
     response = staff_api_client.post(list_url, data=permit_data)
 
     assert response.status_code == HTTP_201_CREATED
-    assert PermitCacheItem.objects.count() == 2
+    assert PermitLookupItem.objects.count() == 2

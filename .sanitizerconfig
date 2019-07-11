@@ -119,7 +119,7 @@ strategy:
     identifier: null
     modified_at: null
     name: null
-  parkings_permitcacheitem:
+  parkings_permitlookupitem:
     area_identifier: null
     end_time: null
     id: null

@@ -5,7 +5,8 @@ from rest_framework import exceptions, permissions, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ...models import Parking, PaymentZone, Permit, PermitArea, PermitCacheItem
+from ...models import (
+    Parking, PaymentZone, Permit, PermitArea, PermitLookupItem)
 
 
 class UnknownLocationException(exceptions.APIException):
@@ -77,8 +78,8 @@ class CheckParking(APIView):
                     .by_subject(registration_number)
                     .by_area(area.identifier)
                 )
-                valid_permitcache = (
-                    PermitCacheItem.objects.filter(
+                valid_permitlookups = (
+                    PermitLookupItem.objects.filter(
                         permit__in=valid_permits,
                         registration_number=registration_number,
                         area_identifier=area.identifier,
@@ -86,7 +87,8 @@ class CheckParking(APIView):
                     .order_by("-end_time")
                     .first()
                 )
-                if valid_permitcache:
-                    return Response({"status": "valid", "end_time": valid_permitcache.end_time})
+                if valid_permitlookups:
+                    return Response({"status": "valid",
+                                     "end_time": valid_permitlookups.end_time})
 
             return Response({"status": "invalid"})

@@ -54,26 +54,26 @@ class PermitQuerySet(models.QuerySet):
         return self.filter(series__active=True)
 
     def by_time(self, timestamp):
-        cache_items = PermitCacheItem.objects.by_time(timestamp)
-        return self.filter(cache_items__in=cache_items).distinct()
+        lookup_items = PermitLookupItem.objects.by_time(timestamp)
+        return self.filter(lookup_items__in=lookup_items).distinct()
 
     def by_subject(self, registration_number):
-        cache_items = PermitCacheItem.objects.by_subject(registration_number)
-        return self.filter(cache_items__in=cache_items).distinct()
+        lookup_items = PermitLookupItem.objects.by_subject(registration_number)
+        return self.filter(lookup_items__in=lookup_items).distinct()
 
     def by_area(self, area_identifier):
-        cache_items = PermitCacheItem.objects.by_area(area_identifier)
-        return self.filter(cache_items__in=cache_items).distinct()
+        lookup_items = PermitLookupItem.objects.by_area(area_identifier)
+        return self.filter(lookup_items__in=lookup_items).distinct()
 
     def bulk_create(self, permits, *args, **kwargs):
         with transaction.atomic(using=self.db, savepoint=False):
             created_permits = super().bulk_create(permits, *args, **kwargs)
-            cache_items = []
+            lookup_items = []
             for permit in created_permits:
                 assert isinstance(permit, Permit)
                 permit.full_clean()
-                cache_items.extend(permit._make_cache_items())
-            PermitCacheItem.objects.using(self.db).bulk_create(cache_items)
+                lookup_items.extend(permit._make_lookup_items())
+            PermitLookupItem.objects.using(self.db).bulk_create(lookup_items)
             return created_permits
 
 
@@ -108,11 +108,11 @@ class Permit(TimestampedModelMixin, models.Model):
         using = using or router.db_for_write(type(self), instance=self)
         with transaction.atomic(using=using, savepoint=False):
             super(Permit, self).save(using=using, *args, **kwargs)
-            self.cache_items.all().using(using).delete()
-            new_cache_items = self._make_cache_items()
-            PermitCacheItem.objects.using(using).bulk_create(new_cache_items)
+            self.lookup_items.all().using(using).delete()
+            new_lookup_items = self._make_lookup_items()
+            PermitLookupItem.objects.using(using).bulk_create(new_lookup_items)
 
-    def _make_cache_items(self):
+    def _make_lookup_items(self):
         for area in self.areas:
             for subject in self.subjects:
                 max_start_time = max(subject['start_time'], area['start_time'])
@@ -120,7 +120,7 @@ class Permit(TimestampedModelMixin, models.Model):
 
                 if max_start_time >= min_end_time:
                     continue
-                yield PermitCacheItem(
+                yield PermitLookupItem(
                     permit=self,
                     registration_number=Parking.normalize_reg_num(
                         subject['registration_number']),
@@ -130,7 +130,7 @@ class Permit(TimestampedModelMixin, models.Model):
                 )
 
 
-class PermitCacheItemQuerySet(models.QuerySet):
+class PermitLookupItemQuerySet(models.QuerySet):
     def active(self):
         return self.filter(permit__series__active=True)
 
@@ -145,15 +145,15 @@ class PermitCacheItemQuerySet(models.QuerySet):
         return self.filter(area_identifier=area_identifier)
 
 
-class PermitCacheItem(models.Model):
+class PermitLookupItem(models.Model):
     permit = models.ForeignKey(
-        Permit, related_name="cache_items", on_delete=models.CASCADE)
+        Permit, related_name="lookup_items", on_delete=models.CASCADE)
     registration_number = models.CharField(max_length=30)
     area_identifier = models.CharField(max_length=10)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
 
-    objects = PermitCacheItemQuerySet.as_manager()
+    objects = PermitLookupItemQuerySet.as_manager()
 
     def __str__(self):
         return (
