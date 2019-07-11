@@ -155,6 +155,14 @@ class PermitLookupItem(models.Model):
 
     objects = PermitLookupItemQuerySet.as_manager()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=[
+                'registration_number', 'start_time', 'end_time',
+                'area_identifier', 'permit']),
+        ]
+        ordering = ('registration_number', 'start_time', 'end_time')
+
     def __str__(self):
         return (
             '{start_time:%Y-%m-%d %H:%M} -- {end_time:%Y-%m-%d %H:%M} / '
