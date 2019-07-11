@@ -58,8 +58,7 @@ class PermitQuerySet(models.QuerySet):
         return self.filter(cache_items__in=cache_items).distinct()
 
     def by_subject(self, registration_number):
-        cache_items = PermitCacheItem.objects.by_registration_number(
-            Parking.normalize_reg_num(registration_number))
+        cache_items = PermitCacheItem.objects.by_subject(registration_number)
         return self.filter(cache_items__in=cache_items).distinct()
 
     def by_area(self, area_identifier):
@@ -132,11 +131,15 @@ class Permit(TimestampedModelMixin, models.Model):
 
 
 class PermitCacheItemQuerySet(models.QuerySet):
+    def active(self):
+        return self.filter(permit__series__active=True)
+
     def by_time(self, timestamp):
         return self.filter(start_time__lte=timestamp, end_time__gte=timestamp)
 
-    def by_registration_number(self, registration_number):
-        return self.filter(registration_number=registration_number)
+    def by_subject(self, registration_number):
+        normalized_reg_num = Parking.normalize_reg_num(registration_number)
+        return self.filter(registration_number=normalized_reg_num)
 
     def by_area(self, area_identifier):
         return self.filter(area_identifier=area_identifier)
