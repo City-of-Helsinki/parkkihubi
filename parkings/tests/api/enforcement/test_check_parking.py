@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import datetime
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.urls import reverse
 from django.utils import timezone
-from rest_framework.status import HTTP_200_OK, HTTP_404_NOT_FOUND
+from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from parkings.api.monitoring.region import WGS84_SRID
 from parkings.models import PaymentZone, Permit, PermitArea
@@ -57,7 +59,7 @@ def test_check_parking_valid_parking(operator, staff_api_client, parking_factory
     response = staff_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
-    assert response.data["status"] == "valid"
+    assert response.data["allowed"] is True
     assert response.data["end_time"] == parking.time_end
 
 
@@ -69,7 +71,7 @@ def test_check_parking_invalid_time_parking(operator, staff_api_client, history_
     response = staff_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
-    assert response.data["status"] == "invalid"
+    assert response.data["allowed"] is False
 
 
 def test_check_parking_invalid_zone_parking(operator, staff_api_client, parking_factory):
@@ -80,7 +82,7 @@ def test_check_parking_invalid_zone_parking(operator, staff_api_client, parking_
     response = staff_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
-    assert response.data["status"] == "invalid"
+    assert response.data["allowed"] is False
 
 
 def test_check_parking_valid_permit(staff_api_client, permit_series_factory):
@@ -107,7 +109,7 @@ def test_check_parking_valid_permit(staff_api_client, permit_series_factory):
     response = staff_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
-    assert response.data["status"] == "valid"
+    assert response.data["allowed"] is True
 
 
 def test_check_parking_invalid_time_permit(staff_api_client, permit_series_factory):
@@ -134,7 +136,7 @@ def test_check_parking_invalid_time_permit(staff_api_client, permit_series_facto
     response = staff_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
-    assert response.data["status"] == "invalid"
+    assert response.data["allowed"] is False
 
 
 def test_check_parking_invalid_location(staff_api_client, permit_series_factory):
@@ -160,5 +162,38 @@ def test_check_parking_invalid_location(staff_api_client, permit_series_factory)
 
     response = staff_api_client.post(list_url, data=INVALID_PARKING_DATA)
 
-    assert response.status_code == HTTP_404_NOT_FOUND
-    assert response.data["detail"] == "Location was not found."
+    assert response.status_code == HTTP_200_OK
+    assert response.data["location"] == {
+        'payment_zone': None, 'permit_area': None}
+    assert response.data["allowed"] is False
+
+
+def test_returned_data_has_correct_schema(staff_api_client):
+    response = staff_api_client.post(list_url, data=PARKING_DATA)
+
+    data = response.data
+    assert isinstance(data, dict)
+    assert sorted(data.keys()) == ["allowed", "end_time", "location", "time"]
+    assert isinstance(data["allowed"], bool)
+    assert data["end_time"] is None
+    assert isinstance(data["location"], dict)
+    assert sorted(data["location"].keys()) == ["payment_zone", "permit_area"]
+    assert isinstance(data["time"], datetime.datetime)
+
+
+def test_requested_time_must_have_timezone(staff_api_client):
+    naive_dt = datetime.datetime(2011, 1, 31, 12, 34, 56, 123456)
+    input_data = dict(PARKING_DATA, time=naive_dt)
+    response = staff_api_client.post(list_url, data=input_data)
+
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.data["time"] == ["Timezone is required"]
+
+
+def test_time_is_honored(staff_api_client):
+    dt = datetime.datetime(2011, 1, 31, 12, 34, 56, 123456,
+                           tzinfo=datetime.timezone.utc)
+    input_data = dict(PARKING_DATA, time=dt)
+    response = staff_api_client.post(list_url, data=input_data)
+
+    assert (response.status_code, response.data["time"]) == (HTTP_200_OK, dt)

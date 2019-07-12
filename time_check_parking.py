@@ -230,7 +230,7 @@ def process_measurements(measurements):
 
         times.setdefault(params, []).append(took)
 
-        if response_data.get('data', {}).get('status') == 'valid':
+        if response_data.get('data', {}).get('allowed'):
             if params not in alloweds:
                 alloweds.append(params)
 
@@ -288,7 +288,7 @@ def print_responses(results):
     for (params, response_data) in sorted(results['responses'].items()):
         data = response_data.get('data')
         status_code = response_data.get('status_code')
-        allowed = (data and data.get('status') == 'valid')
+        allowed = (data and data.get('allowed'))
         print('{params:70} => {err:1}{code:3} {allowed:7} {data}'.format(
             params=' '.join(params),
             err='' if status_code == 200 else '*',

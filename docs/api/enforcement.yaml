@@ -74,14 +74,63 @@ paths:
             application/json:
               schema:
                 type: object
-                required: [status]
+                required: [allowed, end_time, location, time]
                 properties:
-                  status:
-                    description: Validity status of the parking
-                    type: string
-                    enum: ["valid", "invalid"]
+                  allowed:
+                    description: >-
+                      Allowance status of the parking.  True if there
+                      exists a parking or permit in the system which is
+                      valid for the specified registration number at the
+                      specified location (and time), false otherwise.
+                    type: boolean
                   end_time:
-                    description: Time when the valid time ends
+                    description: >-
+                      Time when the validity ends or has ended.  There
+                      are three cases for this:
+
+                        * If the parking is allowed, the time will be in
+                          the future (compared to the specified time).
+                          Then the value specifies when the allowance
+                          time ends, but note that it can be extended.
+
+                        * If there exists a recently expired parking or
+                          permit for the given registration number and
+                          location, the time will be in the past
+                          (compared to the specified time).  Expired
+                          parkings or permits are visible through this
+                          timestamp for 15 minutes by default, but this
+                          may be changed in the server configuration.
+
+                        * If there is no recent parking allowance for
+                          the specified registration number, location
+                          and time, this value will be null.
+                    type: string
+                    format: date-time
+                    nullable: true
+                  location:
+                    type: object
+                    required: [payment_zone, permit_area]
+                    properties:
+                      payment_zone:
+                        description: >-
+                          Payment Zone found by the provided location,
+                          or null if the provided location is not in any
+                          payment zone in the system.
+                        type: integer
+                        nullable: true
+                      permit_area:
+                        description: >-
+                          Permit Area found by the provided location,
+                          or null if the provided location is not in any
+                          permit area in the system.
+                        type: string
+                        maxLength: 10
+                        nullable: true
+                  time:
+                    description: >-
+                      Time used in the check.  It will either be equal
+                      to the time value provided in the request or the
+                      current time if none was provided.
                     type: string
                     format: date-time
         '400':
@@ -90,9 +139,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-        '404':
-          description: Location was not found
-          $ref: '#/components/responses/NotFound'
   /valid_parking/:
     get:
       tags: ['Parking Validation']
@@ -362,6 +408,7 @@ paths:
       tags: ['Permits']
       summary: Replace a permit
       operationId: replacePermit
+      security: [{ApiKey: []}]
       parameters:
       - name: permit_id
         in: path
