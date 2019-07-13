@@ -28,7 +28,7 @@ class LocationSerializer(serializers.Serializer):
 
 
 class CheckParkingSerializer(serializers.Serializer):
-    registration_number = serializers.CharField(max_length=30)
+    registration_number = serializers.CharField(max_length=20)
     location = LocationSerializer()
     time = AwareDateTimeField(required=False)
 

@@ -148,7 +148,7 @@ class PermitLookupItemQuerySet(models.QuerySet):
 class PermitLookupItem(models.Model):
     permit = models.ForeignKey(
         Permit, related_name="lookup_items", on_delete=models.CASCADE)
-    registration_number = models.CharField(max_length=30)
+    registration_number = models.CharField(max_length=20)
     area_identifier = models.CharField(max_length=10)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()

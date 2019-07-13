@@ -45,7 +45,7 @@ paths:
                 registration_number:
                   description: Registration number to check
                   type: string
-                  maxLength: 30
+                  maxLength: 20
                 location:
                   description: Location of the parked vehicle
                   type: object
