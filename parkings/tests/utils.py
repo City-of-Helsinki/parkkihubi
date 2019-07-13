@@ -14,9 +14,11 @@ def approx(x, **kwargs):
     elif x is None or isinstance(x, (str, bytes, UUID, int, Decimal)):
         return x
     elif callable(getattr(x, 'items', None)):
-        return type(x)((key, approx(value)) for (key, value) in x.items())
+        return type(x)(
+            (key, approx(value, **kwargs))
+            for (key, value) in x.items())
     else:
-        return type(x)(approx(item) for item in x)
+        return type(x)(approx(item, **kwargs) for item in x)
 
 
 def call_mgmt_cmd_with_output(command_cls, *args, **kwargs):
