@@ -8,9 +8,11 @@ from django.utils import timezone
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from parkings.api.monitoring.region import WGS84_SRID
-from parkings.models import PaymentZone, Permit, PermitArea
+from parkings.models import ParkingCheck, PaymentZone, Permit, PermitArea
 from parkings.models.constants import GK25FIN_SRID
 from parkings.tests.api.utils import check_required_fields
+
+from ...utils import approx
 
 list_url = reverse("enforcement:v1:check_parking")
 
@@ -197,3 +199,19 @@ def test_time_is_honored(staff_api_client):
     response = staff_api_client.post(list_url, data=input_data)
 
     assert (response.status_code, response.data["time"]) == (HTTP_200_OK, dt)
+
+
+def test_action_is_logged(staff_api_client):
+    response = staff_api_client.post(list_url, data={
+        "registration_number": "XYZ-555",
+        "location": {"longitude": 24.1234567, "latitude": 60.2987654},
+    })
+
+    assert response.status_code == HTTP_200_OK
+    assert ParkingCheck.objects.count() == 1
+    recorded_check = ParkingCheck.objects.first()
+    assert recorded_check.registration_number == "XYZ-555"
+    assert recorded_check.location.coords == approx(
+        (24.1234567, 60.2987654), abs=1e-10)
+    assert recorded_check.time == response.data["time"]
+    assert recorded_check.time_overridden is False

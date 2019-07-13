@@ -6,7 +6,8 @@ from django.utils import timezone
 from rest_framework import generics, permissions, serializers
 from rest_framework.response import Response
 
-from ...models import Parking, PaymentZone, PermitArea, PermitLookupItem
+from ...models import (
+    Parking, ParkingCheck, PaymentZone, PermitArea, PermitLookupItem)
 from ...models.constants import GK25FIN_SRID, WGS84_SRID
 
 
@@ -50,12 +51,12 @@ class CheckParking(generics.GenericAPIView):
         # Read input parameters to variables
         time = params.get("time") or timezone.now()
         registration_number = params.get("registration_number")
-        location = get_location(params)
+        (wgs84_location, gk25_location) = get_location(params)
 
-        zone = get_payment_zone(location)
-        area = get_permit_area(location)
+        zone = get_payment_zone(gk25_location)
+        area = get_permit_area(gk25_location)
 
-        (allowed_by, end_time) = check_parking(
+        (allowed_by, parking, end_time) = check_parking(
             registration_number, zone, area, time)
 
         allowed = bool(allowed_by)
@@ -65,10 +66,10 @@ class CheckParking(generics.GenericAPIView):
             # one that has just expired, i.e. was valid a few minutes
             # ago (where "a few minutes" is the grace duration)
             past_time = time - get_grace_duration()
-            (_allowed_by, end_time) = check_parking(
+            (_allowed_by, parking, end_time) = check_parking(
                 registration_number, zone, area, past_time)
 
-        return Response({
+        result = {
             "allowed": allowed,
             "end_time": end_time,
             "location": {
@@ -76,14 +77,27 @@ class CheckParking(generics.GenericAPIView):
                 "permit_area": area,
             },
             "time": time,
-        })
+        }
+
+        ParkingCheck.objects.create(
+            time=time,
+            time_overridden=bool(params.get("time")),
+            registration_number=registration_number,
+            location=wgs84_location,
+            result=result,
+            allowed=allowed,
+            found_parking=parking,
+        )
+
+        return Response(result)
 
 
 def get_location(params):
     longitude = params["location"]["longitude"]
     latitude = params["location"]["latitude"]
     wgs84_location = Point(longitude, latitude, srid=WGS84_SRID)
-    return wgs84_location.transform(GK25FIN_SRID, clone=True)
+    gk25_location = wgs84_location.transform(GK25FIN_SRID, clone=True)
+    return (wgs84_location, gk25_location)
 
 
 def get_payment_zone(location):
@@ -108,16 +122,16 @@ def check_parking(registration_number, zone, area, time):
     :type zone: int|None
     :type area: str|None
     :type time: datetime.datetime
-    :rtype: (str, datetime.datetime)
+    :rtype: (str, Parking|None, datetime.datetime)
     """
     active_parkings = (
         Parking.objects
         .registration_number_like(registration_number)
         .valid_at(time)
-        .values_list("zone", "time_end"))
-    for (parking_zone, parking_end_time) in active_parkings:
-        if zone is None or parking_zone <= zone:
-            return ("parking", parking_end_time)
+        .only("id", "zone", "time_end"))
+    for parking in active_parkings:
+        if zone is None or parking.zone <= zone:
+            return ("parking", parking, parking.time_end)
 
     if area:
         permit_end_time = (
@@ -130,9 +144,9 @@ def check_parking(registration_number, zone, area, time):
             .first())
 
         if permit_end_time:
-            return ("permit", permit_end_time)
+            return ("permit", None, permit_end_time)
 
-    return (None, None)
+    return (None, None, None)
 
 
 def get_grace_duration(default=datetime.timedelta(minutes=15)):

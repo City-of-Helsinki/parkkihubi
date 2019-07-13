@@ -1,6 +1,7 @@
 from .operator import Operator
 from .parking import Parking, ParkingQuerySet
 from .parking_area import ParkingArea
+from .parking_check import ParkingCheck
 from .parking_terminal import ParkingTerminal
 from .permit import Permit, PermitArea, PermitLookupItem, PermitSeries
 from .region import Region
@@ -10,6 +11,7 @@ __all__ = [
     'Operator',
     'Parking',
     'ParkingArea',
+    'ParkingCheck',
     'ParkingTerminal',
     'ParkingQuerySet',
     'PaymentZone',
