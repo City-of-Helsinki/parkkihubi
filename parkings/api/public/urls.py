@@ -1,7 +1,7 @@
-from django.conf.urls import include, url
 from rest_framework import permissions
 from rest_framework.routers import APIRootView, DefaultRouter
 
+from ..url_utils import versioned_url
 from .parking_area import PublicAPIParkingAreaViewSet
 from .parking_area_statistics import PublicAPIParkingAreaStatisticsViewSet
 
@@ -22,6 +22,7 @@ router.register(
     r'parking_area_statistics',
     PublicAPIParkingAreaStatisticsViewSet, basename='parkingareastatistics')
 
+app_name = 'public'
 urlpatterns = [
-    url(r'^', include(router.urls, namespace='v1')),
+    versioned_url('v1', router.urls),
 ]

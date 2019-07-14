@@ -1,11 +1,12 @@
-from django.conf.urls import include, url
 from rest_framework.routers import DefaultRouter
 
+from ..url_utils import versioned_url
 from .parking import OperatorAPIParkingViewSet
 
 router = DefaultRouter()
 router.register(r'parking', OperatorAPIParkingViewSet)
 
+app_name = 'operator'
 urlpatterns = [
-    url(r'^', include(router.urls, namespace='v1')),
+    versioned_url('v1', router.urls),
 ]
