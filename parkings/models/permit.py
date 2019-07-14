@@ -143,7 +143,8 @@ class PermitCacheItemQuerySet(models.QuerySet):
 
 
 class PermitCacheItem(models.Model):
-    permit = models.ForeignKey(Permit, related_name="cache_items")
+    permit = models.ForeignKey(
+        Permit, related_name="cache_items", on_delete=models.CASCADE)
     registration_number = models.CharField(max_length=30)
     area_identifier = models.CharField(max_length=10)
     start_time = models.DateTimeField()
