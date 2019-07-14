@@ -5,6 +5,7 @@ from django.test.client import Client
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK
 
+from ..factories import PermitFactory
 from ..models import ParkingCheck
 
 
@@ -47,3 +48,12 @@ class TestParkingCheckAdmin(ObjAdminTestCase):
 
     def test_location_not_modifiable(self):
         assert 'geodjango_location.modifiable = false;' in self.response_text
+
+
+class TestPermitLookupItemAdmin(ObjAdminTestCase):
+    def create_object(self):
+        permit = PermitFactory()
+        return permit.lookup_items.first()
+
+    def test_is_readonly(self):
+        assert '<input type="text"' not in self.response_text
