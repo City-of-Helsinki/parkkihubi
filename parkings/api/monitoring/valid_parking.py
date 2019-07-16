@@ -34,7 +34,7 @@ class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
         .select_related('operator'))
     serializer_class = ParkingSerializer
     pagination_class = gis_pagination.GeoJsonPagination
-    filter_class = ValidParkingFilter
+    filterset_class = ValidParkingFilter
     bbox_filter_field = 'location'
     filter_backends = [DjangoFilterBackend, WGS84InBBoxFilter]
     bbox_filter_include_overlapping = True

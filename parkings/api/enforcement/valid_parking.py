@@ -75,7 +75,7 @@ class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAdminUser]
     queryset = Parking.objects.order_by('-time_end')
     serializer_class = ValidParkingSerializer
-    filter_class = ValidParkingFilter
+    filterset_class = ValidParkingFilter
 
     def filter_queryset(self, queryset):
         """

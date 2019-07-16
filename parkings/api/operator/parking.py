@@ -66,7 +66,7 @@ class OperatorAPIParkingPermission(permissions.BasePermission):
         """
         user = request.user
 
-        if not user.is_authenticated():
+        if not user.is_authenticated:
             return False
 
         try:

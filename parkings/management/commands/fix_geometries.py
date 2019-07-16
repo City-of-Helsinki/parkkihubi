@@ -82,6 +82,15 @@ def _polygon_to_multipolygon(polygon):
 
 def _geometry_collection_to_multipolygon(geometry_collection):
     assert isinstance(geometry_collection, GeometryCollection)
+    return _get_multipolygon_from_collection(geometry_collection)
+
+
+def _multipolygon_to_multipolygon(multipolygon):
+    assert isinstance(multipolygon, MultiPolygon)
+    return _get_multipolygon_from_collection(multipolygon)
+
+
+def _get_multipolygon_from_collection(geometry_collection):
     polygons = []
     for geom in geometry_collection:
         if geom.dims < 2:
@@ -101,7 +110,7 @@ def _to_multipolygon(geometry):
 
 
 _geometry_converters = {
-    MultiPolygon: lambda x: x,
+    MultiPolygon: _multipolygon_to_multipolygon,
     Polygon: _polygon_to_multipolygon,
     GeometryCollection: _geometry_collection_to_multipolygon,
 }

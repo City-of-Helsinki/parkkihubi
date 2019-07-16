@@ -9,24 +9,20 @@ from parkings.api.operator import urls as operator_urls
 from parkings.api.public import urls as public_urls
 
 urlpatterns = [
-    url(r'^auth/v1/', include(auth_urls, namespace='auth')),
+    url(r'^auth/', include(auth_urls)),
 ]
 
 if getattr(settings, 'PARKKIHUBI_PUBLIC_API_ENABLED', False):
-    urlpatterns.append(url(r'^public/v1/', include(public_urls, namespace='public')))
+    urlpatterns.append(url(r'^public/', include(public_urls)))
 
 if getattr(settings, 'PARKKIHUBI_MONITORING_API_ENABLED', False):
-    urlpatterns.append(
-        url(r'^monitoring/v1/',
-            include(monitoring_urls, namespace='monitoring')))
+    urlpatterns.append(url(r'^monitoring/', include(monitoring_urls)))
 
 if getattr(settings, 'PARKKIHUBI_OPERATOR_API_ENABLED', False):
-    urlpatterns.append(url(r'^operator/v1/', include(operator_urls, namespace='operator')))
+    urlpatterns.append(url(r'^operator/', include(operator_urls)))
 
 if getattr(settings, 'PARKKIHUBI_ENFORCEMENT_API_ENABLED', False):
-    urlpatterns.append(
-        url(r'^enforcement/v1/',
-            include(enforcement_urls, namespace='enforcement')))
+    urlpatterns.append(url(r'^enforcement/', include(enforcement_urls)))
 
 urlpatterns.extend([
     url(r'^admin/', admin.site.urls),

@@ -1,6 +1,7 @@
-from django.conf.urls import include, url
+from django.conf.urls import url
 from rest_framework.routers import DefaultRouter
 
+from ..url_utils import versioned_url
 from .check_parking import CheckParking
 from .operator import OperatorViewSet
 from .permit import (
@@ -30,6 +31,7 @@ router.register('permitseries', PermitSeriesViewSet, basename='permitseries')
 router.register('valid_parking', ValidParkingViewSet,
                 basename='valid_parking')
 
+app_name = 'enforcement'
 urlpatterns = [
-    url(r'^', include(router.urls, namespace='v1')),
+    versioned_url('v1', router.urls),
 ]
