@@ -90,6 +90,16 @@ strategy:
     id: null
     modified_at: null
     origin_id: null
+  parkings_parkingcheck:
+    allowed: null
+    created_at: null
+    found_parking_id: null
+    id: null
+    location: null
+    registration_number: parkkihubi.registration_number
+    result: null
+    time: null
+    time_overridden: null
   parkings_parkingterminal:
     created_at: null
     id: null
@@ -119,7 +129,7 @@ strategy:
     identifier: null
     modified_at: null
     name: null
-  parkings_permitcacheitem:
+  parkings_permitlookupitem:
     area_identifier: null
     end_time: null
     id: null

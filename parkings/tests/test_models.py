@@ -5,7 +5,7 @@ from django.contrib.gis.geos import Point
 from django.test import override_settings
 from django.utils.timezone import now, utc
 
-from parkings.models import Operator, Parking, ParkingTerminal
+from parkings.models import Operator, Parking, ParkingCheck, ParkingTerminal
 
 
 def test_operator_instance_creation():
@@ -51,6 +51,25 @@ def test_parking_str(parking_factory):
         registration_number='ABC-123',
     )
     assert all(str(parking).count(val) == 1 for val in ('2016', '8', 'ABC-123'))
+
+
+def test_parking_check_str():
+    parking_check = ParkingCheck(
+        created_at=datetime.datetime(2014, 1, 1, 6, 0, 0, tzinfo=utc),
+        time=datetime.datetime(2015, 1, 1, 12, 0, 0, tzinfo=utc),
+        time_overridden=True,
+        registration_number='ABC-123',
+        location=Point(60.193609, 24.951394),
+        result={'location': {'payment_zone': 2, 'permit_area': 'J'}},
+        allowed=True,
+        found_parking=None,
+    )
+
+    result = str(parking_check)
+
+    assert result == (
+        '[2014-01-01 06:00:00+00:00]'
+        ' 2015-01-01 12:00:00+00:00* 24.95139N 60.19361E Z2/J ABC-123: OK')
 
 
 @pytest.mark.django_db

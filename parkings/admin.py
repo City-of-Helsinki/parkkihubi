@@ -1,22 +1,19 @@
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 
-from parkings.models import PaymentZone, PermitArea
-
+from .admin_utils import ReadOnlyAdmin
 from .models import (
-    Operator, Parking, ParkingArea, ParkingTerminal, Permit, PermitCacheItem,
-    Region)
+    Operator, Parking, ParkingArea, ParkingCheck, ParkingTerminal, PaymentZone,
+    Permit, PermitArea, PermitLookupItem, Region)
 
 
+@admin.register(Operator)
 class OperatorAdmin(admin.ModelAdmin):
     pass
 
 
-class PermitAreaAdmin(admin.ModelAdmin):
-    ordering = ('identifier',)
-
-
-class PaymentZoneAdmin(admin.ModelAdmin):
+@admin.register(PaymentZone)
+class PaymentZoneAdmin(OSMGeoAdmin):
     ordering = ('number',)
 
 
@@ -35,8 +32,26 @@ class RegionAdmin(OSMGeoAdmin):
     ordering = ('name',)
 
 
+@admin.register(ParkingArea)
 class ParkingAreaAdmin(OSMGeoAdmin):
     ordering = ('origin_id',)
+
+
+@admin.register(ParkingCheck)
+class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
+    modifiable = False
+
+    def get_readonly_fields(self, request, obj=None):
+        # Remove location from readonly fields, because otherwise the
+        # map won't be rendered at all.  The class level
+        # "modifiable=False" will take care of not allowing the location
+        # to be modified.
+        fields = super().get_readonly_fields(request, obj)
+        return [x for x in fields if x != 'location']
+
+    def has_change_permission(self, request, obj=None):
+        # Needed to make the map visible for the location field
+        return True
 
 
 @admin.register(ParkingTerminal)
@@ -44,9 +59,16 @@ class ParkingTerminalAdmin(OSMGeoAdmin):
     list_display = ['id', 'number', 'name']
 
 
-admin.site.register(Operator, OperatorAdmin)
-admin.site.register(ParkingArea, ParkingAreaAdmin)
-admin.site.register(Permit)
-admin.site.register(PermitCacheItem)
-admin.site.register(PermitArea, PermitAreaAdmin)
-admin.site.register(PaymentZone, PaymentZoneAdmin)
+@admin.register(Permit)
+class PermitAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(PermitArea)
+class PermitAreaAdmin(OSMGeoAdmin):
+    ordering = ('identifier',)
+
+
+@admin.register(PermitLookupItem)
+class PermitLookupItemAdmin(ReadOnlyAdmin):
+    pass

@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from ..factories.permit import (
     generate_areas, generate_external_ids, generate_subjects)
-from ..models import Permit, PermitCacheItem
+from ..models import Permit, PermitLookupItem
 
 
 @pytest.mark.django_db
@@ -19,7 +19,7 @@ def test_permit_instance_creation_succeeds_with_valid_data(permit_series):
     instance = Permit.objects.first()
 
     assert Permit.objects.count() == 1
-    assert PermitCacheItem.objects.count() == 1
+    assert PermitLookupItem.objects.count() == 1
     for key in permit_data.keys():
         assert getattr(instance, key) == permit_data[key]
 
@@ -96,7 +96,8 @@ def test_permit_by_time_manager_method_valid_time(active_permit):
 
 
 @pytest.mark.django_db
-def test_permitcacheitem_creation_ignored_for_start_date_gte_end_date(permit_series):
+def test_permitlookupitem_creation_ignored_for_start_date_gte_end_date(
+        permit_series):
     permit_data = {
         'series': permit_series,
         'external_id': generate_external_ids(),
@@ -114,4 +115,4 @@ def test_permitcacheitem_creation_ignored_for_start_date_gte_end_date(permit_ser
     Permit.objects.create(**permit_data)
 
     assert Permit.objects.count() == 1
-    assert PermitCacheItem.objects.count() == 0
+    assert PermitLookupItem.objects.count() == 0
