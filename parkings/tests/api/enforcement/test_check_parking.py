@@ -234,6 +234,19 @@ def test_infinite_latitude_returns_bad_request(staff_api_client):
         " are not JSON compliant: 'Infinity'")
 
 
+@pytest.mark.parametrize("longitude", [-180, 0.0, 180.0])
+@pytest.mark.parametrize("latitude", [-90.0, 0.0, 90.0])
+def test_extreme_locations_are_ok(
+        staff_api_client, latitude, longitude):
+    location = {"latitude": latitude, "longitude": longitude}
+    input_data = dict(PARKING_DATA, location=location)
+    response = staff_api_client.post(list_url, data=input_data)
+
+    assert response.status_code == HTTP_200_OK
+    assert ParkingCheck.objects.first().location.coords == (
+        longitude, latitude)
+
+
 def test_requested_time_must_have_timezone(staff_api_client):
     naive_dt = datetime.datetime(2011, 1, 31, 12, 34, 56, 123456)
     input_data = dict(PARKING_DATA, time=naive_dt)
