@@ -247,6 +247,30 @@ def test_extreme_locations_are_ok(
         longitude, latitude)
 
 
+INVALID_REGNUM_TEST_CASES = {
+    "too-long": (
+        "123456789012345678901",
+        "Ensure this field has no more than 20 characters."),
+    "blank": (
+        "",
+        "This field may not be blank."),
+    "list": (
+        ["ABC-123"],
+        "Not a valid string."),
+    "dict": (
+        {"ABC-123": "ABC-123"},
+        "Not a valid string."),
+}
+@pytest.mark.parametrize("case", INVALID_REGNUM_TEST_CASES.keys())
+def test_invalid_regnum_returns_bad_request(staff_api_client, case):
+    (regnum, error_text) = INVALID_REGNUM_TEST_CASES[case]
+    input_data = dict(PARKING_DATA, registration_number=regnum)
+    response = staff_api_client.post(list_url, data=input_data)
+
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.data["registration_number"] == [error_text]
+
+
 def test_requested_time_must_have_timezone(staff_api_client):
     naive_dt = datetime.datetime(2011, 1, 31, 12, 34, 56, 123456)
     input_data = dict(PARKING_DATA, time=naive_dt)
