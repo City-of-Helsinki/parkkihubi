@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import datetime
+import json
 
+import pytest
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.urls import reverse
 from django.utils import timezone
@@ -181,6 +183,55 @@ def test_returned_data_has_correct_schema(staff_api_client):
     assert isinstance(data["location"], dict)
     assert sorted(data["location"].keys()) == ["payment_zone", "permit_area"]
     assert isinstance(data["time"], datetime.datetime)
+
+
+INVALID_LOCATION_TEST_CASES = {
+    "str-location": (
+        "foobar",
+        "non_field_errors",
+        "Invalid data. Expected a dictionary, but got str."),
+    "str-latitude": (
+        {"latitude": "foobar", "longitude": 33.0},
+        "latitude",
+        "A valid number is required."),
+    "too-big-latitude": (
+        {"latitude": 9999, "longitude": 99},
+        "latitude",
+        "Ensure this value is less than or equal to 90."),
+    "too-big-longitude": (
+        {"latitude": 90, "longitude": 999},
+        "longitude",
+        "Ensure this value is less than or equal to 180."),
+    "too-small-latitude": (
+        {"latitude": -9999, "longitude": 99},
+        "latitude",
+        "Ensure this value is greater than or equal to -90."),
+    "too-small-longitude": (
+        {"latitude": 90, "longitude": -999},
+        "longitude",
+        "Ensure this value is greater than or equal to -180."),
+}
+@pytest.mark.parametrize("case", INVALID_LOCATION_TEST_CASES.keys())
+def test_invalid_location_returns_bad_request(staff_api_client, case):
+    (location, error_field, error_text) = INVALID_LOCATION_TEST_CASES[case]
+    input_data = dict(PARKING_DATA, location=location)
+    response = staff_api_client.post(list_url, data=input_data)
+
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.data["location"][error_field] == [error_text]
+
+
+def test_infinite_latitude_returns_bad_request(staff_api_client):
+    location = {"latitude": float("inf"), "longitude": 0.0},
+    input_data = dict(PARKING_DATA, location=location)
+    body = json.dumps(input_data).encode("utf-8")
+    response = staff_api_client.post(
+        list_url, data=body, content_type="application/json")
+
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.data["detail"] == (
+        "JSON parse error - Out of range float values"
+        " are not JSON compliant: 'Infinity'")
 
 
 def test_requested_time_must_have_timezone(staff_api_client):
