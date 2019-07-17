@@ -84,10 +84,6 @@ INVALID_DATA_TEST_CASES = {
     'invalid-timestamp': (
         [{'start_time': TS1, 'end_time': '', 'registration_number': 'X-14'}],
         'Invalid "end_time" value \'\': Not a timestamp string'),
-    'no-timezone': (
-        [{'start_time': TS1, 'end_time': '2019-12-31T00:00:00',
-          'registration_number': 'X-14'}],
-        'Invalid "end_time" value \'2019-12-31T00:00:00\': Missing timezone'),
 }
 @pytest.mark.parametrize('kind', ['single', 'bulk'])
 @pytest.mark.parametrize('test_case', INVALID_DATA_TEST_CASES.keys())
@@ -120,6 +116,7 @@ def test_permit_is_not_created_with_invalid_post_data(
     ('1995-01-01 12:00:00 UTC', '1995-01-01T12:00:00+00:00'),
     ('2019-05-30T12:00:00.123Z', '2019-05-30T12:00:00.123000+00:00'),
     ('2019-05-30T12:00:00.999999 +00:00', '2019-05-30T12:00:00.999999+00:00'),
+    ('2019-12-31T00:00:00', '2019-12-31T00:00:00+00:00'),  # No timezone as UTC
 ])
 @pytest.mark.django_db
 def test_permit_creation_normalizes_timestamps(
