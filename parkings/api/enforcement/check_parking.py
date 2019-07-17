@@ -1,6 +1,7 @@
 import datetime
 
 from django.conf import settings
+from django.contrib.gis.gdal.error import GDALException
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 from rest_framework import generics, permissions, serializers
@@ -24,8 +25,8 @@ class AwareDateTimeField(serializers.DateTimeField):
 
 
 class LocationSerializer(serializers.Serializer):
-    latitude = serializers.FloatField()
-    longitude = serializers.FloatField()
+    latitude = serializers.FloatField(min_value=-90, max_value=90)
+    longitude = serializers.FloatField(min_value=-180, max_value=180)
 
 
 class CheckParkingSerializer(serializers.Serializer):
@@ -96,11 +97,19 @@ def get_location(params):
     longitude = params["location"]["longitude"]
     latitude = params["location"]["latitude"]
     wgs84_location = Point(longitude, latitude, srid=WGS84_SRID)
-    gk25_location = wgs84_location.transform(GK25FIN_SRID, clone=True)
+    try:
+        gk25_location = wgs84_location.transform(GK25FIN_SRID, clone=True)
+    except GDALException:
+        # GK25-FIN doesn't cover the whole world, and therefore
+        # locations outside of its projection plane will raise a
+        # GDALException.  In that case return None as the gk25_location.
+        return (wgs84_location, None)
     return (wgs84_location, gk25_location)
 
 
 def get_payment_zone(location):
+    if location is None:
+        return None
     zone_numbers = (
         PaymentZone.objects
         .filter(geom__contains=location)
@@ -110,6 +119,8 @@ def get_payment_zone(location):
 
 
 def get_permit_area(location):
+    if location is None:
+        return None
     area = PermitArea.objects.filter(geom__contains=location).first()
     return area.identifier if area else None
 
