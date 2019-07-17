@@ -271,6 +271,16 @@ def test_invalid_regnum_returns_bad_request(staff_api_client, case):
     assert response.data["registration_number"] == [error_text]
 
 
+def test_invalid_timestamp_string_returns_bad_request(staff_api_client):
+    input_data = dict(PARKING_DATA, time="invalid-timestamp")
+    response = staff_api_client.post(list_url, data=input_data)
+
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert response.data["time"] == [
+        ("Date has wrong format. Use one of these formats instead:"
+         " YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].")]
+
+
 def test_requested_time_must_have_timezone(staff_api_client):
     naive_dt = datetime.datetime(2011, 1, 31, 12, 34, 56, 123456)
     input_data = dict(PARKING_DATA, time=naive_dt)
