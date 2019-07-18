@@ -11,15 +11,15 @@ from ..models import ParkingCheck
 
 class ObjAdminTestCase(TestCase):
     def setUp(self):
+        user_model = get_user_model()
+        self.user = user_model.objects.create_superuser('admin', '', 'admin')
+
         self.obj = self.create_object()
         self.url = '{admin_root}{app_label}/{model}/{obj_id}/change/'.format(
             admin_root=reverse('admin:index'),
             app_label=self.obj._meta.app_label,
             model=self.obj._meta.model_name,
             obj_id=self.obj.id)
-
-        user_model = get_user_model()
-        self.user = user_model.objects.create_superuser('admin', '', 'admin')
 
         self.client = Client()
         self.client.force_login(self.user)
@@ -33,6 +33,7 @@ class ObjAdminTestCase(TestCase):
 class TestParkingCheckAdmin(ObjAdminTestCase):
     def create_object(self):
         return ParkingCheck.objects.create(
+            performer=self.user,
             time='2019-01-01T12:00:00Z',
             time_overridden=True,
             registration_number='ABC-123',

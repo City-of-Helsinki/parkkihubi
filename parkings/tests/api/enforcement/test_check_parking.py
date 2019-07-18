@@ -313,3 +313,5 @@ def test_action_is_logged(staff_api_client):
         (24.1234567, 60.2987654), abs=1e-10)
     assert recorded_check.time == response.data["time"]
     assert recorded_check.time_overridden is False
+    assert recorded_check.performer
+    assert recorded_check.performer.is_staff
