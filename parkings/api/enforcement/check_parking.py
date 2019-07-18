@@ -81,6 +81,7 @@ class CheckParking(generics.GenericAPIView):
         }
 
         ParkingCheck.objects.create(
+            performer=request.user,
             time=time,
             time_overridden=bool(params.get("time")),
             registration_number=registration_number,

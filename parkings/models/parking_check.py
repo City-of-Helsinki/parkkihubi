@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.fields import JSONField
 from django.core.serializers.json import DjangoJSONEncoder
@@ -19,6 +20,10 @@ class ParkingCheck(models.Model):
     # Metadata
     created_at = models.DateTimeField(
         auto_now_add=True, db_index=True, verbose_name=_("time created"))
+    performer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, editable=False,
+        verbose_name=_("performer"),
+        help_text=_("User who performed the check"))
 
     # Query parameters
     time = models.DateTimeField(verbose_name=_("time"))
