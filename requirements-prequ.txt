@@ -5,7 +5,7 @@
 --no-binary psycopg2
 
 click==7.0                # via prequ
-prequ==1.4.6
+prequ==1.4.7
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip                       # via prequ
