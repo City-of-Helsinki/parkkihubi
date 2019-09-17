@@ -1,3 +1,5 @@
+from itertools import chain
+
 from django.conf import settings
 from django.contrib.gis.db import models as gis_models
 from django.db import models, router, transaction
@@ -66,14 +68,14 @@ class PermitQuerySet(models.QuerySet):
         return self.filter(lookup_items__in=lookup_items).distinct()
 
     def bulk_create(self, permits, *args, **kwargs):
+        for permit in permits:
+            assert isinstance(permit, Permit)
+            permit.full_clean()
+
         with transaction.atomic(using=self.db, savepoint=False):
             created_permits = super().bulk_create(permits, *args, **kwargs)
-            lookup_items = []
-            for permit in created_permits:
-                assert isinstance(permit, Permit)
-                permit.full_clean()
-                lookup_items.extend(permit._make_lookup_items())
-            PermitLookupItem.objects.using(self.db).bulk_create(lookup_items)
+            PermitLookupItem.objects.using(self.db).bulk_create(
+                chain(*(x._make_lookup_items() for x in created_permits)))
             return created_permits
 
 

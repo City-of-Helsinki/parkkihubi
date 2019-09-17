@@ -49,8 +49,7 @@ class TimestampField(TextField):
             raise ValidationError(_('Not a timestamp string'))
 
         if not dt.tzinfo:
-            # Interpret timestamps without a timezone as UTC
-            dt = dt.replace(tzinfo=timezone.utc)
+            raise ValidationError(_('Missing timezone'))
 
         return dt.astimezone(timezone.utc).isoformat()
 

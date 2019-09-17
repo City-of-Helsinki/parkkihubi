@@ -5,7 +5,7 @@ from rest_framework.status import (
 
 from ....factories.permit import (
     generate_areas, generate_external_ids, generate_subjects)
-from ....models import PermitLookupItem
+from ....models import Permit, PermitLookupItem
 
 list_url = reverse('enforcement:v1:permit-list')
 
@@ -84,6 +84,10 @@ INVALID_DATA_TEST_CASES = {
     'invalid-timestamp': (
         [{'start_time': TS1, 'end_time': '', 'registration_number': 'X-14'}],
         'Invalid "end_time" value \'\': Not a timestamp string'),
+    'no-timezone': (
+        [{'start_time': TS1, 'end_time': '2019-12-31T00:00:00',
+          'registration_number': 'X-14'}],
+        'Invalid "end_time" value \'2019-12-31T00:00:00\': Missing timezone'),
 }
 @pytest.mark.parametrize('kind', ['single', 'bulk'])
 @pytest.mark.parametrize('test_case', INVALID_DATA_TEST_CASES.keys())
@@ -116,7 +120,6 @@ def test_permit_is_not_created_with_invalid_post_data(
     ('1995-01-01 12:00:00 UTC', '1995-01-01T12:00:00+00:00'),
     ('2019-05-30T12:00:00.123Z', '2019-05-30T12:00:00.123000+00:00'),
     ('2019-05-30T12:00:00.999999 +00:00', '2019-05-30T12:00:00.999999+00:00'),
-    ('2019-12-31T00:00:00', '2019-12-31T00:00:00+00:00'),  # No timezone as UTC
 ])
 @pytest.mark.django_db
 def test_permit_creation_normalizes_timestamps(
@@ -201,7 +204,8 @@ def test_permit_data_matches_permit_object(staff_api_client, permit):
     check_permit_areas_keys(response.data['areas'][0])
 
 
-def test_permit_bulk_create_creates_lookup_items(staff_api_client, permit_series):
+def test_permit_bulk_create_creates_lookup_items(
+        staff_api_client, permit_series):
     permit_data = [
         {
             "series": permit_series.id,
@@ -222,3 +226,50 @@ def test_permit_bulk_create_creates_lookup_items(staff_api_client, permit_series
 
     assert response.status_code == HTTP_201_CREATED
     assert PermitLookupItem.objects.count() == 2
+
+
+def test_permit_bulk_create_normalizes_timestamps(
+        staff_api_client, permit_series):
+    permit_data = [
+        {
+            "series": permit_series.id,
+            "external_id": "E1",
+            'subjects': [{
+                'start_time': '1970-01-01T01:23:00+01:23',
+                'end_time': '2030-06-30T12:00+03:00',
+                'registration_number': 'REG-1',
+            }],
+            'areas': [{
+                'start_time': '1970-01-01T00:00:00Z',
+                'end_time': '2030-06-30T11:00+02:00',
+                'area': 'AREA 51',
+            }],
+        },
+        {
+            "series": permit_series.id,
+            "external_id": "E2",
+            'subjects': [{
+                'start_time': '1969-12-31T22:00:00-02:00',
+                'end_time': '2030-06-30T10:00+01:00',
+                'registration_number': 'REG-2',
+            }],
+            'areas': [{
+                'start_time': '1970-01-01T00:00:00+00:00',
+                'end_time': '2030-06-30T09:00Z',
+                'area': 'AREA 52',
+            }],
+        },
+    ]
+
+    response = staff_api_client.post(list_url, data=permit_data)
+
+    assert response.status_code == HTTP_201_CREATED
+    (permit1, permit2) = list(Permit.objects.order_by('external_id'))
+    assert permit1.subjects[0]['start_time'] == '1970-01-01T00:00:00+00:00'
+    assert permit1.subjects[0]['end_time'] == '2030-06-30T09:00:00+00:00'
+    assert permit1.areas[0]['start_time'] == '1970-01-01T00:00:00+00:00'
+    assert permit1.areas[0]['end_time'] == '2030-06-30T09:00:00+00:00'
+    assert permit2.subjects[0]['start_time'] == '1970-01-01T00:00:00+00:00'
+    assert permit2.subjects[0]['end_time'] == '2030-06-30T09:00:00+00:00'
+    assert permit2.areas[0]['start_time'] == '1970-01-01T00:00:00+00:00'
+    assert permit2.areas[0]['end_time'] == '2030-06-30T09:00:00+00:00'
