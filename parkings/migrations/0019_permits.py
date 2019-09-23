@@ -62,6 +62,8 @@ class Migration(migrations.Migration):
             ],
             options={
                 'ordering': ('created_at', 'id'),
+                'verbose_name': 'permit series',
+                'verbose_name_plural': 'permit series',
             },
         ),
         migrations.AddField(
