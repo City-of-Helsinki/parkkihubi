@@ -46,6 +46,8 @@ class PermitSeries(TimestampedModelMixin, models.Model):
 
     class Meta:
         ordering = ('created_at', 'id')
+        verbose_name = _("permit series")
+        verbose_name_plural = _("permit series")
 
     def __str__(self):
         return str(self.id)
@@ -103,7 +105,11 @@ class Permit(TimestampedModelMixin, models.Model):
         ordering = ('series', 'id')
 
     def __str__(self):
-        return ('Permit {}'.format(self.id))
+        return 'Permit {id} ({series}{active} / {external_id})'.format(
+            id=self.id,
+            series=self.series,
+            active='*' if self.series.active else '',
+            external_id=self.external_id)
 
     def save(self, using=None, *args, **kwargs):
         self.full_clean()

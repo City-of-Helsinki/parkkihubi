@@ -1,44 +1,53 @@
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
 
-from .admin_utils import ReadOnlyAdmin
+from .admin_utils import ReadOnlyAdmin, WithAreaField
 from .models import (
     Operator, Parking, ParkingArea, ParkingCheck, ParkingTerminal, PaymentZone,
-    Permit, PermitArea, PermitLookupItem, Region)
+    Permit, PermitArea, PermitLookupItem, PermitSeries, Region)
 
 
 @admin.register(Operator)
 class OperatorAdmin(admin.ModelAdmin):
-    pass
+    list_display = ['name', 'user']
 
 
 @admin.register(PaymentZone)
-class PaymentZoneAdmin(OSMGeoAdmin):
+class PaymentZoneAdmin(WithAreaField, OSMGeoAdmin):
+    list_display = ['id', 'number', 'name', 'area']
     ordering = ('number',)
 
 
 @admin.register(Parking)
 class ParkingAdmin(OSMGeoAdmin):
+    date_hierarchy = 'time_start'
     list_display = [
         'id', 'operator', 'zone', 'parking_area', 'terminal_number',
         'time_start', 'time_end', 'registration_number',
         'created_at', 'modified_at']
     list_filter = ['operator', 'zone']
-    ordering = ('-created_at',)
+    ordering = ('-time_start',)
 
 
 @admin.register(Region)
-class RegionAdmin(OSMGeoAdmin):
+class RegionAdmin(WithAreaField, OSMGeoAdmin):
+    list_display = ['id', 'name', 'capacity_estimate', 'area']
     ordering = ('name',)
 
 
 @admin.register(ParkingArea)
-class ParkingAreaAdmin(OSMGeoAdmin):
+class ParkingAreaAdmin(WithAreaField, OSMGeoAdmin):
+    area_scale = 1
+    list_display = ['id', 'origin_id', 'capacity_estimate', 'area']
     ordering = ('origin_id',)
 
 
 @admin.register(ParkingCheck)
 class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
+    list_display = [
+        'id', 'time', 'registration_number', 'location',
+        'allowed', 'result', 'performer', 'created_at']
+
     modifiable = False
 
     def get_readonly_fields(self, request, obj=None):
@@ -61,14 +70,36 @@ class ParkingTerminalAdmin(OSMGeoAdmin):
 
 @admin.register(Permit)
 class PermitAdmin(admin.ModelAdmin):
-    pass
+    date_hierarchy = 'created_at'
+    list_display = ['id', 'series', 'external_id', 'created_at', 'modified_at']
+    list_filter = ['series__active']
+    ordering = ('-series', '-id')
 
 
 @admin.register(PermitArea)
-class PermitAreaAdmin(OSMGeoAdmin):
+class PermitAreaAdmin(WithAreaField, OSMGeoAdmin):
+    list_display = ['id', 'identifier', 'name', 'area']
     ordering = ('identifier',)
 
 
 @admin.register(PermitLookupItem)
 class PermitLookupItemAdmin(ReadOnlyAdmin):
-    pass
+    list_display = [
+        'id', 'series', 'permit',
+        'registration_number', 'area_identifier',
+        'start_time', 'end_time']
+    list_filter = ['permit__series__active']
+    ordering = ('-permit__series', 'permit')
+
+    def series(self, instance):
+        series = instance.permit.series
+        return '{id}{active}'.format(
+            id=series.id, active='*' if series.active else '')
+
+
+@admin.register(PermitSeries)
+class PermitSeriesAdmin(admin.ModelAdmin):
+    date_hierarchy = 'created_at'
+    list_display = ['id', 'active', 'created_at', 'modified_at']
+    list_filter = ['active']
+    ordering = ('-created_at', '-id')
