@@ -10,6 +10,11 @@ info:
   version: "1.1.0"
 servers:
   - url: https://api.parkkiopas.fi/operator/v1/
+    description: Production server
+  - url: https://testapi.parkkiopas.fi/operator/v1/
+    description: Test server
+  - url: http://localhost:8000/operator/v1/
+    description: Local development server
 paths:
   /parking/:
     post:
