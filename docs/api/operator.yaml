@@ -15,11 +15,14 @@ servers:
     description: Test server
   - url: http://localhost:8000/operator/v1/
     description: Local development server
+tags:
+  - name: Parkings
+    description: >-
+      Endpoints for creating and updating parkings
 paths:
   /parking/:
     post:
-      tags:
-        - parking
+      tags: ['Parkings']
       summary: Create a new parking
       operationId: createParking
       security: [{ApiKey: []}]
@@ -73,8 +76,7 @@ paths:
           $ref: '#/components/responses/Unauthorized'
   /parking/{parking_id}/:
     put:
-      tags:
-        - parking
+      tags: ['Parkings']
       summary: Update a parking by its ID
       operationId: updateParkingById
       security: [{ApiKey: []}]
@@ -139,8 +141,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     patch:
-      tags:
-        - parking
+      tags: ['Parkings']
       summary: Partial update a parking by its ID
       operationId: partialUpdateParkingById
       security: [{ApiKey: []}]
@@ -195,8 +196,7 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     delete:
-      tags:
-        - parking
+      tags: ['Parkings']
       summary: Delete a parking by its ID
       operationId: deleteParkingById
       security: [{ApiKey: []}]
