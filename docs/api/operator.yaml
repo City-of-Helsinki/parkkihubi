@@ -16,6 +16,7 @@ paths:
         - parking
       summary: Create a new parking
       operationId: createParking
+      security: [{ApiKey: []}]
       requestBody:
         required: true
         description: Parking to add to the system
@@ -70,6 +71,7 @@ paths:
         - parking
       summary: Update a parking by its ID
       operationId: updateParkingById
+      security: [{ApiKey: []}]
       parameters:
         - name: parking_id
           in: path
@@ -135,6 +137,7 @@ paths:
         - parking
       summary: Partial update a parking by its ID
       operationId: partialUpdateParkingById
+      security: [{ApiKey: []}]
       parameters:
         - name: parking_id
           in: path
@@ -190,6 +193,7 @@ paths:
         - parking
       summary: Delete a parking by its ID
       operationId: deleteParkingById
+      security: [{ApiKey: []}]
       parameters:
         - name: parking_id
           in: path
@@ -208,6 +212,11 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      name: Authorization
+      in: header
   schemas:
     Parking:
       type: object
