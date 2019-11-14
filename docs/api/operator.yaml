@@ -1,11 +1,12 @@
 openapi: 3.0.1
 info:
-  title: Parkkihubi
-  description: |
-                 Parkkihubi REST API Documentation (Operator)
+  title: Parkkihubi Operator API
+  description: >-
+    Parkkihubi Operator REST API Documentation
 
-                 Authentication: Every request must have header `Authorization: ApiKey <your api key>`
+    Authentication: Every request must have header:
 
+        Authorization: ApiKey <your api key>
   version: "1.1.0"
 servers:
   - url: https://api.parkkiopas.fi/operator/v1/
