@@ -293,18 +293,23 @@ components:
         - time_start
         - zone
     Location:
-      description: Point location in geoJSON format
+      description: Location in GeoJSON format
       type: object
       example:
         type: Point
         coordinates: [24.938466, 60.170014]
       properties:
         type:
-          description: Location geometry type.
+          description: Geometry type
           type: string
+          enum: [Point]
         coordinates:
-          description: An array of coordinates describing the location geometry (longitude, latitude)
+          description: >-
+            An array of coordinates describing the location geometry.
+            The items are WGS84 longitude and latitude in that order.
           type: array
+          minItems: 2
+          maxItems: 2
           items:
             type: number
             format: float
