@@ -62,7 +62,7 @@ paths:
                   type: string
                   format: dateTime
                 zone:
-                  description: Parking zone
+                  description: Payment zone
                   type: integer
                   enum: [1, 2, 3]
               required:
@@ -124,7 +124,7 @@ paths:
                   type: string
                   format: dateTime
                 zone:
-                  description: Parking zone
+                  description: Payment zone
                   type: integer
                   enum: [1, 2, 3]
               required:
@@ -183,7 +183,7 @@ paths:
                   type: string
                   format: dateTime
                 zone:
-                  description: Parking zone
+                  description: Payment zone
                   type: integer
                   enum: [1, 2, 3]
       responses:
@@ -285,7 +285,7 @@ components:
           type: string
           format: dateTime
         zone:
-          description: Parking zone
+          description: Payment zone
           type: integer
           enum: [1, 2, 3]
       required:
