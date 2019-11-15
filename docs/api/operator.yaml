@@ -44,6 +44,12 @@ paths:
               properties:
                 location:
                   $ref: '#/components/schemas/Location'
+                terminal_number:
+                  description: >-
+                    Payment terminal number, if the parking was bought
+                    from a payment terminal.
+                  type: string
+                  default: ''
                 registration_number:
                   description: Registration number for the parking
                   type: string
@@ -261,6 +267,12 @@ components:
           readOnly: true
         location:
           $ref: '#/components/schemas/Location'
+        terminal_number:
+          description: >-
+            Payment terminal number, if the parking was bought
+            from a payment terminal.
+          type: string
+          default: ''
         registration_number:
           description: Registration number for the parking
           type: string
