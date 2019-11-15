@@ -32,43 +32,95 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              example:
-                location:
-                  type: Point
-                  coordinates: [24.938466, 60.170014]
-                registration_number: LOL-007
-                time_start: "2016-12-24T21:00:00Z"
-                time_end: "2016-12-24T22:00:00Z"
-                zone: 2
-              properties:
-                location:
-                  $ref: '#/components/schemas/Location'
-                terminal_number:
-                  description: >-
-                    Payment terminal number, if the parking was bought
-                    from a payment terminal.
-                  type: string
-                  default: ''
-                registration_number:
-                  description: Registration number for the parking
-                  type: string
-                time_start:
-                  description: Start time for the parking
-                  type: string
-                  format: dateTime
-                time_end:
-                  description: End time for the parking
-                  type: string
-                  format: dateTime
-                zone:
-                  description: Payment zone
-                  type: integer
-                  enum: [1, 2, 3]
-              required:
-                - registration_number
-                - time_start
-                - zone
+              anyOf:
+                - title: Paid parking
+                  example:
+                    location:
+                      type: Point
+                      coordinates: [24.938466, 60.170014]
+                    registration_number: LOL-007
+                    time_start: "2016-12-24T21:00:00Z"
+                    time_end: "2016-12-24T22:00:00Z"
+                    zone: 2
+                  type: object
+                  properties:
+                    location:
+                      $ref: '#/components/schemas/Location'
+                    terminal_number:
+                      description: >-
+                        Payment terminal number, if the parking was bought
+                        from a payment terminal.
+                      type: string
+                      default: ''
+                    registration_number:
+                      description: Registration number for the parking
+                      type: string
+                    time_start:
+                      description: Start time for the parking
+                      type: string
+                      format: dateTime
+                    time_end:
+                      description: End time for the parking
+                      type: string
+                      format: dateTime
+                    zone:
+                      description: Payment zone
+                      type: integer
+                      enum: [1, 2, 3]
+                    is_disc_parking:
+                      description: >-
+                        Specify whether this is a parking disc parking.
+
+                        Note: This field can be left out from the
+                        request and will then default to false.  This
+                        way the API for regular paid parkings is
+                        compatible with the previous version.
+                      type: boolean
+                      enum: [false]
+                      default: false
+                  required:
+                    - registration_number
+                    - time_start
+                    - zone
+                - title: Parking disc parking
+                  example:
+                    location:
+                      type: Point
+                      coordinates: [24.938466, 60.170014]
+                    registration_number: LOL-007
+                    time_start: "2016-12-24T21:00:00Z"
+                    is_disc_parking: true
+                  type: object
+                  properties:
+                    location:
+                      $ref: '#/components/schemas/Location'
+                    terminal_number:
+                      description: >-
+                        Payment terminal number, if the parking was bought
+                        from a payment terminal.
+                      type: string
+                      default: ''
+                    registration_number:
+                      description: Registration number for the parking
+                      type: string
+                    time_start:
+                      description: Start time for the parking
+                      type: string
+                      format: dateTime
+                    time_end:
+                      description: End time for the parking
+                      type: string
+                      format: dateTime
+                    is_disc_parking:
+                      description: >-
+                        Specify whether this is a parking disc parking.
+                      type: boolean
+                      enum: [true]
+                  required:
+                    - registration_number
+                    - time_start
+                    - location
+                    - is_disc_parking
       responses:
         '201':
           description: The parking was created successfully
@@ -288,6 +340,14 @@ components:
           description: Payment zone
           type: integer
           enum: [1, 2, 3]
+        is_disc_parking:
+          description: >-
+            Specify whether this is a parking disc parking.
+
+            Note: For compatibility reasons this field is present in the
+            result only for parking disc parkings, i.e. when the value
+            is true.
+          type: boolean
       required:
         - registration_number
         - time_start
