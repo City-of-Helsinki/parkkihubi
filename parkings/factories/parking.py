@@ -32,6 +32,10 @@ class ParkingFactory(factory.django.DjangoModelFactory):
     zone = factory.LazyFunction(lambda: fake.random.randint(1, 3))
 
 
+class DiscParkingFactory(ParkingFactory):
+    is_disc_parking = True
+
+
 def get_time_far_enough_in_past():
     return fake.date_time_this_decade(before_now=True, tzinfo=pytz.utc) - timedelta(days=7, seconds=1)
 

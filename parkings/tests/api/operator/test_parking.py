@@ -78,6 +78,8 @@ def check_response_parking_data(posted_parking_data, response_parking_data):
     for key in returned_data_keys & posted_data_keys:
         assert response_parking_data[key] == posted_parking_data[key]
 
+    assert 'is_disc_parking' not in set(response_parking_data)
+
 
 def test_disallowed_methods(operator_api_client, parking):
     list_disallowed_methods = ('get', 'put', 'patch', 'delete')
