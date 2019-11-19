@@ -68,6 +68,12 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
 
         return data
 
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if not instance.is_disc_parking:
+            representation.pop('is_disc_parking')
+        return representation
+
 
 class OperatorAPIParkingPermission(permissions.BasePermission):
     def has_permission(self, request, view):
