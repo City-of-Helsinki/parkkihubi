@@ -20,7 +20,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
             'registration_number',
             'time_start', 'time_end',
             'zone',
-            'status',
+            'status', 'is_disc_parking',
         )
 
         # these are needed because by default a PUT request that does not contain some optional field
@@ -30,12 +30,22 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
             'location': {'default': None},
             'terminal_number': {'default': ''},
             'time_end': {'default': None},
+            'is_disc_parking': {'default': False},
         }
 
     def __init__(self, *args, **kwargs):
         super(OperatorAPIParkingSerializer, self).__init__(*args, **kwargs)
         self.fields['time_start'].timezone = pytz.utc
         self.fields['time_end'].timezone = pytz.utc
+        self.fields['zone'].required = True
+
+        self._set_required_extra_fields()
+
+    def _set_required_extra_fields(self):
+        initial_data = getattr(self, 'initial_data', None)
+        if initial_data and self.initial_data.get('is_disc_parking', False):
+            self.fields['location'].required = True
+            self.fields['zone'].required = False
 
     def validate(self, data):
         if self.instance and (now() - self.instance.created_at) > settings.PARKKIHUBI_TIME_PARKINGS_EDITABLE:
