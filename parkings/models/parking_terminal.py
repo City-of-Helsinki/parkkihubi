@@ -16,5 +16,11 @@ class ParkingTerminal(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         verbose_name_plural = _("parking terminals")
         ordering = ('number',)
 
+    @property
+    def zone(self):
+        # Avoid circular imports by importing this function here.
+        from parkings.api.enforcement.check_parking import get_payment_zone
+        return get_payment_zone(self.location)
+
     def __str__(self):
         return "{number}: {name}".format(name=self.name, number=self.number)
