@@ -4,33 +4,32 @@
 #
 --no-binary psycopg2
 
-atomicwrites==1.3.0       # via pytest
-attrs==19.1.0             # via packaging, pytest
-certifi==2019.6.16        # via requests
+attrs==19.3.0             # via pytest
+certifi==2019.11.28       # via requests
 chardet==3.0.4            # via requests
 coverage==4.5.4           # via pytest-cov
 factory-boy==2.12.0
-faker==2.0.1              # via factory-boy
+faker==3.0.0              # via factory-boy
 freezegun==0.3.12
 idna==2.8                 # via requests
-importlib-metadata==0.20  # via pluggy, pytest
+importlib-metadata==1.2.0  # via pluggy, pytest
 inflection==0.3.1         # via pytest-factoryboy
-more-itertools==7.2.0     # via pytest, zipp
-packaging==19.1           # via pytest
-pathlib2==2.3.4           # via pytest
-pluggy==0.12.0            # via pytest
+more-itertools==8.0.0     # via pytest, zipp
+packaging==19.2           # via pytest
+pathlib2==2.3.5           # via pytest
+pluggy==0.13.1            # via pytest
 py==1.8.0                 # via pytest
-pyparsing==2.4.2          # via packaging
-pytest==5.1.2
-pytest-cov==2.7.1
-pytest-django==3.5.1
+pyparsing==2.4.5          # via packaging
+pytest==5.3.1
+pytest-cov==2.8.1
+pytest-django==3.7.0
 pytest-factoryboy==2.0.3
-python-dateutil==2.8.0    # via faker, freezegun
-pyyaml==5.1.2
+python-dateutil==2.8.1    # via faker, freezegun
+pyyaml==5.2
 requests==2.22.0          # via requests-mock
 requests-mock==1.7.0
-six==1.12.0               # via faker, freezegun, packaging, pathlib2, python-dateutil, requests-mock
-text-unidecode==1.2       # via faker
-urllib3==1.25.3           # via requests
+six==1.13.0               # via faker, freezegun, packaging, pathlib2, python-dateutil, requests-mock
+text-unidecode==1.3       # via faker
+urllib3==1.25.7           # via requests
 wcwidth==0.1.7            # via pytest
 zipp==0.6.0               # via importlib-metadata
