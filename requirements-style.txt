@@ -5,14 +5,15 @@
 --no-binary psycopg2
 
 entrypoints==0.3          # via flake8
-flake8==3.7.8
-flake8-isort==2.7.0
+flake8==3.7.9
+flake8-isort==2.8.0
 flake8-polyfill==1.0.2    # via pep8-naming
-flake8-print==3.1.0
-isort==4.3.21             # via flake8-isort
+flake8-print==3.1.4
+isort[pyproject]==4.3.21  # via flake8-isort
 mccabe==0.6.1             # via flake8
-pep8-naming==0.8.2
+pep8-naming==0.9.1
 pycodestyle==2.5.0        # via flake8, flake8-print
 pyflakes==2.1.1           # via flake8
 six==1.13.0               # via flake8-print
-testfixtures==6.10.0      # via flake8-isort
+testfixtures==6.10.3      # via flake8-isort
+toml==0.10.0              # via isort
