@@ -16,6 +16,9 @@ servers:
   - url: http://localhost:8000/operator/v1/
     description: Local development server
 tags:
+  - name: Enforcement Domains
+    description: >-
+      Endpoint for listing the available enforcement domains
   - name: Parkings
     description: >-
       Endpoints for creating and updating parkings
@@ -39,6 +42,22 @@ components:
       name: Authorization
       in: header
   schemas:
+    EnforcementDomain:
+      type: object
+      example:
+        code: "HKI"
+        name: "Helsingin kaupunki"
+      properties:
+        code:
+          description: Code of the enforcement domain
+          type: string
+          maxLength: 10
+        name:
+          description: Name of the enforcement domain
+          type: string
+      required:
+        - code
+        - name
     Parking:
       type: object
       example:
@@ -52,7 +71,8 @@ components:
         registration_number: LOL-007
         time_start: "2016-12-24T21:00:00Z"
         time_end: "2016-12-24T22:00:00Z"
-        zone: 2
+        domain: "HKI"
+        zone: "2"
       properties:
         id:
           description: Unique identifier for the parking
@@ -74,30 +94,35 @@ components:
           type: string
           format: dateTime
           readOnly: true
-        location:
+        location: &parkingLocation
           $ref: '#/components/schemas/Location'
-        terminal_number:
+        terminal_number: &parkingTerminalNumber
           description: >-
             Payment terminal number, if the parking was bought
             from a payment terminal.
           type: string
           default: ''
-        registration_number:
-          description: Registration number for the parking
+        registration_number: &parkingRegistrationNumber
+          description: Registration number of the parked vehicle
           type: string
-        time_start:
+        time_start: &parkingTimeStart
           description: Start time for the parking
           type: string
           format: dateTime
-        time_end:
+        time_end: &parkingTimeEnd
           description: End time for the parking
           type: string
           format: dateTime
-        zone:
-          description: Payment zone
-          type: integer
-          enum: [1, 2, 3]
-        is_disc_parking:
+        domain: &parkingDomain
+          description: >-
+            Code of the enforcement domain that is allowed
+            to see the parking.
+          type: string
+        zone: &parkingZone
+          description: Payment zone code
+          type: string
+          maxLength: 10
+        is_disc_parking: &parkingIsDiscParking
           description: >-
             Specify whether this is a parking disc parking.
 
@@ -108,6 +133,7 @@ components:
       required:
         - registration_number
         - time_start
+        - domain
         - zone
     Location:
       description: Location in GeoJSON format
@@ -138,7 +164,8 @@ components:
           type: "Point"
           coordinates: [24.938466, 60.170014]
         terminal_number: "34B"
-        zone: 2
+        domain: "HKI"
+        zone: "2"
         rules:
           - after: "2019-11-15T06:00:00Z"
             policy: "disc"
@@ -174,8 +201,8 @@ components:
             the given location.
           type: string
         zone:
-          description: Payment zone of the parking spot
-          type: integer
+          << : *parkingZone
+          description: Payment zone code of the parking spot
         rules:
           description: >-
             List of rules that determine if parking is allowed and on
@@ -240,6 +267,11 @@ components:
         id:
           description: Unique identifier of the permit object
           type: integer
+        domain: &permitDomain
+          description: >-
+            Code of the enforcement domain that is allowed
+            to see the permit.
+          type: string
         external_id: &permitExternalId
           description: External id of the permit
           type: string
@@ -348,6 +380,24 @@ components:
     NotFound:  # 404
       description: Parking not found
 paths:
+  /enforcement_domain/:
+    get:
+      tags: ['Enforcement Domains']
+      summary: Get list of the enforcement domains
+      operationId: getEnforcementDomains
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of enforcement domains
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/EnforcementDomain'
   /parking/:
     post:
       tags: ['Parkings']
@@ -357,7 +407,7 @@ paths:
       requestBody:
         required: true
         description: Parking to add to the system
-        content:
+        content: &parkingBodyContent
           application/json:
             schema:
               anyOf:
@@ -369,33 +419,30 @@ paths:
                     registration_number: LOL-007
                     time_start: "2016-12-24T21:00:00Z"
                     time_end: "2016-12-24T22:00:00Z"
-                    zone: 2
+                    domain: "HKI"
+                    zone: "2"
                   type: object
                   properties:
                     location:
-                      $ref: '#/components/schemas/Location'
+                      << : *parkingLocation
                     terminal_number:
-                      description: >-
-                        Payment terminal number, if the parking was bought
-                        from a payment terminal.
-                      type: string
-                      default: ''
+                      << : *parkingTerminalNumber
                     registration_number:
-                      description: Registration number for the parking
-                      type: string
+                      << : *parkingRegistrationNumber
                     time_start:
-                      description: Start time for the parking
-                      type: string
-                      format: dateTime
+                      << : *parkingTimeStart
                     time_end:
-                      description: End time for the parking
-                      type: string
-                      format: dateTime
-                    zone:
-                      description: Payment zone
-                      type: integer
-                      enum: [1, 2, 3]
+                      << : *parkingTimeEnd
+                    domain:
+                      << : *parkingDomain
+                    zone: &parkingZoneInput
+                      << : *parkingZone
+                      description: >-
+                        Payment zone code.  Note: Even though type is
+                        specified as string, integer values are also
+                        accepted for backward compatibility.
                     is_disc_parking:
+                      << : *parkingIsDiscParking
                       description: >-
                         Specify whether this is a parking disc parking.
 
@@ -403,8 +450,6 @@ paths:
                         request and will then default to false.  This
                         way the API for regular paid parkings is
                         compatible with the previous version.
-                      type: boolean
-                      enum: [false]
                       default: false
                   required:
                     - registration_number
@@ -418,31 +463,25 @@ paths:
                     registration_number: LOL-007
                     time_start: "2016-12-24T21:00:00Z"
                     is_disc_parking: true
+                    domain: "HKI"
                   type: object
                   properties:
                     location:
-                      $ref: '#/components/schemas/Location'
+                      << : *parkingLocation
                     terminal_number:
-                      description: >-
-                        Payment terminal number, if the parking was bought
-                        from a payment terminal.
-                      type: string
-                      default: ''
+                      << : *parkingTerminalNumber
                     registration_number:
-                      description: Registration number for the parking
-                      type: string
+                      << : *parkingRegistrationNumber
                     time_start:
-                      description: Start time for the parking
-                      type: string
-                      format: dateTime
+                      << : *parkingTimeStart
                     time_end:
-                      description: End time for the parking
-                      type: string
-                      format: dateTime
+                      << : *parkingTimeEnd
+                    domain:
+                      << : *parkingDomain
                     is_disc_parking:
+                      << : *parkingIsDiscParking
                       description: >-
                         Specify whether this is a parking disc parking.
-                      type: boolean
                       enum: [true]
                   required:
                     - registration_number
@@ -463,54 +502,22 @@ paths:
   /parking/{parking_id}/:
     put:
       tags: ['Parkings']
-      summary: Update a parking by its ID
-      operationId: updateParkingById
+      summary: Replace a parking by its ID
+      operationId: replaceParkingById
       security: [{ApiKey: []}]
       parameters:
         - name: parking_id
           in: path
           required: true
-          description: ID of the parking to update
+          description: ID of the parking to replace
           schema:
             type: string
             format: uuid
       requestBody:
         required: true
-        description: Parking to add to the system
+        description: Parking data to put over the previous data
         content:
-          application/json:
-            schema:
-              type: object
-              example:
-                location:
-                  type: Point
-                  coordinates: [24.938466, 60.170014]
-                registration_number: LOL-007
-                time_start: "2016-12-24T21:00:00Z"
-                time_end: "2016-12-24T22:00:00Z"
-                zone: 2
-              properties:
-                location:
-                  $ref: '#/components/schemas/Location'
-                registration_number:
-                  description: Registration number for the parking
-                  type: string
-                time_start:
-                  description: Start time for the parking
-                  type: string
-                  format: dateTime
-                time_end:
-                  description: End time for the parking
-                  type: string
-                  format: dateTime
-                zone:
-                  description: Payment zone
-                  type: integer
-                  enum: [1, 2, 3]
-              required:
-                - registration_number
-                - time_start
-                - zone
+          << : *parkingBodyContent
       responses:
         '200':
           description: The parking was updated successfully
@@ -529,7 +536,7 @@ paths:
     patch:
       tags: ['Parkings']
       summary: Partial update a parking by its ID
-      operationId: partialUpdateParkingById
+      operationId: updateParkingById
       security: [{ApiKey: []}]
       parameters:
         - name: parking_id
@@ -541,7 +548,7 @@ paths:
             format: uuid
       requestBody:
         required: true
-        description: Parking to add to the system
+        description: Parking data to update
         content:
           application/json:
             schema:
@@ -550,22 +557,23 @@ paths:
                 time_end: "2016-12-25T22:00:00Z"
               properties:
                 location:
-                  $ref: '#/components/schemas/Location'
+                  << : *parkingLocation
+                terminal_number:
+                  << : *parkingTerminalNumber
                 registration_number:
-                  description: Registration number for the parking
-                  type: string
+                  << : *parkingRegistrationNumber
                 time_start:
-                  description: Start time for the parking
-                  type: string
-                  format: dateTime
+                  << : *parkingTimeStart
                 time_end:
-                  description: End time for the parking
-                  type: string
-                  format: dateTime
+                  << : *parkingTimeEnd
+                domain:
+                  << : *parkingDomain
                 zone:
-                  description: Payment zone
-                  type: integer
-                  enum: [1, 2, 3]
+                  << : *parkingZoneInput
+                is_disc_parking:
+                  << : *parkingIsDiscParking
+                  description: >-
+                    Specify whether this is a parking disc parking.
       responses:
         '200':
           description: The parking was updated successfully
@@ -635,8 +643,12 @@ paths:
                     terminal_number:
                       description: Payment terminal number
                       type: string
+                    domain:
+                      description: Code of the enforcement domain
+                      type: string
                   required:
                     - terminal_number
+                    - domain
       responses:
         '200':
           description: Parking spot information query succeeded
@@ -785,6 +797,8 @@ paths:
               properties: &permitProperties
                 series:
                   << : *permitSeries
+                domain:
+                  << : *permitDomain
                 external_id:
                   << : *permitExternalId
                 subjects:
@@ -939,6 +953,8 @@ paths:
             schema:
               type: object
               properties:
+                domain:
+                  << : *permitDomain
                 external_id:
                   description: External id of the permit
                   type: string
@@ -993,6 +1009,8 @@ paths:
             schema:
               type: object
               properties:
+                domain:
+                  << : *permitDomain
                 subjects:
                   << : *permitSubjects
                 areas:
