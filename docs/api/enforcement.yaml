@@ -391,7 +391,7 @@ paths:
         description: >-
           Id of permit
         schema:
-          type: string
+          type: integer
         required: true
       responses:
         '200':
@@ -415,7 +415,7 @@ paths:
         required: true
         description: Id of permit to update
         schema:
-          type: string
+          type: integer
       requestBody:
         required: true
         content:
@@ -448,7 +448,7 @@ paths:
           description: Id of permit to update
           required: true
           schema:
-            type: string
+            type: integer
       requestBody:
         content:
           application/json:
@@ -458,7 +458,7 @@ paths:
                 series:
                   type: integer
                 external_id:
-                  type: integer
+                  type: string
                 subjects:
                   $ref: '#/components/schemas/PermitSubjects'
                 areas:
