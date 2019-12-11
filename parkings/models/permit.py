@@ -9,18 +9,23 @@ from django.utils.translation import gettext_lazy as _
 from ..fields import CleaningJsonField
 from ..validators import DictListValidator, TextField, TimestampField
 from .constants import GK25FIN_SRID
+from .enforcement_domain import EnforcementDomain
 from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
+from .operator import Operator
 from .parking import Parking
 
 
 class PermitArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=40, verbose_name=_('name'))
-    identifier = models.CharField(
-        max_length=10, unique=True, verbose_name=_('identifier'))
+    domain = models.ForeignKey(
+        EnforcementDomain, on_delete=models.PROTECT,
+        related_name='permit_areas')
+    identifier = models.CharField(max_length=10, verbose_name=_('identifier'))
     geom = gis_models.MultiPolygonField(
         srid=GK25FIN_SRID, verbose_name=_('geometry'))
 
     class Meta:
+        unique_together = [('domain', 'identifier')]
         ordering = ('identifier',)
 
     def __str__(self):
@@ -41,6 +46,9 @@ class PermitSeriesQuerySet(models.QuerySet):
 
 class PermitSeries(TimestampedModelMixin, models.Model):
     active = models.BooleanField(default=False)
+    owner = models.ForeignKey(
+        Operator, on_delete=models.PROTECT, null=True, blank=True,
+        related_name='permit_series_set')
 
     objects = PermitSeriesQuerySet.as_manager()
 
@@ -82,6 +90,9 @@ class PermitQuerySet(models.QuerySet):
 
 
 class Permit(TimestampedModelMixin, models.Model):
+    domain = models.ForeignKey(
+        EnforcementDomain, on_delete=models.PROTECT,
+        related_name='permits')
     series = models.ForeignKey(PermitSeries, on_delete=models.PROTECT)
     external_id = models.CharField(max_length=50, null=True, blank=True)
     subjects = CleaningJsonField(blank=True, validators=[DictListValidator({

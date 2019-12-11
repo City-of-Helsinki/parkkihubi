@@ -3,8 +3,15 @@ from django.contrib.gis.admin import OSMGeoAdmin
 
 from .admin_utils import ReadOnlyAdmin, WithAreaField
 from .models import (
+    EnforcementDomain,
     Operator, Parking, ParkingArea, ParkingCheck, ParkingTerminal, PaymentZone,
     Permit, PermitArea, PermitLookupItem, PermitSeries, Region)
+
+
+@admin.register(EnforcementDomain)
+class EnforcmenteDomainAdmin(WithAreaField, OSMGeoAdmin):
+    list_display = ['id', 'code', 'name', 'area']
+    ordering = ('code',)
 
 
 @admin.register(Operator)

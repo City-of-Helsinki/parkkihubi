@@ -8,6 +8,7 @@ from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from parkings.models.operator import Operator
 from parkings.models.parking_area import ParkingArea
 
+from .enforcement_domain import EnforcementDomain
 from .parking_terminal import ParkingTerminal
 from .region import Region
 
@@ -77,6 +78,9 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     time_end = models.DateTimeField(
         verbose_name=_("parking end time"), db_index=True, null=True, blank=True,
     )
+    domain = models.ForeignKey(
+        EnforcementDomain, on_delete=models.PROTECT,
+        related_name='parkings')
     zone = models.IntegerField(
         verbose_name=_("zone number"),
         null=True, blank=True,
