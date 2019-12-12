@@ -22,6 +22,16 @@ tags:
   - name: Parking Information Queries
     description: >-
       Endpoint for performing parking spot information queries
+  - name: Permit Series
+    description: >-
+      Creating, listing and activating permit series
+  - name: Permits
+    description: >-
+      Parking permit management
+  - name: Active Permits by External Id
+    description: >-
+      Managing parking permits in the currently active series by the
+      external identifiers of the permits
 components:
   securitySchemes:
     ApiKey:
@@ -205,7 +215,112 @@ components:
                   to next half hour, which might allow almost 30 minutes
                   more parking time in practice.
                 type: integer
+    PermitSeries:
+      type: object
+      properties:
+        id:
+          description: Unique identifier of the permit series
+          type: integer
+        created_at:
+          description: Creation time of the permit series
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          description: Modification time of the permit series
+          type: string
+          format: date-time
+          readOnly: true
+        active:
+          description: Specifies whether the series is currently active
+          type: boolean
+    Permit:
+      type: object
+      properties:
+        id:
+          description: Unique identifier of the permit object
+          type: integer
+        external_id: &permitExternalId
+          description: External id of the permit
+          type: string
+        series: &permitSeries
+          description: Permit series id
+          type: integer
+        subjects: &permitSubjects
+          $ref: '#/components/schemas/PermitSubjects'
+        areas: &permitAreas
+          $ref: '#/components/schemas/PermitAreas'
+    PermitSubjects:
+      description: >-
+        List of subjects of a permit with validity time ranges.  Each
+        subject is identified by its registration number.
+      type: array
+      items:
+        $ref: '#/components/schemas/PermitSubject'
+    PermitSubject:
+      description: >-
+        Subject of a permit, i.e. a vehicle.  The permit applies to the
+        specified subject for validity period specified by the start and
+        end times.
+      type: object
+      properties:
+        start_time:
+          description: Start time of the validity period
+          type: string
+          format: date-time
+        end_date:
+          description: End time of the validity period
+          type: string
+          format: date-time
+        registration_number:
+          description: >-
+            Registration number of vehicle, which is subject to the permit
+          type: string
+          maxLength: 20
+    PermitAreas:
+      description: >-
+        List of permit area identifiers with validity time ranges
+      type: array
+      items:
+        $ref: '#/components/schemas/PermitArea'
+    PermitArea:
+      type: object
+      properties:
+        start_time:
+          description: Start time of the parking
+          type: string
+          format: date-time
+        end_date:
+          description: End time of the parking
+          type: string
+          format: date-time
+        area:
+          description: Name of the area
+          type: string
+          maxLength: 10
   responses:
+    PaginatedResponse:  # 200
+      description: An array of objects
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: &paginatedResult
+              count:
+                description: Total number of objects
+                type: integer
+              next:
+                description: Link to the next result page
+                type: string
+                format: uri
+              previous:
+                description: Link to the previous result page
+                type: string
+                format: uri
+              results:
+                type: array
+                items:
+                  type: object
     BadRequest:  # 400
       description: Bad request, details in request body
       content:
@@ -535,3 +650,384 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /permitseries/:
+    get:
+      tags: ['Permit Series']
+      summary: Get list of permit series
+      operationId: getPermitSeriesList
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of permit series
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/PermitSeries'
+    post:
+      tags: ['Permit Series']
+      summary: Create a permit series object
+      operationId: createPermitSeries
+      security: [{ApiKey: []}]
+      requestBody:
+        description: Permit series to add to the system
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Permit series was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermitSeries'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /permitseries/{permitseries_id}/:
+    get:
+      tags: ['Permit Series']
+      summary: Get details of a permit series
+      operationId: getPermitSeriesDetails
+      security: [{ApiKey: []}]
+      parameters:
+        - name: permitseries_id
+          in: path
+          description: >-
+            Id of permit series
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: A permit series object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermitSeries'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /permitseries/{permitseries_id}/activate/:
+    post:
+      tags: ['Permit Series']
+      summary: Activate a permit series
+      operationId: activatePermitSeries
+      security: [{ApiKey: []}]
+      parameters:
+        - name: permitseries_id
+          in: path
+          description: >-
+            Id of the permit series
+          schema:
+            type: integer
+          required: true
+      responses:
+        '200':
+          description: Activation succeeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: ["OK", "No change"]
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /permit/:
+    get:
+      tags: ['Permits']
+      summary: Get list of parking permits
+      operationId: getPermitList
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of permit objects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/Permit'
+    post:
+      tags: ['Permits']
+      summary: Create a permit object
+      operationId: createPermit
+      security: [{ApiKey: []}]
+      requestBody:
+        description: Permit to add to the system
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &permitProperties
+                series:
+                  << : *permitSeries
+                external_id:
+                  << : *permitExternalId
+                subjects:
+                  << : *permitSubjects
+                areas:
+                  << : *permitAreas
+              required:
+                - series
+                - subjects
+                - areas
+      responses:
+        '201':
+          description: Permit object was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /permit/{permit_id}/:
+    get:
+      tags: ['Permits']
+      summary: Get details of a permit
+      operationId: getPermitDetails
+      security: [{ApiKey: []}]
+      parameters:
+      - name: permit_id
+        in: path
+        description: >-
+          Id of permit
+        schema:
+          type: integer
+        required: true
+      responses:
+        '200':
+          description: A permit object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: ['Permits']
+      summary: Replace a permit
+      operationId: replacePermit
+      security: [{ApiKey: []}]
+      parameters:
+      - name: permit_id
+        in: path
+        required: true
+        description: Id of permit to update
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Permit'
+      responses:
+        '200':
+          description: The permit object was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: ['Permits']
+      summary: Update a permit
+      operationId: updatePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - name: permit_id
+          in: path
+          description: Id of permit to update
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                << : *permitProperties
+        required: false
+      responses:
+        '200':
+          description: Permit was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /active_permit_by_external_id/:
+    get:
+      tags: ['Active Permits by External Id']
+      summary: Get list of permits in the active series
+      operationId: getActivePermitList
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of permit objects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/Permit'
+    post:
+      tags: ['Active Permits by External Id']
+      summary: Create a permit to the active series
+      operationId: createActivePermit
+      security: [{ApiKey: []}]
+      requestBody:
+        description: Permit to add to the system
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                external_id:
+                  description: External id of the permit
+                  type: string
+                subjects:
+                  $ref: '#/components/schemas/PermitSubjects'
+                areas:
+                  $ref: '#/components/schemas/PermitAreas'
+      responses:
+        '200':
+          description: Creation of the permit succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+  /active_permit_by_external_id/{external_id}/:
+    get:
+      tags: ['Active Permits by External Id']
+      summary: Get details of a permit in the active series
+      operationId: getActivePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - name: external_id
+          in: path
+          description: >-
+            External id of permit
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: A permit object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: ['Active Permits by External Id']
+      summary: Update a permit in the active series
+      operationId: updateActivePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - name: external_id
+          in: path
+          description: External id of the permit to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subjects:
+                  << : *permitSubjects
+                areas:
+                  << : *permitAreas
+      responses:
+        '200':
+          description: Permit was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: ['Active Permits by External Id']
+      summary: Replace a permit in the active series
+      operationId: replaceActivePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - name: external_id
+          in: path
+          description: External id of permit to update
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Permit'
+      responses:
+        '200':
+          description: The permit object was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
