@@ -7,7 +7,23 @@ info:
     Authentication: Every request must have header:
 
         Authorization: ApiKey <your api key>
-  version: "1.1.0"
+
+    # Beta warning and TODO items
+
+    **Note**: This is a beta version of the API specification and there
+    are still some known issues, which might affect how the final
+    version of the API specification will look like.
+
+    - TODO: Authorization for Permit management
+
+      Should all operators be able to create permits to all areas or
+      should there be some kind of linking between the PermitAreas and
+      the operators who are allowed to create permits there?
+
+    - TODO: PermitArea management
+
+      Maybe there should be an API to add/modify PermitAreas?
+  version: "1.2.0.beta1.2019-12-12"
 servers:
   - url: https://api.parkkiopas.fi/operator/v1/
     description: Production server
