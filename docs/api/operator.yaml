@@ -751,6 +751,34 @@ paths:
       security: [{ApiKey: []}]
       parameters:
         - << : *permitSeriesParamId
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - title: Deactivate some other series
+                  type: object
+                  properties:
+                    deactivate_series:
+                      description: >-
+                        A list of permit series ids to deactivate while
+                        activating the specified permit series.
+                      type: array
+                      items:
+                        type: integer
+                      default: []
+                - title: Deactivate all other series
+                  type: object
+                  properties:
+                    deactivate_others:
+                      description: >-
+                        Deactivate all other permit series while
+                        activating the specified permit series.
+                      type: boolean
+                      enum: [true]
+                  required:
+                    - deactivate_others
       responses:
         '200':
           description: Activation succeeded
