@@ -124,15 +124,15 @@ components:
         id:
           description: Unique identifier of the permit object
           type: integer
-        external_id:
+        external_id: &permitExternalId
           description: External id of the permit
           type: string
-        series:
+        series: &permitSeries
           description: Permit series id
           type: integer
-        subjects:
+        subjects: &permitSubjects
           $ref: '#/components/schemas/PermitSubjects'
-        areas:
+        areas: &permitAreas
           $ref: '#/components/schemas/PermitAreas'
     PermitSubjects:
       description: >-
@@ -555,17 +555,15 @@ paths:
           application/json:
             schema:
               type: object
-              properties:
+              properties: &permitProperties
                 series:
-                  description: Permit series id
-                  type: integer
+                  << : *permitSeries
                 external_id:
-                  description: External id of the permit
-                  type: string
+                  << : *permitExternalId
                 subjects:
-                  $ref: '#/components/schemas/PermitSubjects'
+                  << : *permitSubjects
                 areas:
-                  $ref: '#/components/schemas/PermitAreas'
+                  << : *permitAreas
               required:
                 - series
                 - subjects
@@ -659,14 +657,7 @@ paths:
             schema:
               type: object
               properties:
-                series:
-                  type: integer
-                external_id:
-                  type: string
-                subjects:
-                  $ref: '#/components/schemas/PermitSubjects'
-                areas:
-                  $ref: '#/components/schemas/PermitAreas'
+                << : *permitProperties
         required: false
       responses:
         '200':
@@ -774,9 +765,9 @@ paths:
               type: object
               properties:
                 subjects:
-                  $ref: '#/components/schemas/PermitSubjects'
+                  << : *permitSubjects
                 areas:
-                  $ref: '#/components/schemas/PermitAreas'
+                  << : *permitAreas
       responses:
         '200':
           description: Permit was updated successfully
