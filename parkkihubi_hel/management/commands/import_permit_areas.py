@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from parkings.importers import PermitAreaImporter
+from ...importers import PermitAreaImporter
 
 
 class Command(BaseCommand):

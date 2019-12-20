@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from parkings.importers import PaymentZoneImporter
+from ...importers import PaymentZoneImporter
 
 
 class Command(BaseCommand):
