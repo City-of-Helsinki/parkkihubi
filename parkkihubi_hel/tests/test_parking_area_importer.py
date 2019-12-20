@@ -1,6 +1,6 @@
 import os
 
-from parkings.importers import ParkingAreaImporter
+from ..importers import ParkingAreaImporter
 
 mydir = os.path.dirname(__file__)
 sample_xml_file = os.path.join(mydir, 'parking_area_importer_data.xml')

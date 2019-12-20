@@ -2,11 +2,11 @@ import os
 
 import pytest
 
-from parkings.importers.regions import ShapeFileToRegionImporter
-from parkings.management.commands import import_regions
 from parkings.models import Region
+from parkings.tests.utils import approx, call_mgmt_cmd_with_output
 
-from .utils import approx, call_mgmt_cmd_with_output
+from ..importers.regions import ShapeFileToRegionImporter
+from ..management.commands import import_regions
 
 directory = os.path.abspath(os.path.dirname(__file__))
 

@@ -119,7 +119,7 @@ class ParkingAreaImporter(WfsImporter):
         dates start reflecting the individual members update time it would be a
         good way to see if a member needs updating or not.
 
-        There is an example file parkings/tests/parking_area_importer_data.xml
+        There is an example file tests/parking_area_importer_data.xml
 
         :param member: The member XML element.
         :returns: A dict containing the fields origin_id, capacity_estimate

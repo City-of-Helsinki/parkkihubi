@@ -1,10 +1,10 @@
 import pytest
 from django.core.management import call_command
 
-from parkings.management.commands import (
-    import_parking_areas, import_payment_zones, import_permit_areas)
 from parkings.models import ParkingArea, PaymentZone, PermitArea
 
+from ..management.commands import (
+    import_parking_areas, import_payment_zones, import_permit_areas)
 from .request_mocking import mocked_requests
 
 

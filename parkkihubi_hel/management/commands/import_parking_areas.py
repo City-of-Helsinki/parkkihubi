@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from parkings.importers import ParkingAreaImporter
+from ...importers import ParkingAreaImporter
 
 
 class Command(BaseCommand):

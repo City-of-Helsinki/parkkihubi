@@ -80,7 +80,8 @@ INSTALLED_APPS = [
     'parkkihubi',
     'parkings',
     'sanitized_dump',
-]
+] + env.list("EXTRA_INSTALLED_APPS", default=['parkkihubi_hel'])
+
 
 if DEBUG and TIER == 'dev':
     # shell_plus and other goodies

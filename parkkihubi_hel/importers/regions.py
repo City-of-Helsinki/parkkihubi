@@ -3,7 +3,7 @@ import sys
 from django.contrib.gis.gdal import DataSource
 from django.contrib.gis.utils import LayerMapping
 
-from ..models import Region
+from parkings.models import Region
 
 
 class ShapeFileToRegionImporter(object):

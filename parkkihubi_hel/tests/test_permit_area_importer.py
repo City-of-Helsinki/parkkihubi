@@ -1,6 +1,6 @@
 import os
 
-from parkings.importers import PermitAreaImporter
+from ..importers import PermitAreaImporter
 
 mydir = os.path.dirname(__file__)
 

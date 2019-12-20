@@ -1,6 +1,6 @@
 import os
 
-from parkings.importers import PaymentZoneImporter
+from ..importers import PaymentZoneImporter
 
 mydir = os.path.dirname(__file__)
 
