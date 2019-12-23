@@ -1,7 +1,8 @@
 [run]
 branch = True
+
+[report]
 omit =
-    *migrations*
-    *site-packages*
-include =
-    parkings/*
+    */.tox/*
+    manage.py
+    time_check_parking.py
