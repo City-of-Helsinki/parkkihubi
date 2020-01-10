@@ -2,9 +2,10 @@ import pytest
 from pytest_factoryboy import register
 
 from parkings.factories import (
-    ActivePermitFactory, AdminUserFactory, HistoryParkingFactory,
-    OperatorFactory, ParkingAreaFactory, ParkingFactory, PermitFactory,
-    PermitSeriesFactory, RegionFactory, StaffUserFactory, UserFactory)
+    ActivePermitFactory, AdminUserFactory, DiscParkingFactory,
+    HistoryParkingFactory, OperatorFactory, ParkingAreaFactory, ParkingFactory,
+    PermitFactory, PermitSeriesFactory, RegionFactory, StaffUserFactory,
+    UserFactory)
 
 register(OperatorFactory)
 register(ParkingFactory, 'parking')
@@ -17,6 +18,7 @@ register(RegionFactory)
 register(PermitFactory, 'permit')
 register(PermitSeriesFactory, 'permit_series')
 register(ActivePermitFactory, 'active_permit')
+register(DiscParkingFactory, 'disc_parking')
 
 
 @pytest.fixture(autouse=True)

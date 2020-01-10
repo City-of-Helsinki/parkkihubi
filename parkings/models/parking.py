@@ -77,9 +77,12 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     time_end = models.DateTimeField(
         verbose_name=_("parking end time"), db_index=True, null=True, blank=True,
     )
-    zone = models.IntegerField(verbose_name=_("zone number"), validators=[
-        MinValueValidator(1), MaxValueValidator(3),
-    ])
+    zone = models.IntegerField(
+        verbose_name=_("zone number"),
+        null=True, blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(3), ]
+    )
+    is_disc_parking = models.BooleanField(verbose_name=_("disc parking"), default=False)
 
     objects = ParkingQuerySet.as_manager()
 
