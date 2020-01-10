@@ -657,6 +657,14 @@ components:
         zone:
           description: Parking zone id
           type: integer
+        is_disc_parking:
+          description: >-
+            Specify whether this is a parking disc parking.
+
+            Note: For compatibility reasons this field is present in the
+            result only for parking disc parkings, i.e. when the value
+            is true.
+          type: boolean
         operator:
           description: Id of the operator
           type: string
