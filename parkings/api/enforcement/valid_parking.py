@@ -24,7 +24,16 @@ class ValidParkingSerializer(serializers.ModelSerializer):
             'zone',
             'operator',
             'operator_name',
+            'is_disc_parking',
         ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        if not instance.is_disc_parking:
+            representation.pop('is_disc_parking')
+
+        return representation
 
 
 class ValidParkingFilter(django_filters.rest_framework.FilterSet):

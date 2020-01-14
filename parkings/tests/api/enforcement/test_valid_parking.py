@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+from django.conf import settings
 from django.urls import reverse
 from django.utils.timezone import utc
 from rest_framework.status import (
@@ -31,7 +32,16 @@ def get_url(kind, parking):
                        kwargs={'pk': parking.pk})
 
 
+def get_parking_object(parking_type, parking, disc_parking):
+    if parking_type == 'paid':
+        return parking
+    else:
+        assert parking_type == 'disc_parking'
+        return disc_parking
+
+
 ALL_URL_KINDS = ['list', 'list_by_reg_num', 'detail']
+ALL_PARKING_KINDS = ['paid', 'disc_parking']
 
 
 @pytest.mark.parametrize('url_kind', ALL_URL_KINDS)
@@ -63,21 +73,28 @@ def test_list_endpoint_base_fields(staff_api_client):
     check_list_endpoint_base_fields(parking_data)
 
 
-def test_list_endpoint_data(staff_api_client, parking):
-    data = get(staff_api_client, get_url('list_by_reg_num', parking))
+@pytest.mark.parametrize('parking_type', ALL_PARKING_KINDS)
+def test_list_endpoint_data(staff_api_client, parking_type, parking, disc_parking):
+    parking_object = get_parking_object(parking_type, parking, disc_parking)
+    data = get(staff_api_client, get_url('list_by_reg_num', parking_object))
     assert len(data['results']) == 1
     parking_data = data['results'][0]
     check_parking_data_keys(parking_data)
-    check_parking_data_matches_parking_object(data['results'][0], parking)
+    check_parking_data_matches_parking_object(data['results'][0], parking_object)
 
 
 def check_parking_data_keys(parking_data):
-    assert set(parking_data.keys()) == {
+    parking_data_keys = {
         'id', 'created_at', 'modified_at',
         'registration_number',
         'time_start', 'time_end', 'zone',
         'operator', 'operator_name',
     }
+
+    if parking_data.get('is_disc_parking'):
+        parking_data_keys.add('is_disc_parking')
+
+    assert set(parking_data.keys()) == parking_data_keys
 
 
 def check_parking_data_matches_parking_object(parking_data, parking_obj):
@@ -96,6 +113,7 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
     assert parking_data['time_start'] == iso8601(parking_obj.time_start)
     assert parking_data['time_end'] == iso8601(parking_obj.time_end)
     assert parking_data['operator_name'] == str(parking_obj.operator.name)
+    assert parking_data.get('is_disc_parking', False) == parking_obj.is_disc_parking
 
 
 def iso8601(dt):
