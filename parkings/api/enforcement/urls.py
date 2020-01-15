@@ -5,7 +5,8 @@ from ..url_utils import versioned_url
 from .check_parking import CheckParking
 from .operator import OperatorViewSet
 from .permit import (
-    ActivePermitByExternalIdViewSet, PermitSeriesViewSet, PermitViewSet)
+    EnforcementActivePermitByExternalIdViewSet, EnforcementPermitSeriesViewSet,
+    EnforcementPermitViewSet)
 from .valid_parking import ValidParkingViewSet
 
 
@@ -24,10 +25,10 @@ class Router(DefaultRouter):
 
 router = Router()
 router.register('operator', OperatorViewSet, basename='operator')
-router.register('permit', PermitViewSet, basename='permit')
+router.register('permit', EnforcementPermitViewSet, basename='permit')
 router.register('active_permit_by_external_id',
-                ActivePermitByExternalIdViewSet, basename='activepermit')
-router.register('permitseries', PermitSeriesViewSet, basename='permitseries')
+                EnforcementActivePermitByExternalIdViewSet, basename='activepermit')
+router.register('permitseries', EnforcementPermitSeriesViewSet, basename='permitseries')
 router.register('valid_parking', ValidParkingViewSet,
                 basename='valid_parking')
 
