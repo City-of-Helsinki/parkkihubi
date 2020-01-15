@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import pytest
-from django.conf import settings
+from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import utc
 from rest_framework.status import (
@@ -190,3 +190,16 @@ def test_time_filtering(operator, staff_api_client, parking_factory, name):
     filtering = '&time={}'.format(time) if time else ''
     response = get(staff_api_client, list_url_for_abc + filtering)
     check_response_objects(response, expected_parkings)
+
+
+@pytest.mark.parametrize('parking_type', ALL_PARKING_KINDS)
+@override_settings(PARKKIHUBI_NONE_END_TIME_REPLACEMENT='2030-12-31T23:59:59Z')
+def test_null_time_end_is_replaced_correctly(parking_type, staff_api_client, parking, disc_parking):
+    parking_object = get_parking_object(parking_type, parking, disc_parking)
+    parking_object.time_end = None
+    parking_object.save()
+    data = get(staff_api_client, get_url('list_by_reg_num', parking_object))
+    parking_data = data['results'][0]
+    check_parking_data_keys(parking_data)
+
+    assert parking_data['time_end'] == '2030-12-31T23:59:59Z'
