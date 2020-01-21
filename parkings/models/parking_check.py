@@ -68,5 +68,5 @@ def _format_coordinates(location, prec=5):
     e_or_w = "E" if longitude >= 0.0 else "W"
     n_or_s = "N" if latitude >= 0.0 else "S"
     return "{latitude:.{prec}f}{n_or_s} {longitude:.{prec}f}{e_or_w}".format(
-        latitude=latitude, longitude=longitude,
+        latitude=abs(latitude), longitude=abs(longitude),
         prec=prec, n_or_s=n_or_s, e_or_w=e_or_w)
