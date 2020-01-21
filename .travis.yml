@@ -28,10 +28,10 @@ addons:
     - postgresql-client-10
     - postgresql-10-postgis-2.4
 
-install: pip install tox-travis codecov
+install: pip install tox-travis
 
 before_script: psql -U postgres -c "create extension postgis"
 
 script: tox
 
-after_success: codecov
+after_success: pip install codecov coverage==4.5.4 && codecov
