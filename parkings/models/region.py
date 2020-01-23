@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.db.models.functions import Intersection
 from django.db import models
-from django.db.models import Case, Count, Q, When
+from django.db.models import Case, Count, F, Q, When
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
@@ -12,6 +12,21 @@ from .parking_area import ParkingArea
 class RegionQuerySet(models.QuerySet):
     def with_parking_count(self, at_time=None):
         time = at_time if at_time else timezone.now()
+
+        if time > timezone.now():
+            region_q = self.filter(
+                parking_counts__time=time, parking_counts__is_forecast=True
+            )
+        else:
+            region_q = self.filter(
+                parking_counts__time=time, parking_counts__is_forecast=False
+            )
+
+        if region_q.exists():
+            return region_q.annotate(
+                parking_count=F("parking_counts__number")
+            )
+
         valid_parkings_q = (
             Q(parkings__time_start__lte=time) &
             (Q(parkings__time_end__gte=time) | Q(parkings__time_end=None)))
