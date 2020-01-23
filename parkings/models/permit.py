@@ -9,22 +9,31 @@ from django.utils.translation import gettext_lazy as _
 from ..fields import CleaningJsonField
 from ..validators import DictListValidator, TextField, TimestampField
 from .constants import GK25FIN_SRID
+from .enforcement_domain import EnforcementDomain
 from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from .parking import Parking
 
 
 class PermitArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(max_length=40, verbose_name=_('name'))
-    identifier = models.CharField(
-        max_length=10, unique=True, verbose_name=_('identifier'))
+    domain = models.ForeignKey(
+        EnforcementDomain, on_delete=models.PROTECT,
+        related_name='permit_areas')
+    identifier = models.CharField(max_length=10, verbose_name=_('identifier'))
     geom = gis_models.MultiPolygonField(
         srid=GK25FIN_SRID, verbose_name=_('geometry'))
 
     class Meta:
+        unique_together = [('domain', 'identifier')]
         ordering = ('identifier',)
 
     def __str__(self):
         return '{}: {}'.format(self.identifier, self.name)
+
+    def save(self, *args, **kwargs):
+        if not self.domain_id:
+            self.domain = EnforcementDomain.get_default_domain()
+        super().save(*args, **kwargs)
 
 
 class PermitSeriesQuerySet(models.QuerySet):
@@ -41,7 +50,8 @@ class PermitSeriesQuerySet(models.QuerySet):
 
 class PermitSeries(TimestampedModelMixin, models.Model):
     active = models.BooleanField(default=False)
-
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name=_("owner"))
     objects = PermitSeriesQuerySet.as_manager()
 
     class Meta:
@@ -82,6 +92,9 @@ class PermitQuerySet(models.QuerySet):
 
 
 class Permit(TimestampedModelMixin, models.Model):
+    domain = models.ForeignKey(
+        EnforcementDomain, on_delete=models.PROTECT,
+        related_name='permits')
     series = models.ForeignKey(PermitSeries, on_delete=models.PROTECT)
     external_id = models.CharField(max_length=50, null=True, blank=True)
     subjects = CleaningJsonField(blank=True, validators=[DictListValidator({
@@ -112,6 +125,9 @@ class Permit(TimestampedModelMixin, models.Model):
             external_id=self.external_id)
 
     def save(self, using=None, *args, **kwargs):
+        if not self.domain_id:
+            self.domain = EnforcementDomain.get_default_domain()
+
         self.full_clean()
         using = using or router.db_for_write(type(self), instance=self)
         with transaction.atomic(using=using, savepoint=False):

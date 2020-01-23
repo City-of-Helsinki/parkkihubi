@@ -2,7 +2,7 @@ import logging
 
 from django.db import transaction
 
-from parkings.models import PaymentZone
+from parkings.models import EnforcementDomain, PaymentZone
 
 from .wfs_importer import WfsImporter
 
@@ -27,6 +27,8 @@ class PaymentZoneImporter(WfsImporter):
         payment_zone_ids = []
         for payment_dict in payment_zone_dicts:
             payment_zone, _ = PaymentZone.objects.update_or_create(
+                domain=EnforcementDomain.get_default_domain(),
+                code=payment_dict['number'],
                 number=payment_dict['number'],
                 defaults=payment_dict)
             payment_zone_ids.append(payment_zone.pk)

@@ -1,5 +1,6 @@
 from .operator import OperatorFactory  # noqa
-from .parking import DiscParkingFactory, HistoryParkingFactory, ParkingFactory  # noqa
+from .parking import (  # noqa
+    DiscParkingFactory, HistoryParkingFactory, ParkingFactory)
 from .parking_area import ParkingAreaFactory  # noqa
 from .permit import ActivePermitFactory, PermitFactory, PermitSeriesFactory
 from .region import RegionFactory
