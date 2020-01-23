@@ -1,7 +1,10 @@
+import datetime
+
 import pytest
 from django.contrib.gis.geos import MultiPolygon, Polygon
+from django.utils.timezone import now
 
-from parkings.models import ParkingArea, Region
+from parkings.models import ParkingArea, ParkingCount, Region
 
 
 def test_str():
@@ -71,3 +74,22 @@ def test_calculate_capacity_estimate():
 
     # And finally, check the result of the calculation is correct
     assert reg.calculate_capacity_estimate() == 12
+
+
+@pytest.mark.django_db
+def test_future_parking_count(region_factory):
+    time_future = now() + datetime.timedelta(hours=1)
+    time = datetime.datetime(
+        time_future.year,
+        time_future.month,
+        time_future.day,
+        time_future.hour,
+        tzinfo=time_future.tzinfo,
+    )
+
+    region = region_factory()
+    ParkingCount.objects.create(
+        is_forecast=True, number=10, region=region, time=time
+    )
+    region_q = Region.objects.with_parking_count(at_time=time)
+    assert region_q.first().parking_count == 10
