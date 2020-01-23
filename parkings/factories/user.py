@@ -17,6 +17,14 @@ class StaffUserFactory(factory.django.DjangoModelFactory):
     is_staff = True
 
 
+class PasiUserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = User
+        django_get_or_create = ('username',)
+
+    username = 'PASI'
+
+
 class AdminUserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = User

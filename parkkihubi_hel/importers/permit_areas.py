@@ -2,7 +2,7 @@ import logging
 
 from django.db import transaction
 
-from parkings.models import PermitArea
+from parkings.models import EnforcementDomain, PermitArea
 
 from .wfs_importer import WfsImporter
 
@@ -27,6 +27,7 @@ class PermitAreaImporter(WfsImporter):
         permit_area_ids = []
         for area_dict in permit_areas_dict:
             permit_area, _ = PermitArea.objects.update_or_create(
+                domain=EnforcementDomain.get_default_domain(),
                 identifier=area_dict['identifier'],
                 defaults=area_dict)
             permit_area_ids.append(permit_area.pk)
