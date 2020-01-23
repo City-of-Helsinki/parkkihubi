@@ -1,9 +1,11 @@
 from .operator import OperatorFactory  # noqa
-from .parking import DiscParkingFactory, HistoryParkingFactory, ParkingFactory  # noqa
+from .parking import (  # noqa
+    DiscParkingFactory, HistoryParkingFactory, ParkingFactory)
 from .parking_area import ParkingAreaFactory  # noqa
 from .permit import ActivePermitFactory, PermitFactory, PermitSeriesFactory
 from .region import RegionFactory
-from .user import AdminUserFactory, StaffUserFactory, UserFactory  # noqa
+from .user import (  # noqa
+    AdminUserFactory, PasiUserFactory, StaffUserFactory, UserFactory)
 
 __all__ = [
     'ActivePermitFactory',
@@ -13,6 +15,7 @@ __all__ = [
     'OperatorFactory',
     'ParkingAreaFactory',
     'ParkingFactory',
+    'PasiUserFactory',
     'PermitFactory',
     'PermitSeriesFactory',
     'RegionFactory',

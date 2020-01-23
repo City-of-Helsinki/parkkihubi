@@ -11,9 +11,10 @@ def get_url(obj):
     return reverse('enforcement:v1:permitseries-detail', kwargs={'pk': obj.pk})
 
 
-def test_series_get_activated(staff_api_client):
-    new_permit_series = PermitSeries.objects.create(active=False)
-    old_permit_series = PermitSeries.objects.create(active=True)
+def test_series_get_activated(staff_api_client, pasi_user_factory):
+    pasi_user = pasi_user_factory()
+    new_permit_series = PermitSeries.objects.create(active=False, owner=pasi_user)
+    old_permit_series = PermitSeries.objects.create(active=True, owner=pasi_user)
 
     response = staff_api_client.post(get_url(new_permit_series) + 'activate/')
 
@@ -23,9 +24,10 @@ def test_series_get_activated(staff_api_client):
     assert not PermitSeries.objects.get(id=old_permit_series.id).active
 
 
-def test_old_series_are_pruned(staff_api_client):
-    new_permit_series = PermitSeries.objects.create(active=False)
-    old_permit_series = PermitSeries.objects.create()
+def test_old_series_are_pruned(staff_api_client, pasi_user_factory):
+    pasi_user = pasi_user_factory()
+    new_permit_series = PermitSeries.objects.create(active=False, owner=pasi_user)
+    old_permit_series = PermitSeries.objects.create(owner=pasi_user)
     old_permit_series.created_at = timezone.now() - datetime.timedelta(3)
     old_permit_series.save()
 
