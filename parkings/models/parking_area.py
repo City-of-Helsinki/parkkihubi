@@ -5,6 +5,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 
+from .enforcement_domain import EnforcementDomain
+
 # Estimated number of parking spots per square meter (m^2)
 PARKING_SPOTS_PER_SQ_M = 0.07328
 
@@ -65,6 +67,9 @@ class ParkingAreaQuerySet(models.QuerySet):
 
 
 class ParkingArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
+    domain = models.ForeignKey(EnforcementDomain, on_delete=models.PROTECT,
+                               related_name='parking_areas')
+
     # This is for whatever ID the external system that this parking lot was
     # imported from has assigned to this lot. There is no guarantee that it will
     # always be a number or that it will be unique, especially if multiple
@@ -102,6 +107,11 @@ class ParkingArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return 'Parking Area %s' % str(self.origin_id)
+
+    def save(self, *args, **kwargs):
+        if not self.domain_id:
+            self.domain = EnforcementDomain.get_default_domain()
+        super().save(*args, **kwargs)
 
     @property
     def estimated_capacity(self):

@@ -1,6 +1,16 @@
+- model: parkings.enforcementdomain
+  pk: 1
+  fields:
+    code: 10
+    name: 'Helsinki'
+    geom: null
+    created_at: '2017-09-05T13:52:19.677Z'
+    modified_at: '2017-09-11T11:29:33.103Z'
+
 - model: parkings.parkingarea
   pk: a0000000-d493-4670-a1de-f752fd694ed4
   fields:
+    domain_id: 1
     origin_id: '2833'
     capacity_estimate: null
     geom: >-
@@ -16,6 +26,7 @@
 - model: parkings.parkingarea
   pk: b0000000-0a2f-4acf-a89d-0c89eb3a0d1b
   fields:
+    domain_id: 1
     origin_id: '3066'
     capacity_estimate: null
     geom: >-
@@ -38,6 +49,7 @@
 - model: parkings.parkingarea
   pk: c0000000-7713-48d5-82f5-920dfe2a61d7
   fields:
+    domain_id: 1
     origin_id: '3331'
     capacity_estimate: 7
     geom: >-
@@ -55,6 +67,7 @@
 - model: parkings.parkingarea
   pk: d0000000-a225-4542-a7d4-58196cd82d19
   fields:
+    domain_id: 1
     origin_id: '3652'
     capacity_estimate: 46
     geom: >-
@@ -73,6 +86,7 @@
 - model: parkings.parkingarea
   pk: e0000000-c039-462b-9680-798e4fe9d7e4
   fields:
+    domain_id: 1
     origin_id: '4396'
     capacity_estimate: 46
     geom: >-
@@ -88,6 +102,7 @@
 - model: parkings.parkingarea
   pk: f0000000-28b8-4710-a203-8dd3c597b936
   fields:
+    domain_id: 1
     origin_id: '4542'
     capacity_estimate: 28
     geom: >-
