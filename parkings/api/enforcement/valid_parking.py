@@ -24,7 +24,21 @@ class ValidParkingSerializer(serializers.ModelSerializer):
             'zone',
             'operator',
             'operator_name',
+            'is_disc_parking',
         ]
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+
+        if not instance.is_disc_parking:
+            representation.pop('is_disc_parking')
+
+        if instance.time_end is None:
+            replacement_value = getattr(
+                settings, 'PARKKIHUBI_NONE_END_TIME_REPLACEMENT', None)
+            representation['time_end'] = replacement_value or None
+
+        return representation
 
 
 class ValidParkingFilter(django_filters.rest_framework.FilterSet):
