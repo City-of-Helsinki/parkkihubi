@@ -4,8 +4,7 @@ from .parking import (  # noqa
 from .parking_area import ParkingAreaFactory  # noqa
 from .permit import ActivePermitFactory, PermitFactory, PermitSeriesFactory
 from .region import RegionFactory
-from .user import (  # noqa
-    AdminUserFactory, PasiUserFactory, StaffUserFactory, UserFactory)
+from .user import AdminUserFactory, StaffUserFactory, UserFactory  # noqa
 
 __all__ = [
     'ActivePermitFactory',
@@ -15,7 +14,6 @@ __all__ = [
     'OperatorFactory',
     'ParkingAreaFactory',
     'ParkingFactory',
-    'PasiUserFactory',
     'PermitFactory',
     'PermitSeriesFactory',
     'RegionFactory',

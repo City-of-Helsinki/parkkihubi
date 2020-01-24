@@ -6,7 +6,7 @@ import pytz
 from parkings.models import Permit, PermitSeries
 
 from .faker import fake
-from .user import PasiUserFactory
+from .user import UserFactory
 
 CAPITAL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'
 
@@ -53,7 +53,7 @@ def generate_external_ids(id_length=11):
 class PermitSeriesFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = PermitSeries
-    owner = factory.SubFactory(PasiUserFactory)
+    owner = factory.SubFactory(UserFactory)
 
 
 class PermitFactory(factory.django.DjangoModelFactory):
