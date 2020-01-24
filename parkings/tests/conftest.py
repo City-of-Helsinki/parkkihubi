@@ -4,8 +4,8 @@ from pytest_factoryboy import register
 from parkings.factories import (
     ActivePermitFactory, AdminUserFactory, DiscParkingFactory,
     HistoryParkingFactory, OperatorFactory, ParkingAreaFactory, ParkingFactory,
-    PasiUserFactory, PermitFactory, PermitSeriesFactory, RegionFactory,
-    StaffUserFactory, UserFactory)
+    PermitFactory, PermitSeriesFactory, RegionFactory, StaffUserFactory,
+    UserFactory)
 
 register(OperatorFactory)
 register(ParkingFactory, 'parking')
@@ -14,7 +14,6 @@ register(AdminUserFactory, 'admin_user')
 register(StaffUserFactory, 'staff_user')
 register(UserFactory)
 register(ParkingAreaFactory)
-register(PasiUserFactory)
 register(RegionFactory)
 register(PermitFactory, 'permit')
 register(PermitSeriesFactory, 'permit_series')

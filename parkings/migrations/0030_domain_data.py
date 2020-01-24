@@ -72,7 +72,7 @@ def _get_or_create_permit_owner(apps):
     permit_owner, created = user_model.objects.get_or_create(
         username='PASI',
         defaults={
-            'is_superuser': True,
+            'is_staff': True
         }
     )
     return permit_owner
