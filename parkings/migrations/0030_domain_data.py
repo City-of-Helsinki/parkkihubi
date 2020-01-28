@@ -31,7 +31,8 @@ def _set_domains(apps, schema_editor):
 
     permit_areas = permit_area_model.objects.filter(domain=None)
     if permit_areas.exists():
-        permit_areas.update(domain=_get_or_create_enforcement_domain(apps))
+        permit_areas.update(domain=_get_or_create_enforcement_domain(apps),
+                            permitted_user=_get_or_create_pasi_user(apps))
 
     payment_zones = payment_zone_model.objects.filter(domain=None)
     if payment_zones.exists():
@@ -46,7 +47,7 @@ def _set_permitseries_owner(apps, schema_editor):
     permit_series_model = apps.get_model('parkings', 'PermitSeries')
     permit_series = permit_series_model.objects.filter(owner=None)
     if permit_series.exists():
-        permit_series.update(owner=_get_or_create_permit_owner(apps))
+        permit_series.update(owner=_get_or_create_pasi_user(apps))
 
 
 def _create_enforcer_for_user(apps, schema_editor):
@@ -67,7 +68,7 @@ def _get_or_create_enforcer(apps, user):
     return enforcer
 
 
-def _get_or_create_permit_owner(apps):
+def _get_or_create_pasi_user(apps):
     user_model = apps.get_model(settings.AUTH_USER_MODEL)
     permit_owner, created = user_model.objects.get_or_create(
         username='PASI',

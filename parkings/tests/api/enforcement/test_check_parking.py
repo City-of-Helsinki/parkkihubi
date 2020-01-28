@@ -89,9 +89,9 @@ def test_check_parking_invalid_zone_parking(operator, staff_api_client, parking_
     assert response.data["allowed"] is False
 
 
-def test_check_parking_valid_permit(staff_api_client, permit_series_factory):
+def test_check_parking_valid_permit(staff_api_client, permit_series_factory, staff_user):
     area = create_area_geom()
-    PermitArea.objects.create(name="Kamppi", identifier="A", geom=area)
+    PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
     permit_series = permit_series_factory(active=True)
 
     end_time = timezone.now() + datetime.timedelta(days=1)
@@ -116,9 +116,9 @@ def test_check_parking_valid_permit(staff_api_client, permit_series_factory):
     assert response.data["allowed"] is True
 
 
-def test_check_parking_invalid_time_permit(staff_api_client, permit_series_factory):
+def test_check_parking_invalid_time_permit(staff_api_client, permit_series_factory, staff_user):
     area = create_area_geom()
-    PermitArea.objects.create(name="Kamppi", identifier="A", geom=area)
+    PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
     permit_series = permit_series_factory(active=True)
 
     end_time = timezone.now()
@@ -143,9 +143,9 @@ def test_check_parking_invalid_time_permit(staff_api_client, permit_series_facto
     assert response.data["allowed"] is False
 
 
-def test_check_parking_invalid_location(staff_api_client, permit_series_factory):
+def test_check_parking_invalid_location(staff_api_client, permit_series_factory, staff_user):
     area = create_area_geom()
-    PermitArea.objects.create(name="Kamppi", identifier="A", geom=area)
+    PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
     permit_series = permit_series_factory(active=True)
 
     end_time = timezone.now() + datetime.timedelta(days=1)

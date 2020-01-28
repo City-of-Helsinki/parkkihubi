@@ -22,6 +22,8 @@ class PermitArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     identifier = models.CharField(max_length=10, verbose_name=_('identifier'))
     geom = gis_models.MultiPolygonField(
         srid=GK25FIN_SRID, verbose_name=_('geometry'))
+    permitted_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name=_("permitted_user"))
 
     class Meta:
         unique_together = [('domain', 'identifier')]
