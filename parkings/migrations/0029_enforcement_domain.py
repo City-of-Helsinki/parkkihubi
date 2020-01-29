@@ -102,6 +102,12 @@ class Migration(migrations.Migration):
             name='domain',
             field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='permit_areas', to='parkings.EnforcementDomain'),
         ),
+        migrations.AddField(
+            model_name='permitarea',
+            name='permitted_user',
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT,
+                                    verbose_name='permitted_user', to=settings.AUTH_USER_MODEL),
+        ),
         migrations.AlterUniqueTogether(
             name='permitarea',
             unique_together={('domain', 'identifier')},
