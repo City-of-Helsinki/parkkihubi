@@ -101,6 +101,9 @@ class PermitViewSet(viewsets.ModelViewSet):
             kwargs['many'] = True
         return super().get_serializer(*args, **kwargs)
 
+    def get_queryset(self):
+        return super().get_queryset().filter(series__owner=self.request.user)
+
 
 class ActivePermitByExternalIdSerializer(PermitSerializer):
     class Meta(PermitSerializer.Meta):

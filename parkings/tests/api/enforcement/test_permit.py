@@ -168,7 +168,11 @@ def test_lookup_item_is_created_for_permit(staff_api_client, permit_series):
     assert PermitLookupItem.objects.count() == 1
 
 
-def test_api_endpoint_returns_correct_data(staff_api_client, permit):
+def test_api_endpoint_returns_correct_data(staff_api_client, permit, staff_user):
+    permit_series = permit.series
+    permit_series.owner = staff_user
+    permit_series.save()
+
     response = staff_api_client.get(list_url)
 
     assert response.status_code == HTTP_200_OK
@@ -189,7 +193,11 @@ def check_permit_areas_keys(data):
     assert set(data.keys()) == {'start_time', 'end_time', 'area'}
 
 
-def test_permit_data_matches_permit_object(staff_api_client, permit):
+def test_permit_data_matches_permit_object(staff_api_client, permit, staff_user):
+    permit_series = permit.series
+    permit_series.owner = staff_user
+    permit_series.save()
+
     permit_detail_url = '{}{}/'.format(list_url, permit.id)
 
     response = staff_api_client.get(permit_detail_url)
