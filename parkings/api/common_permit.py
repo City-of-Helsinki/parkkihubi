@@ -29,6 +29,9 @@ class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
     queryset = PermitSeries.objects.all()
     serializer_class = PermitSeriesSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
         with transaction.atomic():
