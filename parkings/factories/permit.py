@@ -2,10 +2,12 @@
 
 import factory
 import pytz
+from django.contrib.auth import get_user_model
 
-from parkings.models import Permit, PermitSeries
+from parkings.models import Permit, PermitArea, PermitSeries
 
 from .faker import fake
+from .parking_area import generate_multi_polygon
 from .user import UserFactory
 
 CAPITAL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'
@@ -34,14 +36,30 @@ def generate_subjects(count=1):
     return subjects
 
 
+def create_permit_area(identifier):
+    geom = generate_multi_polygon()
+    staff_user, created = get_user_model().objects.get_or_create(
+        username='TEST_STAFF',
+        defaults={'is_staff': True}
+    )
+    PermitArea.objects.get_or_create(
+        identifier=identifier,
+        defaults={
+            'name': "Kamppi", 'geom': geom, 'permitted_user': staff_user
+        }
+    )
+
+
 def generate_areas(count=1):
     areas = []
     for c in range(count):
+        identifier = fake.random.choice(CAPITAL_LETTERS)
         areas.append({
             'start_time': generate_timestamp_string('-2h', '-1h'),
             'end_time': generate_timestamp_string('+1h', '+2h'),
-            'area': fake.random.choice(CAPITAL_LETTERS),
+            'area': identifier,
         })
+        create_permit_area(identifier)
     return areas
 
 

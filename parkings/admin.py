@@ -99,7 +99,7 @@ class PermitAreaAdmin(WithAreaField, OSMGeoAdmin):
 class PermitLookupItemAdmin(ReadOnlyAdmin):
     list_display = [
         'id', 'series', 'permit',
-        'registration_number', 'area_identifier',
+        'registration_number', 'area',
         'start_time', 'end_time']
     list_filter = ['permit__series__active']
     ordering = ('-permit__series', 'permit')

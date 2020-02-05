@@ -1,4 +1,5 @@
 import datetime
+from itertools import chain
 
 import django_filters
 from django.conf import settings
@@ -6,7 +7,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions, serializers, viewsets
 
-from ...models import Parking
+from ...models import Parking, PermitLookupItem
 
 
 class ValidParkingSerializer(serializers.ModelSerializer):
@@ -30,7 +31,7 @@ class ValidParkingSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
-        if not instance.is_disc_parking:
+        if not hasattr(instance, 'is_disc_parking') or not instance.is_disc_parking:
             representation.pop('is_disc_parking')
 
         if instance.time_end is None:
@@ -39,6 +40,13 @@ class ValidParkingSerializer(serializers.ModelSerializer):
             representation['time_end'] = replacement_value or None
 
         return representation
+
+
+class ValidParkingAndPermitSerializer(ValidParkingSerializer, serializers.Serializer):
+    zone = serializers.CharField(default=None)
+    operator = serializers.CharField(default=None)
+    operator_name = serializers.CharField(source='operator.name', default=None)
+    is_disc_parking = serializers.BooleanField(default=False)
 
 
 class ValidParkingFilter(django_filters.rest_framework.FilterSet):
@@ -141,3 +149,26 @@ def get_grace_duration(default=datetime.timedelta(minutes=15)):
     value = getattr(settings, 'PARKKIHUBI_TIME_OLD_PARKINGS_VISIBLE', None)
     assert value is None or isinstance(value, datetime.timedelta)
     return value if value is not None else default
+
+
+class ValidParkingPermitViewSet(ValidParkingViewSet):
+    serializer_class = ValidParkingAndPermitSerializer
+
+    def filter_queryset(self, queryset):
+        filtered_queryset = super().filter_queryset(queryset)
+        filtered_permits_queryset = self._get_valid_permits_queryset(queryset)
+        return list(chain(filtered_queryset, filtered_permits_queryset))
+
+    def _get_valid_permits_queryset(self, queryset):
+        filter_params = self._get_filter_params(queryset)
+        reg_num = filter_params['reg_num']
+        permit_look_up_items_queryset = PermitLookupItem.objects.by_subject(reg_num) \
+            .filter(area__permitted_user=self.request.user)
+        for pl in permit_look_up_items_queryset:
+            setattr(pl, 'registration_number', reg_num)
+            setattr(pl, "created_at", pl.permit.created_at)
+            setattr(pl, "modified_at", pl.permit.modified_at)
+            setattr(pl, 'time_start', pl.start_time)
+            setattr(pl, 'operator', pl.permit.series.owner.operator)
+            setattr(pl, 'time_end', pl.end_time)
+        return permit_look_up_items_queryset
