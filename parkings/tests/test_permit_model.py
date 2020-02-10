@@ -98,6 +98,7 @@ def test_permit_by_time_manager_method_valid_time(active_permit):
 @pytest.mark.django_db
 def test_permitlookupitem_creation_ignored_for_start_date_gte_end_date(
         permit_series):
+    areas = generate_areas()
     permit_data = {
         'series': permit_series,
         'external_id': generate_external_ids(),
@@ -109,7 +110,7 @@ def test_permitlookupitem_creation_ignored_for_start_date_gte_end_date(
         'areas': [{
             'start_time': '2019-05-01T12:00:00+00:00',
             'end_time': '2019-05-30T12:00:00+00:00',
-            'area': 'A',
+            'area': areas[0]['area'],
         }],
     }
     Permit.objects.create(**permit_data)
