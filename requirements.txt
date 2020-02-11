@@ -7,14 +7,14 @@
 certifi==2019.11.28       # via requests
 chardet==3.0.4            # via requests
 database-sanitizer==1.1.0  # via django-sanitized-dump
-django==2.2.8
 django-cors-headers==3.2.0
 django-environ==0.4.5
 django-filter==2.2.0
 django-sanitized-dump==1.2.0
-djangorestframework==3.10.3
+django==2.2.10
 djangorestframework-gis==0.14
 djangorestframework-jwt==1.11.0  # via drf-jwt-2fa
+djangorestframework==3.10.3
 drf-jwt-2fa==0.3.0
 idna==2.8                 # via requests
 lxml==4.4.2
