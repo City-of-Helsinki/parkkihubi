@@ -9,8 +9,14 @@ from ....factories.permit import (
 list_url = reverse('enforcement:v1:activepermit-list')
 
 
+def change_permitseries_owner_to(permit_series, owner):
+    permit_series.owner = owner
+    permit_series.save()
+
+
 @pytest.mark.django_db
-def test_post_active_permit_by_external_id(staff_api_client, permit_series):
+def test_post_active_permit_by_external_id(staff_api_client, permit_series, staff_user):
+    permit_series.owner = staff_user
     permit_series.active = True
     permit_series.save()
     data = {
@@ -26,7 +32,8 @@ def test_post_active_permit_by_external_id(staff_api_client, permit_series):
 
 
 @pytest.mark.django_db
-def test_patch_active_permit_by_external_id(staff_api_client, active_permit):
+def test_patch_active_permit_by_external_id(staff_api_client, active_permit, staff_user):
+    change_permitseries_owner_to(active_permit.series, staff_user)
     areas = generate_areas()
     areas[0].update(area='X1')
     active_permit_by_external_id_url = '{}{}/'.format(list_url, active_permit.external_id)
@@ -38,7 +45,8 @@ def test_patch_active_permit_by_external_id(staff_api_client, active_permit):
 
 
 @pytest.mark.django_db
-def test_put_active_permit_by_external_id(staff_api_client, active_permit):
+def test_put_active_permit_by_external_id(staff_api_client, active_permit, staff_user):
+    change_permitseries_owner_to(active_permit.series, staff_user)
     areas = generate_areas(count=2)
     response = staff_api_client.get(list_url)
     put_data = response.data['results'][0]
@@ -65,7 +73,8 @@ def test_post_active_permit_by_external_id_fails_if_no_active_series_exists(staf
     assert response.data == {'detail': "Active permit series doesn't exist"}
 
 
-def test_invalid_put_active_permit_by_external_id(staff_api_client, active_permit):
+def test_invalid_put_active_permit_by_external_id(staff_api_client, active_permit, staff_user):
+    change_permitseries_owner_to(active_permit.series, staff_user)
     areas = generate_areas()
     del areas[0]['start_time']
     response = staff_api_client.get(list_url)
@@ -79,7 +88,8 @@ def test_invalid_put_active_permit_by_external_id(staff_api_client, active_permi
     assert set(response.data.keys()) == {'areas'}
 
 
-def test_invalid_patch_active_permit_by_external_id(staff_api_client, active_permit):
+def test_invalid_patch_active_permit_by_external_id(staff_api_client, active_permit, staff_user):
+    change_permitseries_owner_to(active_permit.series, staff_user)
     areas = generate_areas()
     del areas[0]['start_time']
     active_permit_by_external_id_url = '{}{}/'.format(list_url, active_permit.external_id)
@@ -90,7 +100,8 @@ def test_invalid_patch_active_permit_by_external_id(staff_api_client, active_per
     assert set(response.data.keys()) == {'areas'}
 
 
-def test_get_active_permit_by_external_id(staff_api_client, active_permit, permit):
+def test_get_active_permit_by_external_id(staff_api_client, active_permit, permit, staff_user):
+    change_permitseries_owner_to(active_permit.series, staff_user)
     response = staff_api_client.get(list_url)
 
     assert response.status_code == HTTP_200_OK
