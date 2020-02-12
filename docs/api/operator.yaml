@@ -4,10 +4,6 @@ info:
   description: >-
     Parkkihubi Operator REST API Documentation
 
-    Authentication: Every request must have header:
-
-        Authorization: ApiKey <your api key>
-
     # Beta warning and TODO items
 
     **Note**: This is a beta version of the API specification and there
@@ -53,6 +49,11 @@ components:
       type: apiKey
       name: Authorization
       in: header
+      description: |-
+        Requests must have value `ApiKey <your_api_key>` in the
+        `Authorization` header, i.e. the HTTP header should look like:
+
+            Authorization: ApiKey <your_api_key>
   schemas:
     EnforcementDomain:
       type: object
