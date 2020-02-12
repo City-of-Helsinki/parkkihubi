@@ -9,7 +9,7 @@ info:
     **Note**: This is a beta version of the API specification and there
     are still some known issues, which might affect how the final
     version of the API specification will look like.
-  version: "1.2.0.beta1.2019-12-12"
+  version: "1.2.0.beta2.2020-02-12"
 servers:
   - url: https://api.parkkiopas.fi/operator/v1/
     description: Production server
