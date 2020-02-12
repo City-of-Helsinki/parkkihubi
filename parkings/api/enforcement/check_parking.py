@@ -4,6 +4,7 @@ from django.conf import settings
 from django.contrib.gis.gdal.error import GDALException
 from django.contrib.gis.geos import Point
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 from rest_framework import generics, permissions, serializers
 from rest_framework.response import Response
 
@@ -90,6 +91,10 @@ class CheckParking(generics.GenericAPIView):
             allowed=allowed,
             found_parking=parking,
         )
+
+        if parking and request.user.enforcer.enforced_domain != parking.domain:
+            # Enforcers cannot see parkings of another domain
+            return Response({'error': _('You do not have permission to view this parking')})
 
         return Response(result)
 

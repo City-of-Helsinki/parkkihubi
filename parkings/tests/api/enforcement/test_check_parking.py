@@ -55,10 +55,12 @@ def test_check_parking_required_fields(staff_api_client):
     check_required_fields(staff_api_client, list_url, expected_required_fields)
 
 
-def test_check_parking_valid_parking(operator, staff_api_client, parking_factory):
+def test_check_parking_valid_parking(operator, staff_api_client, parking_factory, staff_enforcer):
     area = create_area_geom()
     PaymentZone.objects.create(number=1, name="Maksuvyöhyke 1", geom=area)
-    parking = parking_factory(registration_number="ABC-123", operator=operator, zone=1)
+    parking = parking_factory(
+        registration_number="ABC-123", operator=operator, zone=1, domain=staff_enforcer.enforced_domain
+    )
 
     response = staff_api_client.post(list_url, data=PARKING_DATA)
 
@@ -315,3 +317,35 @@ def test_action_is_logged(staff_api_client):
     assert recorded_check.time_overridden is False
     assert recorded_check.performer
     assert recorded_check.performer.is_staff
+
+
+def test_enforcer_cannot_view_parkings_that_belongs_to_domain_they_dont_enforce(
+    operator, staff_api_client, parking_factory, staff_enforcer
+):
+    area = create_area_geom()
+    PaymentZone.objects.create(number=1, name="Maksuvyöhyke 1", geom=area)
+    parking_factory(registration_number="ABC-123", operator=operator, zone=1)
+
+    response = staff_api_client.post(list_url, data=PARKING_DATA)
+
+    assert response.status_code == HTTP_200_OK
+    assert "error" in response.json()
+    assert response.json()["error"] == "You do not have permission to view this parking"
+
+
+def test_enforcer_can_only_view_parkings_that_belongs_to_domain_they_enforce(
+    operator, staff_api_client, parking_factory, staff_enforcer
+):
+    area = create_area_geom()
+    PaymentZone.objects.create(number=1, name="Maksuvyöhyke 1", geom=area)
+    parking_factory(
+        registration_number="ABC-123",
+        operator=operator,
+        zone=1,
+        domain=staff_enforcer.enforced_domain
+    )  # Parking in staff enforced domain
+
+    response = staff_api_client.post(list_url, data=PARKING_DATA)
+
+    assert response.status_code == HTTP_200_OK
+    assert response.data["allowed"] is True
