@@ -28,6 +28,9 @@ tags:
   - name: Payment Zones
     description: >-
       Endpoint for listing the available payment zones
+  - name: Permit Areas
+    description: >-
+      Endpoint for listing the available permit areas
   - name: Parkings
     description: >-
       Endpoints for creating and updating parkings
@@ -322,8 +325,8 @@ components:
         subject is identified by its registration number.
       type: array
       items:
-        $ref: '#/components/schemas/PermitSubject'
-    PermitSubject:
+        $ref: '#/components/schemas/PermitSubjectsItem'
+    PermitSubjectsItem:
       description: >-
         Subject of a permit, i.e. a vehicle.  The permit applies to the
         specified subject for validity period specified by the start and
@@ -345,11 +348,11 @@ components:
           maxLength: 20
     PermitAreas:
       description: >-
-        List of permit area identifiers with validity time ranges
+        List of permit area codes with validity time ranges
       type: array
       items:
-        $ref: '#/components/schemas/PermitArea'
-    PermitArea:
+        $ref: '#/components/schemas/PermitAreasItem'
+    PermitAreasItem:
       type: object
       properties:
         start_time:
@@ -362,14 +365,38 @@ components:
           format: date-time
         area:
           description: >-
-            Identifier of the area.
+            Code of the area.
 
             The list of allowed values to use here varies by operator,
             i.e. only certain operators can create permits for specific
-            areas.  Contact the service administrator for a list of
-            allowed values or to get your own areas into the system.
+            areas.  The list of allowed areas can be fetched from the
+            [``GET /permit_area/``](#operation/getPermitAreas) endpoint.
+            Contact the service administrator to get your own areas into
+            the system.
           type: string
           maxLength: 10
+    PermitArea:
+      type: object
+      example:
+        domain: "HKI"
+        code: "FooBar:123"
+        name: "Area 123 of FooBar operator"
+      required:
+        - domain
+        - code
+        - name
+      properties:
+        domain:
+          description: Enforcement domain code of the permit area
+          type: string
+          maxLength: 10
+        code:
+          description: Code of the permit area
+          type: string
+          maxLength: 10
+        name:
+          description: Name of the permit area
+          type: string
   responses:
     PaginatedResponse:  # 200
       description: An array of objects
@@ -720,6 +747,24 @@ paths:
                   results:
                     items:
                       $ref: '#/components/schemas/PaymentZone'
+  /permit_area/:
+    get:
+      tags: ['Permit Areas']
+      summary: Get list of the permit areas you are allowed to use
+      operationId: getPermitAreas
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of permit areas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/PermitArea'
   /permitseries/:
     get:
       tags: ['Permit Series']

@@ -163,7 +163,7 @@ components:
           maxLength: 20
     PermitAreas:
       description: >-
-        List of permit area identifiers with validity time ranges
+        List of permit area codes with validity time ranges
       type: array
       items:
         $ref: '#/components/schemas/PermitArea'
