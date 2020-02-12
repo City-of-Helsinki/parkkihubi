@@ -269,6 +269,9 @@ components:
           type: boolean
     Permit:
       type: object
+      required:
+        - domain
+        - series
       properties:
         id:
           description: Unique identifier of the permit object
@@ -847,6 +850,7 @@ paths:
                   << : *permitAreas
               required:
                 - series
+                - domain
                 - subjects
                 - areas
       responses:
@@ -992,6 +996,9 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - domain
+                - external_id
               properties:
                 domain:
                   << : *permitDomain
