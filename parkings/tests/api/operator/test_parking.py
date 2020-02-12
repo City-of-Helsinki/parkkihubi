@@ -6,7 +6,7 @@ from django.conf import settings
 from django.urls import reverse
 from freezegun import freeze_time
 
-from parkings.models import Parking
+from parkings.models import EnforcementDomain, Parking
 
 from ..utils import (
     ALL_METHODS, check_method_status_codes, check_required_fields, delete,
@@ -67,7 +67,7 @@ def check_response_parking_data(posted_parking_data, response_parking_data):
         'terminal_number',
         'time_start', 'time_end',
         'location', 'created_at', 'modified_at',
-        'status',
+        'status', 'domain',
     }
 
     posted_data_keys = set(posted_parking_data)
@@ -113,6 +113,7 @@ def test_post_parking(operator_api_client, operator, new_parking_data):
 
     # operator should be autopopulated
     assert new_parking.operator == operator
+    assert new_parking.domain.code == response_parking_data['domain']
 
 
 def test_post_parking_optional_fields_omitted(operator_api_client, new_parking_data):
@@ -188,6 +189,7 @@ def test_patch_parking(operator_api_client, parking):
     # check the actual object
     parking.refresh_from_db()
     assert parking.zone == new_zone
+    assert parking.domain.code == response_parking_data['domain']
 
 
 def test_delete_parking(operator_api_client, parking):
@@ -295,3 +297,22 @@ def test_parking_registration_number_special_chars(operator_api_client, new_park
     check_response_parking_data(new_parking_data, response_parking_data)
     new_parking = Parking.objects.get(id=response_parking_data['id'])
     check_parking_data_matches_parking_object(new_parking_data, new_parking)
+
+
+def test_default_enforcement_domain_is_used_on_parking_creation_if_not_specified(
+    operator_api_client, new_parking_data
+):
+    response_parking_data = post(operator_api_client, list_url, new_parking_data)
+
+    assert response_parking_data['domain'] == EnforcementDomain.get_default_domain().code
+
+
+def test_enforcement_domain_can_be_specified_on_parking_creation(
+    operator_api_client, new_parking_data, enforcement_domain
+):
+    new_parking_data.update(domain=enforcement_domain.code)
+
+    response_parking_data = post(operator_api_client, list_url, new_parking_data)
+
+    assert not response_parking_data['domain'] == EnforcementDomain.get_default_domain().code
+    assert response_parking_data['domain'] == enforcement_domain.code

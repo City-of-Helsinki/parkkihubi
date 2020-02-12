@@ -29,7 +29,7 @@ expected_keys = {
         'terminal_number',
         'time_start', 'time_end',
         'location', 'created_at', 'modified_at',
-        'status', 'is_disc_parking',
+        'status', 'is_disc_parking', 'domain',
     }
 
 
