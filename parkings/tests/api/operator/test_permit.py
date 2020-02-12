@@ -2,10 +2,11 @@ from django.urls import reverse
 from rest_framework.status import (
     HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND)
 
-from parkings.models import Permit
+from parkings.models import Permit, PermitArea
 
 from ....factories.permit import (
     generate_areas, generate_external_ids, generate_subjects)
+from ..enforcement.test_check_parking import create_area_geom
 
 list_url = reverse('operator:v1:permit-list')
 
@@ -202,3 +203,57 @@ def test_operator_and_enforcers_cannot_see_each_others_permit(
     assert set([permit['id'] for permit in json_response['results']]) == set(
         [permit.id for permit in enforcer_permit_list]
     )
+
+
+def test_operator_cannot_create_permit_on_permitareas_where_she_is_not_permitted(
+    operator_api_client, permit_series_factory, enforcer_factory, operator
+):
+    area = create_area_geom()
+    permit_series = permit_series_factory(active=True)
+    operator_enforcer = enforcer_factory(user=operator.user)
+    permit_data = _get_permit_data(permit_series)
+    permit_data.update(domain=operator_enforcer.enforced_domain.code)
+
+    PermitArea.objects.create(
+        name='Kamppi',
+        identifier='A',
+        geom=area,
+        permitted_user=operator.user
+    )  # PermitArea with different domain compared to permit_data
+
+    for each_area in permit_data['areas']:
+        each_area.update(area='A')
+
+    response = operator_api_client.post(list_url, data=permit_data)
+
+    assert response.json()['non_field_errors'] == [
+        'You can\'t create permit whose domain is different than areas\'s domain.'
+    ]
+
+
+def test_operator_only_create_permit_on_permitareas_where_she_is_permitted(
+    operator_api_client, permit_series_factory, enforcer_factory, operator
+):
+    area = create_area_geom()
+    permit_series = permit_series_factory(active=True)
+    operator_enforcer = enforcer_factory(user=operator.user)
+    permit_data = _get_permit_data(permit_series)
+    permit_data.update(domain=operator_enforcer.enforced_domain.code)
+
+    PermitArea.objects.create(
+        name='Kamppi',
+        identifier='A',
+        geom=area,
+        permitted_user=operator.user,
+        domain=operator_enforcer.enforced_domain
+    )  # PermitArea with same domain as permit_data
+
+    for each_area in permit_data['areas']:
+        each_area.update(area='A')
+
+    response = operator_api_client.post(list_url, data=permit_data)
+    json_response = response.json()
+
+    assert response.status_code == HTTP_201_CREATED
+    assert json_response['domain'] == operator_enforcer.enforced_domain.code
+    assert json_response['series'] == permit_series.id

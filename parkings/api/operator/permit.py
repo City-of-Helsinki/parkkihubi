@@ -4,7 +4,7 @@ from rest_framework import mixins, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from parkings.models import EnforcementDomain, Permit, PermitSeries
+from parkings.models import EnforcementDomain, Permit, PermitArea, PermitSeries
 
 from ..common_permit import (
     ActivePermitByExternalIdSerializer, ActivePermitByExternalIdViewSet,
@@ -18,6 +18,19 @@ class OperatorPermitSerializer(PermitSerializer):
 
     class Meta(PermitSerializer.Meta):
         fields = PermitSerializer.Meta.fields + ['domain']
+
+    def validate(self, attrs):
+        # Operator cannot create a permit with area's domain being different than permit domain
+        for area in attrs.get('areas', []):
+            for permitarea in PermitArea.objects.filter(identifier=area['area']).select_related('domain'):
+                if permitarea.domain != attrs['domain']:
+                    raise serializers.ValidationError(
+                        _(
+                            'You can\'t create permit whose domain is different than areas\'s domain.'
+                        )
+                    )
+
+        return super().validate(attrs)
 
 
 class OperatorPermitViewSet(PermitViewSet):
