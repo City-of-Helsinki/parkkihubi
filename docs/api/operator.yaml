@@ -25,6 +25,9 @@ tags:
   - name: Enforcement Domains
     description: >-
       Endpoint for listing the available enforcement domains
+  - name: Payment Zones
+    description: >-
+      Endpoint for listing the available payment zones
   - name: Parkings
     description: >-
       Endpoints for creating and updating parkings
@@ -248,6 +251,28 @@ components:
                   to next half hour, which might allow almost 30 minutes
                   more parking time in practice.
                 type: integer
+    PaymentZone:
+      type: object
+      example:
+        domain: "HKI"
+        code: "2"
+        name: "Maksuvyöhyke 2"
+      required:
+        - domain
+        - code
+        - name
+      properties:
+        domain:
+          description: Enforcement domain code of the payment zone
+          type: string
+          maxLength: 10
+        code:
+          description: Code of the payment zone
+          type: string
+          maxLength: 10
+        name:
+          description: Name of the payment zone
+          type: string
     PermitSeries:
       type: object
       properties:
@@ -677,6 +702,24 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /payment_zone/:
+    get:
+      tags: ['Payment Zones']
+      summary: Get list of the payment zones
+      operationId: getPaymentZones
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of payment zones
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/PaymentZone'
   /permitseries/:
     get:
       tags: ['Permit Series']
