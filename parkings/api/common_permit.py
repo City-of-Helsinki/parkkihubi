@@ -55,6 +55,9 @@ class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
 
             return Response({'status': 'OK'})
 
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
+
 
 class PermitListSerializer(serializers.ListSerializer):
     def create(self, validated_data):

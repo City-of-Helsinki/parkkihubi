@@ -1,10 +1,10 @@
-from rest_framework import serializers
+from rest_framework import mixins, serializers
 
 from parkings.models import EnforcementDomain
 
 from ..common_permit import (
     ActivePermitByExternalIdSerializer, ActivePermitByExternalIdViewSet,
-    PermitSerializer, PermitViewSet)
+    PermitSerializer, PermitSeriesViewSet, PermitViewSet)
 from .operator_permission import OperatorApiHasPermission
 
 
@@ -32,3 +32,7 @@ class OperatorActivePermitByExtIdSerializer(ActivePermitByExternalIdSerializer):
 class OperatorActivePermitByExternalIdViewSet(ActivePermitByExternalIdViewSet):
     permission_classes = [OperatorApiHasPermission]
     serializer_class = OperatorActivePermitByExtIdSerializer
+
+
+class OperatorPermitSeriesViewSet(mixins.DestroyModelMixin, PermitSeriesViewSet):
+    permission_classes = [OperatorApiHasPermission]
