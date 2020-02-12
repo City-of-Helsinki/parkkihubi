@@ -499,6 +499,14 @@ paths:
     post:
       tags: ['Permit Series']
       summary: Activate a permit series
+      description: |-
+        Activate the specified permit series and deactivate all other
+        permit series owned by you.
+
+        As a side effect this will also delete old inactive permit
+        series from the system.  The time limit which defines which
+        series are considered old is 3 days by default, but may be
+        configured by the service administrator to a different value.
       operationId: activatePermitSeries
       security: [{ApiKey: []}]
       parameters:
