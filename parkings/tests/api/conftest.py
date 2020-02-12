@@ -57,3 +57,8 @@ def operator_2_api_client(operator_2):
     token_authenticate(api_client, operator_2.user)
     api_client.operator = operator_2
     return api_client
+
+
+@pytest.fixture
+def staff_enforcer(enforcer_factory, staff_user):
+    return enforcer_factory(user=staff_user)

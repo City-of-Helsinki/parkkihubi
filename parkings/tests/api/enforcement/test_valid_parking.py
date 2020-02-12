@@ -62,20 +62,23 @@ def test_disallowed_methods(staff_api_client, parking, url_kind):
         staff_api_client, [url], disallowed_methods, 405)
 
 
-def test_reg_num_is_required(staff_api_client, parking):
+def test_reg_num_is_required(staff_api_client, parking, staff_enforcer):
     response = staff_api_client.get(list_url)
     assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data == {'reg_num': ['This field is required.']}
 
 
-def test_list_endpoint_base_fields(staff_api_client):
+def test_list_endpoint_base_fields(staff_api_client, staff_enforcer):
     parking_data = get(staff_api_client, list_url_for_abc)
     check_list_endpoint_base_fields(parking_data)
 
 
 @pytest.mark.parametrize('parking_type', ALL_PARKING_KINDS)
-def test_list_endpoint_data(staff_api_client, parking_type, parking, disc_parking):
+def test_list_endpoint_data(staff_api_client, parking_type, parking, disc_parking, staff_enforcer):
     parking_object = get_parking_object(parking_type, parking, disc_parking)
+    parking_object.domain = staff_enforcer.enforced_domain
+    parking_object.save()
+
     data = get(staff_api_client, get_url('list_by_reg_num', parking_object))
     assert len(data['results']) == 1
     parking_data = data['results'][0]
@@ -124,11 +127,11 @@ def iso8601_us(dt):
     return dt.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
 
-def test_registration_number_filter(operator, staff_api_client, parking_factory):
-    p1 = parking_factory(registration_number='ABC-123', operator=operator)
-    p2 = parking_factory(registration_number='ZYX-987', operator=operator)
-    p3 = parking_factory(registration_number='ZYX-987', operator=operator)
-    p4 = parking_factory(registration_number='Zyx987 ', operator=operator)
+def test_registration_number_filter(operator, staff_api_client, parking_factory, staff_enforcer):
+    p1 = parking_factory(registration_number='ABC-123', operator=operator, domain=staff_enforcer.enforced_domain)
+    p2 = parking_factory(registration_number='ZYX-987', operator=operator, domain=staff_enforcer.enforced_domain)
+    p3 = parking_factory(registration_number='ZYX-987', operator=operator, domain=staff_enforcer.enforced_domain)
+    p4 = parking_factory(registration_number='Zyx987 ', operator=operator, domain=staff_enforcer.enforced_domain)
 
     results = get(staff_api_client, list_url_for('ABC-123'))['results']
     assert get_ids_from_results(results) == {p1.id}
@@ -158,18 +161,20 @@ def test_registration_number_filter(operator, staff_api_client, parking_factory)
     'more_than_day_after_2nd',
     'now',
 ])
-def test_time_filtering(operator, staff_api_client, parking_factory, name):
+def test_time_filtering(operator, staff_api_client, parking_factory, name, staff_enforcer):
     p1 = parking_factory(
         registration_number='ABC-123',
         time_start=datetime(2012, 1, 1, 12, 0, 0, tzinfo=utc),
         time_end=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
-        operator=operator)
+        operator=operator,
+        domain=staff_enforcer.enforced_domain)
     p2 = parking_factory(
         registration_number='ABC-123',
         time_start=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
         time_end=datetime(2016, 1, 1, 12, 0, 0, tzinfo=utc),
-        operator=operator)
-    p3 = parking_factory(registration_number='ABC-123')
+        operator=operator,
+        domain=staff_enforcer.enforced_domain)
+    p3 = parking_factory(registration_number='ABC-123', domain=staff_enforcer.enforced_domain)
 
     (time, expected_parkings) = {
         'before_all': ('2000-01-01T12:00:00Z', []),
@@ -194,12 +199,25 @@ def test_time_filtering(operator, staff_api_client, parking_factory, name):
 
 @pytest.mark.parametrize('parking_type', ALL_PARKING_KINDS)
 @override_settings(PARKKIHUBI_NONE_END_TIME_REPLACEMENT='2030-12-31T23:59:59Z')
-def test_null_time_end_is_replaced_correctly(parking_type, staff_api_client, parking, disc_parking):
+def test_null_time_end_is_replaced_correctly(parking_type, staff_api_client, parking, disc_parking, staff_enforcer):
     parking_object = get_parking_object(parking_type, parking, disc_parking)
     parking_object.time_end = None
+    parking_object.domain = staff_enforcer.enforced_domain
     parking_object.save()
     data = get(staff_api_client, get_url('list_by_reg_num', parking_object))
     parking_data = data['results'][0]
     check_parking_data_keys(parking_data)
 
     assert parking_data['time_end'] == '2030-12-31T23:59:59Z'
+
+
+def test_enforcer_can_view_only_parkings_from_domain_they_enforce(
+    staff_api_client, parking_factory, staff_enforcer
+):
+    visible_parking = parking_factory(registration_number='ABC-123', domain=staff_enforcer.enforced_domain)
+    parking_factory(registration_number='ABC-123')  # Parking belonging to different domain
+
+    response = get(staff_api_client, list_url_for('ABC-123'))
+
+    assert response['count'] == 1
+    assert response['results'][0]['id'] == str(visible_parking.id)
