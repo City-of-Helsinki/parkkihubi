@@ -3,9 +3,10 @@ from rest_framework import mixins, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from parkings.models import Permit, PermitSeries
+from parkings.models import EnforcementDomain, Permit, PermitSeries
 
-from ..common_permit import PermitSeriesViewSet
+from ..common_permit import (
+    PermitSerializer, PermitSeriesViewSet, PermitViewSet)
 from .permissions import IsOperator
 
 
@@ -50,3 +51,16 @@ class PermitSeriesActivateBodySerializer(serializers.Serializer):
     deactivate_series = serializers.ListField(
         child=serializers.IntegerField(), required=False
     )
+
+
+class OperatorPermitSerializer(PermitSerializer):
+    domain = serializers.SlugRelatedField(
+        slug_field='code', queryset=EnforcementDomain.objects.all())
+
+    class Meta(PermitSerializer.Meta):
+        fields = PermitSerializer.Meta.fields + ['domain']
+
+
+class OperatorPermitViewSet(PermitViewSet):
+    serializer_class = OperatorPermitSerializer
+    permission_classes = [IsOperator]

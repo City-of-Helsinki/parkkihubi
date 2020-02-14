@@ -2,11 +2,12 @@ from rest_framework.routers import DefaultRouter
 
 from ..url_utils import versioned_url
 from .parking import OperatorAPIParkingViewSet
-from .permit import OperatorPermitSeriesViewSet
+from .permit import OperatorPermitSeriesViewSet, OperatorPermitViewSet
 
 router = DefaultRouter()
 router.register(r'parking', OperatorAPIParkingViewSet, basename='parking')
 router.register(r'permitseries', OperatorPermitSeriesViewSet, basename='permitseries')
+router.register(r'permit', OperatorPermitViewSet, basename='permit')
 
 app_name = 'operator'
 urlpatterns = [
