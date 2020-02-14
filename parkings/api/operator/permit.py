@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from parkings.models import EnforcementDomain, Permit, PermitSeries
 
 from ..common_permit import (
+    ActivePermitByExternalIdSerializer, ActivePermitByExternalIdViewSet,
     PermitSerializer, PermitSeriesViewSet, PermitViewSet)
 from .permissions import IsOperator
 
@@ -64,3 +65,16 @@ class OperatorPermitSerializer(PermitSerializer):
 class OperatorPermitViewSet(PermitViewSet):
     serializer_class = OperatorPermitSerializer
     permission_classes = [IsOperator]
+
+
+class OperatorActivePermitByExtIdSerializer(ActivePermitByExternalIdSerializer):
+    domain = serializers.SlugRelatedField(
+        slug_field='code', queryset=EnforcementDomain.objects.all())
+
+    class Meta(ActivePermitByExternalIdSerializer.Meta):
+        fields = ActivePermitByExternalIdSerializer.Meta.fields + ['domain']
+
+
+class OperatorActivePermitByExternalIdViewSet(ActivePermitByExternalIdViewSet):
+    permission_classes = [IsOperator]
+    serializer_class = OperatorActivePermitByExtIdSerializer
