@@ -181,7 +181,11 @@ def test_lookup_item_is_created_for_permit(enforcer_api_client, permit_series):
     assert PermitLookupItem.objects.count() == 1
 
 
-def test_api_endpoint_returns_correct_data(enforcer_api_client, permit):
+def test_api_endpoint_returns_correct_data(enforcer_api_client, permit, enforcer):
+    permit_series = permit.series
+    permit_series.owner = enforcer.user
+    permit_series.save()
+
     response = enforcer_api_client.get(list_url)
 
     assert response.status_code == HTTP_200_OK
@@ -202,7 +206,10 @@ def check_permit_areas_keys(data):
     assert set(data.keys()) == {'start_time', 'end_time', 'area'}
 
 
-def test_permit_data_matches_permit_object(enforcer_api_client, permit):
+def test_permit_data_matches_permit_object(enforcer_api_client, permit, enforcer):
+    permit_series = permit.series
+    permit_series.owner = enforcer.user
+    permit_series.save()
     permit_detail_url = '{}{}/'.format(list_url, permit.id)
 
     response = enforcer_api_client.get(permit_detail_url)
@@ -296,3 +303,19 @@ def test_permitseries_created_by_user_gets_the_user_as_owner(enforcer_api_client
     assert response.status_code == HTTP_201_CREATED
     assert PermitSeries.objects.count() == 1
     assert PermitSeries.objects.first().owner == enforcer.user
+
+
+def test_permit_visibility_is_limited_to_owner(
+    enforcer_api_client, enforcer, permit_series_factory, operator, permit_factory
+):
+    enforcer_owned_permitseries = permit_series_factory(owner=enforcer.user)
+    operator_owned_permitseries = permit_series_factory(owner=operator.user)
+
+    enforcer_owned_permit = permit_factory(series=enforcer_owned_permitseries)
+    permit_factory(series=operator_owned_permitseries)  # operator_owned_permit
+
+    response = enforcer_api_client.get(list_url)
+
+    assert response.status_code == HTTP_200_OK
+    assert response.json()['count'] == 1
+    assert response.json()['results'][0]['id'] == enforcer_owned_permit.id
