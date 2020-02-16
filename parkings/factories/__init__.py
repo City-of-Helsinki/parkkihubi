@@ -1,3 +1,4 @@
+from .enforcement_domain import EnforcementDomainFactory, EnforcerFactory
 from .operator import OperatorFactory  # noqa
 from .parking import (  # noqa
     DiscParkingFactory, HistoryParkingFactory, ParkingFactory)
@@ -19,4 +20,6 @@ __all__ = [
     'RegionFactory',
     'StaffUserFactory',
     'UserFactory',
+    'EnforcementDomainFactory',
+    'EnforcerFactory',
 ]

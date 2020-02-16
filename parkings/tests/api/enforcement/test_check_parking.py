@@ -50,46 +50,46 @@ def create_area_geom():
     return MultiPolygon(polygons)
 
 
-def test_check_parking_required_fields(staff_api_client):
+def test_check_parking_required_fields(enforcer_api_client):
     expected_required_fields = {"registration_number", "location"}
-    check_required_fields(staff_api_client, list_url, expected_required_fields)
+    check_required_fields(enforcer_api_client, list_url, expected_required_fields)
 
 
-def test_check_parking_valid_parking(operator, staff_api_client, parking_factory):
+def test_check_parking_valid_parking(operator, enforcer_api_client, parking_factory):
     area = create_area_geom()
     PaymentZone.objects.create(number=1, name="Maksuvyöhyke 1", geom=area)
     parking = parking_factory(registration_number="ABC-123", operator=operator, zone=1)
 
-    response = staff_api_client.post(list_url, data=PARKING_DATA)
+    response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
     assert response.data["allowed"] is True
     assert response.data["end_time"] == parking.time_end
 
 
-def test_check_parking_invalid_time_parking(operator, staff_api_client, history_parking_factory):
+def test_check_parking_invalid_time_parking(operator, enforcer_api_client, history_parking_factory):
     area = create_area_geom()
     PaymentZone.objects.create(number=1, name="Maksuvyöhyke 1", geom=area)
     history_parking_factory(registration_number="ABC-123", operator=operator, zone=1)
 
-    response = staff_api_client.post(list_url, data=PARKING_DATA)
+    response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
     assert response.data["allowed"] is False
 
 
-def test_check_parking_invalid_zone_parking(operator, staff_api_client, parking_factory):
+def test_check_parking_invalid_zone_parking(operator, enforcer_api_client, parking_factory):
     area = create_area_geom()
     PaymentZone.objects.create(number=1, name="Maksuvyöhyke 1", geom=area)
     parking_factory(registration_number="ABC-123", operator=operator, zone=2)
 
-    response = staff_api_client.post(list_url, data=PARKING_DATA)
+    response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
     assert response.data["allowed"] is False
 
 
-def test_check_parking_valid_permit(staff_api_client, permit_series_factory, staff_user):
+def test_check_parking_valid_permit(enforcer_api_client, permit_series_factory, staff_user):
     area = create_area_geom()
     PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
     permit_series = permit_series_factory(active=True)
@@ -110,13 +110,13 @@ def test_check_parking_valid_permit(staff_api_client, permit_series_factory, sta
         series=permit_series, external_id=12345, subjects=subjects, areas=areas
     )
 
-    response = staff_api_client.post(list_url, data=PARKING_DATA)
+    response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
     assert response.data["allowed"] is True
 
 
-def test_check_parking_invalid_time_permit(staff_api_client, permit_series_factory, staff_user):
+def test_check_parking_invalid_time_permit(enforcer_api_client, permit_series_factory, staff_user):
     area = create_area_geom()
     PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
     permit_series = permit_series_factory(active=True)
@@ -137,13 +137,13 @@ def test_check_parking_invalid_time_permit(staff_api_client, permit_series_facto
         series=permit_series, external_id=12345, subjects=subjects, areas=areas
     )
 
-    response = staff_api_client.post(list_url, data=PARKING_DATA)
+    response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
     assert response.data["allowed"] is False
 
 
-def test_check_parking_invalid_location(staff_api_client, permit_series_factory, staff_user):
+def test_check_parking_invalid_location(enforcer_api_client, permit_series_factory, staff_user):
     area = create_area_geom()
     PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
     permit_series = permit_series_factory(active=True)
@@ -164,7 +164,7 @@ def test_check_parking_invalid_location(staff_api_client, permit_series_factory,
         series=permit_series, external_id=12345, subjects=subjects, areas=areas
     )
 
-    response = staff_api_client.post(list_url, data=INVALID_PARKING_DATA)
+    response = enforcer_api_client.post(list_url, data=INVALID_PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
     assert response.data["location"] == {
@@ -172,8 +172,8 @@ def test_check_parking_invalid_location(staff_api_client, permit_series_factory,
     assert response.data["allowed"] is False
 
 
-def test_returned_data_has_correct_schema(staff_api_client):
-    response = staff_api_client.post(list_url, data=PARKING_DATA)
+def test_returned_data_has_correct_schema(enforcer_api_client):
+    response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
     data = response.data
     assert isinstance(data, dict)
@@ -212,20 +212,20 @@ INVALID_LOCATION_TEST_CASES = {
         "Ensure this value is greater than or equal to -180."),
 }
 @pytest.mark.parametrize("case", INVALID_LOCATION_TEST_CASES.keys())
-def test_invalid_location_returns_bad_request(staff_api_client, case):
+def test_invalid_location_returns_bad_request(enforcer_api_client, case):
     (location, error_field, error_text) = INVALID_LOCATION_TEST_CASES[case]
     input_data = dict(PARKING_DATA, location=location)
-    response = staff_api_client.post(list_url, data=input_data)
+    response = enforcer_api_client.post(list_url, data=input_data)
 
     assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data["location"][error_field] == [error_text]
 
 
-def test_infinite_latitude_returns_bad_request(staff_api_client):
+def test_infinite_latitude_returns_bad_request(enforcer_api_client):
     location = {"latitude": float("inf"), "longitude": 0.0},
     input_data = dict(PARKING_DATA, location=location)
     body = json.dumps(input_data).encode("utf-8")
-    response = staff_api_client.post(
+    response = enforcer_api_client.post(
         list_url, data=body, content_type="application/json")
 
     assert response.status_code == HTTP_400_BAD_REQUEST
@@ -237,10 +237,10 @@ def test_infinite_latitude_returns_bad_request(staff_api_client):
 @pytest.mark.parametrize("longitude", [-180, 0.0, 180.0])
 @pytest.mark.parametrize("latitude", [-90.0, 0.0, 90.0])
 def test_extreme_locations_are_ok(
-        staff_api_client, latitude, longitude):
+        enforcer_api_client, latitude, longitude):
     location = {"latitude": latitude, "longitude": longitude}
     input_data = dict(PARKING_DATA, location=location)
-    response = staff_api_client.post(list_url, data=input_data)
+    response = enforcer_api_client.post(list_url, data=input_data)
 
     assert response.status_code == HTTP_200_OK
     assert ParkingCheck.objects.first().location.coords == (
@@ -262,18 +262,18 @@ INVALID_REGNUM_TEST_CASES = {
         "Not a valid string."),
 }
 @pytest.mark.parametrize("case", INVALID_REGNUM_TEST_CASES.keys())
-def test_invalid_regnum_returns_bad_request(staff_api_client, case):
+def test_invalid_regnum_returns_bad_request(enforcer_api_client, case):
     (regnum, error_text) = INVALID_REGNUM_TEST_CASES[case]
     input_data = dict(PARKING_DATA, registration_number=regnum)
-    response = staff_api_client.post(list_url, data=input_data)
+    response = enforcer_api_client.post(list_url, data=input_data)
 
     assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data["registration_number"] == [error_text]
 
 
-def test_invalid_timestamp_string_returns_bad_request(staff_api_client):
+def test_invalid_timestamp_string_returns_bad_request(enforcer_api_client):
     input_data = dict(PARKING_DATA, time="invalid-timestamp")
-    response = staff_api_client.post(list_url, data=input_data)
+    response = enforcer_api_client.post(list_url, data=input_data)
 
     assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data["time"] == [
@@ -281,26 +281,26 @@ def test_invalid_timestamp_string_returns_bad_request(staff_api_client):
          " YYYY-MM-DDThh:mm[:ss[.uuuuuu]][+HH:MM|-HH:MM|Z].")]
 
 
-def test_requested_time_must_have_timezone(staff_api_client):
+def test_requested_time_must_have_timezone(enforcer_api_client):
     naive_dt = datetime.datetime(2011, 1, 31, 12, 34, 56, 123456)
     input_data = dict(PARKING_DATA, time=naive_dt)
-    response = staff_api_client.post(list_url, data=input_data)
+    response = enforcer_api_client.post(list_url, data=input_data)
 
     assert response.status_code == HTTP_400_BAD_REQUEST
     assert response.data["time"] == ["Timezone is required"]
 
 
-def test_time_is_honored(staff_api_client):
+def test_time_is_honored(enforcer_api_client):
     dt = datetime.datetime(2011, 1, 31, 12, 34, 56, 123456,
                            tzinfo=datetime.timezone.utc)
     input_data = dict(PARKING_DATA, time=dt)
-    response = staff_api_client.post(list_url, data=input_data)
+    response = enforcer_api_client.post(list_url, data=input_data)
 
     assert (response.status_code, response.data["time"]) == (HTTP_200_OK, dt)
 
 
-def test_action_is_logged(staff_api_client):
-    response = staff_api_client.post(list_url, data={
+def test_action_is_logged(enforcer_api_client):
+    response = enforcer_api_client.post(list_url, data={
         "registration_number": "XYZ-555",
         "location": {"longitude": 24.1234567, "latitude": 60.2987654},
     })
@@ -314,4 +314,3 @@ def test_action_is_logged(staff_api_client):
     assert recorded_check.time == response.data["time"]
     assert recorded_check.time_overridden is False
     assert recorded_check.performer
-    assert recorded_check.performer.is_staff
