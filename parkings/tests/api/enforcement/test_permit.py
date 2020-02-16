@@ -319,3 +319,18 @@ def test_permit_visibility_is_limited_to_owner(
     assert response.status_code == HTTP_200_OK
     assert response.json()['count'] == 1
     assert response.json()['results'][0]['id'] == enforcer_owned_permit.id
+
+
+def test_permit_series_visibility_is_limited_to_owner(
+    enforcer_api_client, enforcer, permit_series_factory, operator
+):
+    url = reverse('enforcement:v1:permitseries-list')
+    enforcer_owned_permitseries = permit_series_factory(owner=enforcer.user)
+    permit_series_factory(owner=operator.user)
+
+    response = enforcer_api_client.get(url)
+
+    assert response.status_code == HTTP_200_OK
+    assert response.json()['count'] == 1
+    assert PermitSeries.objects.count() == 2
+    assert response.json()['results'][0]['id'] == enforcer_owned_permitseries.id

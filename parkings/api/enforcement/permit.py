@@ -33,6 +33,9 @@ class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
+
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
         with transaction.atomic():
