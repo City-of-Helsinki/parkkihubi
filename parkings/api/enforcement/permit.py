@@ -125,3 +125,6 @@ class ActivePermitByExternalIdViewSet(viewsets.ModelViewSet):
         if not latest_active_permit_series:
             raise NotFound(_("Active permit series doesn't exist"))
         serializer.save(series=latest_active_permit_series)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(series__owner=self.request.user)

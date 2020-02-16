@@ -9,8 +9,14 @@ from ....factories.permit import (
 list_url = reverse('enforcement:v1:activepermit-list')
 
 
+def change_permitseries_owner_to(permit_series, owner):
+    permit_series.owner = owner
+    permit_series.save()
+
+
 @pytest.mark.django_db
-def test_post_active_permit_by_external_id(enforcer_api_client, permit_series):
+def test_post_active_permit_by_external_id(enforcer_api_client, permit_series, enforcer):
+    permit_series.owner = enforcer.user
     permit_series.active = True
     permit_series.save()
     data = {
@@ -26,7 +32,8 @@ def test_post_active_permit_by_external_id(enforcer_api_client, permit_series):
 
 
 @pytest.mark.django_db
-def test_patch_active_permit_by_external_id(enforcer_api_client, active_permit):
+def test_patch_active_permit_by_external_id(enforcer_api_client, active_permit, enforcer):
+    change_permitseries_owner_to(active_permit.series, enforcer.user)
     areas = generate_areas()
     areas[0].update(area='X1')
     active_permit_by_external_id_url = '{}{}/'.format(list_url, active_permit.external_id)
@@ -38,7 +45,8 @@ def test_patch_active_permit_by_external_id(enforcer_api_client, active_permit):
 
 
 @pytest.mark.django_db
-def test_put_active_permit_by_external_id(enforcer_api_client, active_permit):
+def test_put_active_permit_by_external_id(enforcer_api_client, active_permit, enforcer):
+    change_permitseries_owner_to(active_permit.series, enforcer.user)
     areas = generate_areas(count=2)
     response = enforcer_api_client.get(list_url)
     put_data = response.data['results'][0]
@@ -65,7 +73,8 @@ def test_post_active_permit_by_external_id_fails_if_no_active_series_exists(enfo
     assert response.data == {'detail': "Active permit series doesn't exist"}
 
 
-def test_invalid_put_active_permit_by_external_id(enforcer_api_client, active_permit):
+def test_invalid_put_active_permit_by_external_id(enforcer_api_client, active_permit, enforcer):
+    change_permitseries_owner_to(active_permit.series, enforcer.user)
     areas = generate_areas()
     del areas[0]['start_time']
     response = enforcer_api_client.get(list_url)
@@ -79,7 +88,8 @@ def test_invalid_put_active_permit_by_external_id(enforcer_api_client, active_pe
     assert set(response.data.keys()) == {'areas'}
 
 
-def test_invalid_patch_active_permit_by_external_id(enforcer_api_client, active_permit):
+def test_invalid_patch_active_permit_by_external_id(enforcer_api_client, active_permit, enforcer):
+    change_permitseries_owner_to(active_permit.series, enforcer.user)
     areas = generate_areas()
     del areas[0]['start_time']
     active_permit_by_external_id_url = '{}{}/'.format(list_url, active_permit.external_id)
@@ -90,10 +100,19 @@ def test_invalid_patch_active_permit_by_external_id(enforcer_api_client, active_
     assert set(response.data.keys()) == {'areas'}
 
 
-def test_get_active_permit_by_external_id(enforcer_api_client, active_permit, permit):
+def test_get_active_permit_by_external_id(enforcer_api_client, active_permit, permit, enforcer):
+    change_permitseries_owner_to(active_permit.series, enforcer.user)
     response = enforcer_api_client.get(list_url)
 
     assert response.status_code == HTTP_200_OK
     assert response.data['count'] == 1
     assert response.data['results'][0]['id'] != permit.id
     assert response.data['results'][0]['id'] == active_permit.id
+
+
+def test_active_permit_visibility_is_limited_to_permitseries_owner(enforcer_api_client, active_permit, enforcer):
+    response = enforcer_api_client.get(list_url)
+
+    assert response.status_code == HTTP_200_OK
+    assert response.data['count'] == 0
+    assert active_permit.series.owner != enforcer.user
