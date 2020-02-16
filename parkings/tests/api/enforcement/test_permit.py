@@ -5,7 +5,7 @@ from rest_framework.status import (
 
 from ....factories.permit import (
     generate_areas, generate_external_ids, generate_subjects)
-from ....models import Permit, PermitLookupItem
+from ....models import Permit, PermitLookupItem, PermitSeries
 
 list_url = reverse('enforcement:v1:permit-list')
 
@@ -286,3 +286,13 @@ def test_permit_bulk_create_normalizes_timestamps(
     assert permit2.subjects[0]['end_time'] == '2030-06-30T09:00:00+00:00'
     assert permit2.areas[0]['start_time'] == '1970-01-01T00:00:00+00:00'
     assert permit2.areas[0]['end_time'] == '2030-06-30T09:00:00+00:00'
+
+
+def test_permitseries_created_by_user_gets_the_user_as_owner(enforcer_api_client, enforcer):
+    url = reverse('enforcement:v1:permitseries-list')
+
+    response = enforcer_api_client.post(url, data={})
+
+    assert response.status_code == HTTP_201_CREATED
+    assert PermitSeries.objects.count() == 1
+    assert PermitSeries.objects.first().owner == enforcer.user
