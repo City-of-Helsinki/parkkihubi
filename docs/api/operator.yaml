@@ -4,26 +4,12 @@ info:
   description: >-
     Parkkihubi Operator REST API Documentation
 
-    Authentication: Every request must have header:
-
-        Authorization: ApiKey <your api key>
-
     # Beta warning and TODO items
 
     **Note**: This is a beta version of the API specification and there
     are still some known issues, which might affect how the final
     version of the API specification will look like.
-
-    - TODO: Authorization for Permit management
-
-      Should all operators be able to create permits to all areas or
-      should there be some kind of linking between the PermitAreas and
-      the operators who are allowed to create permits there?
-
-    - TODO: PermitArea management
-
-      Maybe there should be an API to add/modify PermitAreas?
-  version: "1.2.0.beta1.2019-12-12"
+  version: "1.2.0.beta2.2020-02-12"
 servers:
   - url: https://api.parkkiopas.fi/operator/v1/
     description: Production server
@@ -35,6 +21,12 @@ tags:
   - name: Enforcement Domains
     description: >-
       Endpoint for listing the available enforcement domains
+  - name: Payment Zones
+    description: >-
+      Endpoint for listing the available payment zones
+  - name: Permit Areas
+    description: >-
+      Endpoint for listing the available permit areas
   - name: Parkings
     description: >-
       Endpoints for creating and updating parkings
@@ -57,6 +49,11 @@ components:
       type: apiKey
       name: Authorization
       in: header
+      description: |-
+        Requests must have value `ApiKey <your_api_key>` in the
+        `Authorization` header, i.e. the HTTP header should look like:
+
+            Authorization: ApiKey <your_api_key>
   schemas:
     EnforcementDomain:
       type: object
@@ -258,6 +255,28 @@ components:
                   to next half hour, which might allow almost 30 minutes
                   more parking time in practice.
                 type: integer
+    PaymentZone:
+      type: object
+      example:
+        domain: "HKI"
+        code: "2"
+        name: "Maksuvyöhyke 2"
+      required:
+        - domain
+        - code
+        - name
+      properties:
+        domain:
+          description: Enforcement domain code of the payment zone
+          type: string
+          maxLength: 10
+        code:
+          description: Code of the payment zone
+          type: string
+          maxLength: 10
+        name:
+          description: Name of the payment zone
+          type: string
     PermitSeries:
       type: object
       properties:
@@ -279,6 +298,9 @@ components:
           type: boolean
     Permit:
       type: object
+      required:
+        - domain
+        - series
       properties:
         id:
           description: Unique identifier of the permit object
@@ -304,8 +326,8 @@ components:
         subject is identified by its registration number.
       type: array
       items:
-        $ref: '#/components/schemas/PermitSubject'
-    PermitSubject:
+        $ref: '#/components/schemas/PermitSubjectsItem'
+    PermitSubjectsItem:
       description: >-
         Subject of a permit, i.e. a vehicle.  The permit applies to the
         specified subject for validity period specified by the start and
@@ -327,11 +349,11 @@ components:
           maxLength: 20
     PermitAreas:
       description: >-
-        List of permit area identifiers with validity time ranges
+        List of permit area codes with validity time ranges
       type: array
       items:
-        $ref: '#/components/schemas/PermitArea'
-    PermitArea:
+        $ref: '#/components/schemas/PermitAreasItem'
+    PermitAreasItem:
       type: object
       properties:
         start_time:
@@ -343,9 +365,39 @@ components:
           type: string
           format: date-time
         area:
-          description: Name of the area
+          description: >-
+            Code of the area.
+
+            The list of allowed values to use here varies by operator,
+            i.e. only certain operators can create permits for specific
+            areas.  The list of allowed areas can be fetched from the
+            [``GET /permit_area/``](#operation/getPermitAreas) endpoint.
+            Contact the service administrator to get your own areas into
+            the system.
           type: string
           maxLength: 10
+    PermitArea:
+      type: object
+      example:
+        domain: "HKI"
+        code: "FooBar:123"
+        name: "Area 123 of FooBar operator"
+      required:
+        - domain
+        - code
+        - name
+      properties:
+        domain:
+          description: Enforcement domain code of the permit area
+          type: string
+          maxLength: 10
+        code:
+          description: Code of the permit area
+          type: string
+          maxLength: 10
+        name:
+          description: Name of the permit area
+          type: string
   responses:
     PaginatedResponse:  # 200
       description: An array of objects
@@ -678,6 +730,42 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
+  /payment_zone/:
+    get:
+      tags: ['Payment Zones']
+      summary: Get list of the payment zones
+      operationId: getPaymentZones
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of payment zones
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/PaymentZone'
+  /permit_area/:
+    get:
+      tags: ['Permit Areas']
+      summary: Get list of the permit areas you are allowed to use
+      operationId: getPermitAreas
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of permit areas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/PermitArea'
   /permitseries/:
     get:
       tags: ['Permit Series']
@@ -763,6 +851,14 @@ paths:
     post:
       tags: ['Permit Series']
       summary: Activate a permit series
+      description: |-
+        Activate the specified permit series and possibly deactivate
+        some other permit series owned by you.
+
+        As a side effect this will also delete old inactive permit
+        series from the system.  The time limit which defines which
+        series are considered old is 3 days by default, but may be
+        configured by the service administrator to a different value.
       operationId: activatePermitSeries
       security: [{ApiKey: []}]
       parameters:
@@ -773,7 +869,13 @@ paths:
           application/json:
             schema:
               oneOf:
+                - title: Do not deactivate any series (the default)
+                  example: {}
+                  type: object
+                  properties: {}
                 - title: Deactivate some other series
+                  example:
+                    deactivate_series: [2, 3, 4]
                   type: object
                   properties:
                     deactivate_series:
@@ -851,6 +953,7 @@ paths:
                   << : *permitAreas
               required:
                 - series
+                - domain
                 - subjects
                 - areas
       responses:
@@ -996,6 +1099,9 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                - domain
+                - external_id
               properties:
                 domain:
                   << : *permitDomain

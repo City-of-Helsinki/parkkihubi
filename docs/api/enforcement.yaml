@@ -1,8 +1,15 @@
 openapi: 3.0.1
 info:
   title: Parkkihubi Enforcement API
-  description: Parkkihubi Enforcement REST API Documentation
-  version: 0.1.0
+  description: >-
+    Parkkihubi Enforcement REST API Documentation
+
+    # Beta warning and TODO items
+
+    **Note**: This is a beta version of the API specification and there
+    are still some known issues, which might affect how the final
+    version of the API specification will look like.
+  version: "1.2.0.beta2.2020-02-12"
 servers:
   - url: https://api.parkkiopas.fi/enforcement/v1/
     description: Production server
@@ -33,6 +40,11 @@ components:
       type: apiKey
       name: Authorization
       in: header
+      description: |-
+        Requests must have value `ApiKey <your_api_key>` in the
+        `Authorization` header, i.e. the HTTP header should look like:
+
+            Authorization: ApiKey <your_api_key>
   schemas:
     Parking:
       type: object
@@ -163,7 +175,7 @@ components:
           maxLength: 20
     PermitAreas:
       description: >-
-        List of permit area identifiers with validity time ranges
+        List of permit area codes with validity time ranges
       type: array
       items:
         $ref: '#/components/schemas/PermitArea'
@@ -499,6 +511,14 @@ paths:
     post:
       tags: ['Permit Series']
       summary: Activate a permit series
+      description: |-
+        Activate the specified permit series and deactivate all other
+        permit series owned by you.
+
+        As a side effect this will also delete old inactive permit
+        series from the system.  The time limit which defines which
+        series are considered old is 3 days by default, but may be
+        configured by the service administrator to a different value.
       operationId: activatePermitSeries
       security: [{ApiKey: []}]
       parameters:
