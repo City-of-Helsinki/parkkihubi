@@ -4,9 +4,10 @@ import django_filters
 from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from rest_framework import permissions, serializers, viewsets
+from rest_framework import serializers, viewsets
 
 from ...models import Parking
+from .permissions import IsEnforcer
 
 
 class ValidParkingSerializer(serializers.ModelSerializer):
@@ -86,7 +87,7 @@ class ValidParkingFilter(django_filters.rest_framework.FilterSet):
 
 
 class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsEnforcer]
     queryset = Parking.objects.order_by('-time_end')
     serializer_class = ValidParkingSerializer
     filterset_class = ValidParkingFilter
@@ -135,6 +136,9 @@ class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
     def _get_filterset(self, queryset):
         filter_backend = self.filter_backends[0]()
         return filter_backend.get_filterset(self.request, queryset, self)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(domain=self.request.user.enforcer.enforced_domain)
 
 
 def get_grace_duration(default=datetime.timedelta(minutes=15)):

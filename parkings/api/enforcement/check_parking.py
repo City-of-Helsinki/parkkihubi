@@ -4,12 +4,13 @@ from django.conf import settings
 from django.contrib.gis.gdal.error import GDALException
 from django.contrib.gis.geos import Point
 from django.utils import timezone
-from rest_framework import generics, permissions, serializers
+from rest_framework import generics, serializers
 from rest_framework.response import Response
 
 from ...models import (
     Parking, ParkingCheck, PaymentZone, PermitArea, PermitLookupItem)
 from ...models.constants import GK25FIN_SRID, WGS84_SRID
+from .permissions import IsEnforcer
 
 
 class AwareDateTimeField(serializers.DateTimeField):
@@ -39,7 +40,7 @@ class CheckParking(generics.GenericAPIView):
     """
     Check if parking is valid for given registration number and location.
     """
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsEnforcer]
     serializer_class = CheckParkingSerializer
 
     def post(self, request):

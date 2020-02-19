@@ -10,7 +10,7 @@ list_url = reverse('enforcement:v1:activepermit-list')
 
 
 @pytest.mark.django_db
-def test_post_active_permit_by_external_id(staff_api_client, permit_series):
+def test_post_active_permit_by_external_id(enforcer_api_client, permit_series):
     permit_series.active = True
     permit_series.save()
     data = {
@@ -19,79 +19,79 @@ def test_post_active_permit_by_external_id(staff_api_client, permit_series):
         'areas': generate_areas()
     }
 
-    response = staff_api_client.post(list_url, data=data)
+    response = enforcer_api_client.post(list_url, data=data)
 
     assert response.status_code == HTTP_201_CREATED
     assert response.data['series'] == permit_series.id
 
 
 @pytest.mark.django_db
-def test_patch_active_permit_by_external_id(staff_api_client, active_permit):
+def test_patch_active_permit_by_external_id(enforcer_api_client, active_permit):
     areas = generate_areas()
     areas[0].update(area='X1')
     active_permit_by_external_id_url = '{}{}/'.format(list_url, active_permit.external_id)
 
-    response = staff_api_client.patch(active_permit_by_external_id_url, data={'areas': areas})
+    response = enforcer_api_client.patch(active_permit_by_external_id_url, data={'areas': areas})
 
     assert response.status_code == HTTP_200_OK
     assert response.data['areas'] == areas
 
 
 @pytest.mark.django_db
-def test_put_active_permit_by_external_id(staff_api_client, active_permit):
+def test_put_active_permit_by_external_id(enforcer_api_client, active_permit):
     areas = generate_areas(count=2)
-    response = staff_api_client.get(list_url)
+    response = enforcer_api_client.get(list_url)
     put_data = response.data['results'][0]
     put_data.update(areas=areas)
     active_permit_by_external_id_url = '{}{}/'.format(list_url, active_permit.external_id)
 
-    response = staff_api_client.put(active_permit_by_external_id_url, data=put_data)
+    response = enforcer_api_client.put(active_permit_by_external_id_url, data=put_data)
 
     assert response.status_code == HTTP_200_OK
     assert response.data['areas'] == areas
 
 
 @pytest.mark.django_db
-def test_post_active_permit_by_external_id_fails_if_no_active_series_exists(staff_api_client, permit):
+def test_post_active_permit_by_external_id_fails_if_no_active_series_exists(enforcer_api_client, permit):
     data = {
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
         'areas': generate_areas()
     }
 
-    response = staff_api_client.post(list_url, data=data)
+    response = enforcer_api_client.post(list_url, data=data)
 
     assert response.status_code == HTTP_404_NOT_FOUND
     assert response.data == {'detail': "Active permit series doesn't exist"}
 
 
-def test_invalid_put_active_permit_by_external_id(staff_api_client, active_permit):
+def test_invalid_put_active_permit_by_external_id(enforcer_api_client, active_permit):
     areas = generate_areas()
     del areas[0]['start_time']
-    response = staff_api_client.get(list_url)
+    response = enforcer_api_client.get(list_url)
     put_data = response.data['results'][0]
     put_data.update(areas=areas)
     active_permit_by_external_id_url = '{}{}/'.format(list_url, active_permit.external_id)
 
-    response = staff_api_client.put(active_permit_by_external_id_url, data=put_data)
+    response = enforcer_api_client.put(active_permit_by_external_id_url, data=put_data)
 
     assert response.status_code == HTTP_400_BAD_REQUEST
     assert set(response.data.keys()) == {'areas'}
 
 
-def test_invalid_patch_active_permit_by_external_id(staff_api_client, active_permit):
+def test_invalid_patch_active_permit_by_external_id(enforcer_api_client, active_permit):
     areas = generate_areas()
     del areas[0]['start_time']
     active_permit_by_external_id_url = '{}{}/'.format(list_url, active_permit.external_id)
 
-    response = staff_api_client.patch(active_permit_by_external_id_url, data={'areas': areas})
+    response = enforcer_api_client.patch(active_permit_by_external_id_url, data={'areas': areas})
 
     assert response.status_code == HTTP_400_BAD_REQUEST
     assert set(response.data.keys()) == {'areas'}
 
 
-def test_get_active_permit_by_external_id(staff_api_client, active_permit, permit):
-    response = staff_api_client.get(list_url)
+def test_get_active_permit_by_external_id(enforcer_api_client, active_permit, permit):
+    response = enforcer_api_client.get(list_url)
 
     assert response.status_code == HTTP_200_OK
     assert response.data['count'] == 1

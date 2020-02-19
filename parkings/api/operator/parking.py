@@ -4,13 +4,15 @@ from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import mixins, permissions, serializers, viewsets
 
-from parkings.models import Operator, Parking
+from parkings.models import EnforcementDomain, Operator, Parking
 
 from ..common import ParkingException
 
 
 class OperatorAPIParkingSerializer(serializers.ModelSerializer):
     status = serializers.ReadOnlyField(source='get_state')
+    domain = serializers.SlugRelatedField(
+        slug_field='code', queryset=EnforcementDomain.objects.all())
 
     class Meta:
         model = Parking
@@ -21,6 +23,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
             'time_start', 'time_end',
             'zone',
             'status', 'is_disc_parking',
+            'domain',
         )
 
         # these are needed because by default a PUT request that does not contain some optional field
@@ -38,6 +41,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
         self.fields['time_start'].timezone = pytz.utc
         self.fields['time_end'].timezone = pytz.utc
         self.fields['zone'].required = True
+        self.fields['domain'].required = False
 
         self._set_required_extra_fields()
 
@@ -62,6 +66,9 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
         else:
             time_start = data['time_start']
             time_end = data['time_end']
+
+            if 'domain' not in data:
+                data['domain'] = EnforcementDomain.get_default_domain()
 
         if time_end is not None and time_start > time_end:
             raise serializers.ValidationError(_('"time_start" cannot be after "time_end".'))

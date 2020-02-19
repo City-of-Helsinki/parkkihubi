@@ -34,21 +34,21 @@ def test_permission_checks(api_client, operator_api_client, operator, url_kind):
 
 
 @pytest.mark.parametrize('url_kind', ALL_URL_KINDS)
-def test_disallowed_methods(staff_api_client, operator, url_kind):
+def test_disallowed_methods(enforcer_api_client, operator, url_kind):
     url = get_url(url_kind, operator)
     disallowed_methods = ('post', 'put', 'patch', 'delete')
     check_method_status_codes(
-        staff_api_client, [url], disallowed_methods, 405)
+        enforcer_api_client, [url], disallowed_methods, 405)
 
 
-def test_list_endpoint_base_fields(staff_api_client):
-    operator_data = get(staff_api_client, list_url)
+def test_list_endpoint_base_fields(enforcer_api_client):
+    operator_data = get(enforcer_api_client, list_url)
     check_list_endpoint_base_fields(operator_data)
 
 
-def test_list_endpoint_data(staff_api_client, operator):
+def test_list_endpoint_data(enforcer_api_client, operator):
     assert Operator.objects.count() == 1
-    data = get(staff_api_client, list_url)
+    data = get(enforcer_api_client, list_url)
     assert len(data['results']) == 1
     operator_data = data['results'][0]
     check_operator_data_keys(operator_data)
