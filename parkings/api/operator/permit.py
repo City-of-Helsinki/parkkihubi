@@ -3,6 +3,7 @@ from django.utils.translation import gettext as _
 from rest_framework import mixins, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from parkings.models import EnforcementDomain, Permit, PermitArea, PermitSeries
 
@@ -96,3 +97,21 @@ class OperatorActivePermitByExtIdSerializer(ActivePermitByExternalIdSerializer):
 class OperatorActivePermitByExternalIdViewSet(ActivePermitByExternalIdViewSet):
     permission_classes = [IsOperator]
     serializer_class = OperatorActivePermitByExtIdSerializer
+
+
+class OperatorPermitAreaSerializer(serializers.ModelSerializer):
+    domain = serializers.SlugRelatedField(
+        slug_field='code', queryset=EnforcementDomain.objects.all())
+    code = serializers.CharField(source='identifier')
+
+    class Meta:
+        model = PermitArea
+        fields = ['code', 'domain', 'name']
+
+
+class OperatorPermittedPermitAreaViewSet(mixins.ListModelMixin, GenericViewSet):
+    permission_classes = [IsOperator]
+    serializer_class = OperatorPermitAreaSerializer
+
+    def get_queryset(self):
+        return PermitArea.objects.filter(permitted_user=self.request.user)
