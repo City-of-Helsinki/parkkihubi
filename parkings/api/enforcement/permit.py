@@ -30,6 +30,12 @@ class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
     queryset = PermitSeries.objects.all()
     serializer_class = PermitSeriesSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(owner=self.request.user)
+
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
         with transaction.atomic():
@@ -99,6 +105,9 @@ class PermitViewSet(viewsets.ModelViewSet):
             kwargs['many'] = True
         return super().get_serializer(*args, **kwargs)
 
+    def get_queryset(self):
+        return super().get_queryset().filter(series__owner=self.request.user)
+
 
 class ActivePermitByExternalIdSerializer(PermitSerializer):
     class Meta(PermitSerializer.Meta):
@@ -116,3 +125,6 @@ class ActivePermitByExternalIdViewSet(viewsets.ModelViewSet):
         if not latest_active_permit_series:
             raise NotFound(_("Active permit series doesn't exist"))
         serializer.save(series=latest_active_permit_series)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(series__owner=self.request.user)
