@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Area
-from django.db.models import Func, Sum
+from django.db.models import Case, Count, F, Func, Q, Sum, When
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
@@ -64,6 +65,28 @@ class ParkingAreaQuerySet(models.QuerySet):
             self.annotate(spots=Round(PARKING_SPOTS_PER_SQ_M * Area('geom')))
             .aggregate(val=Sum('spots')))['val']
         return int(spots.sq_m) if spots else 0
+
+    def with_parking_count(self, at_time=None):
+        time = at_time if at_time else timezone.now()
+
+        if time > timezone.now():
+            region_q = self.filter(
+                parking_counts__time=time, parking_counts__is_forecast=True
+            )
+        else:
+            region_q = self.filter(
+                parking_counts__time=time, parking_counts__is_forecast=False
+            )
+
+        if region_q.exists():
+            return region_q.annotate(
+                parking_count=F("parking_counts__number")
+            )
+
+        valid_parkings_q = Q(parkings__time_start__lte=time) & (
+            Q(parkings__time_end__gte=time) | Q(parkings__time_end=None)
+        )
+        return self.annotate(parking_count=Count(Case(When(valid_parkings_q, then=1))))
 
 
 class ParkingArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
