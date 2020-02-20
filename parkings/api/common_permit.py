@@ -57,9 +57,7 @@ class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
 
             to_deactivate.update(active=False)
 
-            prunable_series = PermitSeries.objects.prunable()
-            Permit.objects.filter(series__in=prunable_series).delete()
-            prunable_series.delete()
+            PermitSeries.delete_prunable_series()
 
             return Response({'status': 'OK'})
 

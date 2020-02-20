@@ -45,8 +45,9 @@ class PermitSeriesQuerySet(models.QuerySet):
     def latest_active(self):
         return self.active().order_by('-modified_at').first()
 
-    def prunable(self):
-        limit = timezone.now() - settings.PARKKIHUBI_PERMITS_PRUNABLE_AFTER
+    def prunable(self, time_limit=None):
+        limit = time_limit or (
+            timezone.now() - settings.PARKKIHUBI_PERMITS_PRUNABLE_AFTER)
         return self.filter(created_at__lt=limit, active=False)
 
 
@@ -60,6 +61,12 @@ class PermitSeries(TimestampedModelMixin, models.Model):
         ordering = ('created_at', 'id')
         verbose_name = _("permit series")
         verbose_name_plural = _("permit series")
+
+    @classmethod
+    def delete_prunable_series(cls, time_limit=None):
+        prunable = cls.objects.prunable(time_limit)
+        Permit.objects.filter(series__in=prunable).delete()
+        prunable.delete()
 
     def __str__(self):
         return str(self.id)
