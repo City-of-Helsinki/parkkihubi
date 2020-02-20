@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Q
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, serializers, viewsets
@@ -36,20 +37,25 @@ class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
 
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
+        return self.execute_activation(Q())
+
+    def execute_activation(self, deactivate_id_filter):
         with transaction.atomic():
             obj_to_activate = self.get_object()
-            old_actives = self.queryset.filter(active=True)
+            to_deactivate = (
+                self.get_queryset()
+                .filter(active=True)
+                .filter(deactivate_id_filter)
+                .exclude(pk=obj_to_activate.pk))
 
-            if obj_to_activate.active and old_actives.count() == 1:
+            if obj_to_activate.active and to_deactivate.count() == 0:
                 return Response({'status': 'No change'})
 
             if not obj_to_activate.active:
                 obj_to_activate.active = True
-                obj_to_activate.save()
+                obj_to_activate.save(update_fields=['active'])
 
-            for obj in old_actives.exclude(pk=obj_to_activate.pk):
-                obj.active = False
-                obj.save()
+            to_deactivate.update(active=False)
 
             prunable_series = PermitSeries.objects.prunable()
             Permit.objects.filter(series__in=prunable_series).delete()
