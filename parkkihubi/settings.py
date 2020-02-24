@@ -1,3 +1,4 @@
+import datetime
 import os
 from datetime import timedelta
 
@@ -217,3 +218,7 @@ PARKKIHUBI_ENFORCEMENT_API_ENABLED = (
     env.bool('PARKKIHUBI_ENFORCEMENT_API_ENABLED', True))
 PARKKIHUBI_PERMITS_PRUNABLE_AFTER = timedelta(days=3)
 DEFAULT_ENFORCEMENT_DOMAIN = ('Helsinki', 'HKI')
+FORECAST_PARKINGS_START = datetime.date(
+    2017, 9, 20
+)  # The data has some inconsistent datapoints in the beginning. This is the start of the consistent part of the data.
+FORECAST_PERIOD = 24 * 7  # One week.
