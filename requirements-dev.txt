@@ -28,7 +28,7 @@ pycodestyle==2.5.0        # via autopep8
 pydocstyle==4.0.1
 pyflakes==2.1.1           # via autoflake
 pygments==2.5.2           # via ipython
-pyparsing==2.4.5          # via packaging
+pyparsing==2.4.7          # via packaging
 six==1.13.0               # via django-extensions, packaging, prompt-toolkit, tox, traitlets
 snowballstemmer==2.0.0    # via pydocstyle
 toml==0.10.0              # via tox
@@ -36,7 +36,7 @@ tox==3.14.2
 traitlets==4.3.3          # via ipython
 virtualenv==16.7.8        # via tox
 wcwidth==0.1.7            # via prompt-toolkit
-werkzeug==0.16.0
+werkzeug==1.0.0
 zipp==0.6.0               # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
