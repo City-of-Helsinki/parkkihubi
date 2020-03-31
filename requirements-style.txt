@@ -14,6 +14,6 @@ mccabe==0.6.1             # via flake8
 pep8-naming==0.9.1
 pycodestyle==2.5.0        # via flake8, flake8-print
 pyflakes==2.1.1           # via flake8
-six==1.13.0               # via flake8-print
-testfixtures==6.10.3      # via flake8-isort
+six==1.14.0               # via flake8-print
+testfixtures==6.13.0      # via flake8-isort
 toml==0.10.0              # via isort

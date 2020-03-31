@@ -1,0 +1,29 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgis/postgis:10-3.0
+    environment:
+      POSTGRES_DB: parkkihubi
+      POSTGRES_PASSWORD: parkkihubi
+      POSTGRES_USER: parkkihubi
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  api:
+    build:
+      context: "."
+      target: ${BUILD_TARGET:-development}
+    environment:
+      DATABASE_URL: >-
+          postgis://parkkihubi:parkkihubi@db/parkkihubi
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - .:/app
+
+volumes:
+  db_data:
