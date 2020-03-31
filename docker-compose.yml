@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   db:
-    image: mdillon/postgis:9.6
+    image: postgis/postgis:10-3.0
     environment:
       POSTGRES_DB: parkkihubi
       POSTGRES_PASSWORD: parkkihubi
