@@ -158,6 +158,7 @@ def test_activate_wont_deactivate_enforcer_series(
     assert series_to_activate.active
     assert response.json()['status'] == 'OK'
     assert not PermitSeries.objects.filter(owner=staff_user, active=False).exists()
+    assert PermitSeries.objects.filter(owner=staff_user, active=True).count() == 5
 
 
 def test_activate_wont_deactivate_series_owned_by_others(
@@ -192,3 +193,5 @@ def test_activate_wont_deactivate_series_owned_by_others(
 
     for series in PermitSeries.objects.filter(active=False):
         assert series.id in operator_series_to_deactivate
+
+    assert PermitSeries.objects.filter(owner=staff_user, active=True).count() == 5
