@@ -18,11 +18,6 @@ class Migration(migrations.Migration):
             field=models.OneToOneField(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL, verbose_name='user'),
         ),
         migrations.AlterField(
-            model_name='parking',
-            name='domain',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='parkings', to='parkings.EnforcementDomain'),
-        ),
-        migrations.AlterField(
             model_name='parkingarea',
             name='domain',
             field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='parking_areas', to='parkings.EnforcementDomain'),
