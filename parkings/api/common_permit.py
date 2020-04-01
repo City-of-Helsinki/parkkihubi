@@ -6,8 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
-from ...models import EnforcementDomain, Permit, PermitSeries
-from .permissions import IsEnforcer
+from ..models import EnforcementDomain, Permit, PermitSeries
 
 
 class PermitSeriesSerializer(serializers.ModelSerializer):
@@ -26,7 +25,6 @@ class CreateAndReadOnlyModelViewSet(
 
 
 class PermitSeriesViewSet(CreateAndReadOnlyModelViewSet):
-    permission_classes = [IsEnforcer]
     queryset = PermitSeries.objects.all()
     serializer_class = PermitSeriesSerializer
 
@@ -94,7 +92,6 @@ class PermitSerializer(serializers.ModelSerializer):
 
 
 class PermitViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsEnforcer]
     queryset = Permit.objects.all()
     serializer_class = PermitSerializer
     filter_backends = [DjangoFilterBackend]
@@ -115,7 +112,6 @@ class ActivePermitByExternalIdSerializer(PermitSerializer):
 
 
 class ActivePermitByExternalIdViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsEnforcer]
     queryset = Permit.objects.active().exclude(external_id=None)
     serializer_class = ActivePermitByExternalIdSerializer
     lookup_field = 'external_id'

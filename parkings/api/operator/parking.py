@@ -2,11 +2,12 @@ import pytz
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import mixins, permissions, serializers, viewsets
+from rest_framework import mixins, serializers, viewsets
 
-from parkings.models import EnforcementDomain, Operator, Parking
+from parkings.models import EnforcementDomain, Parking
 
 from ..common import ParkingException
+from .permissions import IsOperator
 
 
 class OperatorAPIParkingSerializer(serializers.ModelSerializer):
@@ -82,24 +83,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
         return representation
 
 
-class OperatorAPIParkingPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        """
-        Allow only operators to create/modify a parking.
-        """
-        user = request.user
-
-        if not user.is_authenticated:
-            return False
-
-        try:
-            user.operator
-            return True
-        except Operator.DoesNotExist:
-            pass
-
-        return False
-
+class OperatorAPIParkingPermission(IsOperator):
     def has_object_permission(self, request, view, obj):
         """
         Allow operators to modify only their own parkings.
