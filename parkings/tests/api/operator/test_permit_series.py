@@ -120,8 +120,9 @@ def test_activate_with_deactivate_series(
         assert series.id in series_to_deactivate
 
 
+@pytest.mark.parametrize('empty_data', [None, {}])
 def test_activate_with_empty_payload(
-    operator_api_client, operator
+    empty_data, operator_api_client, operator
 ):
     """
     Without params specified series is activated, nothing is deactivated.
@@ -130,7 +131,7 @@ def test_activate_with_empty_payload(
     series_to_activate = PermitSeries.objects.create(owner=operator.user, active=False)
     url = get_activate_url(series_to_activate)
 
-    response = operator_api_client.post(url, data={})
+    response = operator_api_client.post(url, data=empty_data)
 
     assert response.status_code == HTTP_200_OK
     series_to_activate.refresh_from_db()
