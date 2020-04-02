@@ -4,7 +4,8 @@ from rest_framework.status import (
     HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_404_NOT_FOUND)
 
 from ....factories.permit import (
-    generate_areas, generate_external_ids, generate_subjects)
+    create_permit_area, generate_areas, generate_external_ids,
+    generate_subjects)
 
 list_url = reverse('enforcement:v1:activepermit-list')
 
@@ -35,6 +36,7 @@ def test_post_active_permit_by_external_id(enforcer_api_client, permit_series, e
 def test_patch_active_permit_by_external_id(enforcer_api_client, active_permit, enforcer):
     change_permitseries_owner_to(active_permit.series, enforcer.user)
     areas = generate_areas()
+    create_permit_area('X1')
     areas[0].update(area='X1')
     active_permit_by_external_id_url = '{}{}/'.format(list_url, active_permit.external_id)
 

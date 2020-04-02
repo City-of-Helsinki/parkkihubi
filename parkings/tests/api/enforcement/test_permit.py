@@ -4,7 +4,8 @@ from rest_framework.status import (
     HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN)
 
 from ....factories.permit import (
-    generate_areas, generate_external_ids, generate_subjects)
+    create_permit_area, generate_areas, generate_external_ids,
+    generate_subjects)
 from ....models import Permit, PermitLookupItem, PermitSeries
 
 list_url = reverse('enforcement:v1:permit-list')
@@ -139,6 +140,8 @@ def test_permit_creation_normalizes_timestamps(
         enforcer_api_client, permit_series,
         kind,
         input_timestamp, normalized_timestamp):
+    area_identifier = 'area name'
+    create_permit_area(area_identifier)
     permit_data = {
         'series': permit_series.id,
         'external_id': 'E123',
@@ -150,7 +153,7 @@ def test_permit_creation_normalizes_timestamps(
         'areas': [{
             'start_time': '1970-01-01T00:00:00+00:00',
             'end_time': input_timestamp,
-            'area': 'area name',
+            'area': area_identifier,
         }],
     }
 
@@ -250,6 +253,9 @@ def test_permit_bulk_create_creates_lookup_items(
 
 def test_permit_bulk_create_normalizes_timestamps(
         enforcer_api_client, permit_series):
+    area_identifiers = ['AREA 51', 'AREA 52']
+    for identifier in area_identifiers:
+        create_permit_area(identifier)
     permit_data = [
         {
             "series": permit_series.id,
@@ -262,7 +268,7 @@ def test_permit_bulk_create_normalizes_timestamps(
             'areas': [{
                 'start_time': '1970-01-01T00:00:00Z',
                 'end_time': '2030-06-30T11:00+02:00',
-                'area': 'AREA 51',
+                'area': area_identifiers[0],
             }],
         },
         {
@@ -276,7 +282,7 @@ def test_permit_bulk_create_normalizes_timestamps(
             'areas': [{
                 'start_time': '1970-01-01T00:00:00+00:00',
                 'end_time': '2030-06-30T09:00Z',
-                'area': 'AREA 52',
+                'area': area_identifiers[1],
             }],
         },
     ]
