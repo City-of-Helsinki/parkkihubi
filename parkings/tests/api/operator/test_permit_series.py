@@ -8,7 +8,7 @@ from parkings.models import PermitSeries
 url_list = reverse('operator:v1:permitseries-list')
 
 
-def test_operator_can_view_only_permitseries_owned_by_herself(
+def test_operator_can_view_only_own_permitseries(
     operator_api_client,
     permit_series,
     admin_user
@@ -27,7 +27,7 @@ def test_operator_can_view_only_permitseries_owned_by_herself(
     assert response.json()['results'][0]['id'] != permit_series.id
 
 
-def test_operator_can_delete_permitseries_owned_by_herself(
+def test_operator_can_delete_own_permitseries(
     operator_api_client,
     permit_series,
     admin_user,
@@ -49,20 +49,25 @@ def test_operator_can_delete_permitseries_owned_by_herself(
     assert PermitSeries.objects.first().id != permit_series.pk
 
 
-def get_permitseries_detail_url(obj):
-    return reverse('operator:v1:permitseries-detail', kwargs={'pk': obj.pk})
+def get_activate_url(permit_series):
+    return '{}activate/'.format(get_detail_url(permit_series))
 
 
-def _create_permit_series(count=3, owner=None, active=False):
+def get_detail_url(permit_series):
+    pk = permit_series.pk
+    return reverse('operator:v1:permitseries-detail', kwargs={'pk': pk})
+
+
+def _create_permit_series(count=3, owner=None):
     for _ in range(count):
-        PermitSeries.objects.create(active=active, owner=owner)
+        PermitSeries.objects.create(active=True, owner=owner)
 
 
 @pytest.mark.parametrize('deactivate_others', [True, False])
-def test_operator_can_deactivate_all_other_series_activating_main(
+def test_activate_with_deactive_others(
     operator_api_client, operator, deactivate_others
 ):
-    _create_permit_series(count=5, owner=operator.user, active=True)
+    _create_permit_series(count=5, owner=operator.user)
     assert PermitSeries.objects.count() == 5
 
     series_to_activate = PermitSeries.objects.first()
@@ -70,7 +75,7 @@ def test_operator_can_deactivate_all_other_series_activating_main(
     series_to_activate.save()
 
     response = operator_api_client.post(
-        '{}activate/'.format(get_permitseries_detail_url(series_to_activate)),
+        get_activate_url(series_to_activate),
         data={'deactivate_others': deactivate_others},
     )
 
@@ -85,10 +90,10 @@ def test_operator_can_deactivate_all_other_series_activating_main(
         assert PermitSeries.objects.filter(active=True).count() == 5
 
 
-def test_operator_can_deactivate_specified_series_activating_main(
+def test_activate_with_deactivate_series(
     operator_api_client, operator
 ):
-    _create_permit_series(count=5, owner=operator.user, active=True)
+    _create_permit_series(count=5, owner=operator.user)
     assert PermitSeries.objects.count() == 5
 
     series_to_activate = PermitSeries.objects.first()
@@ -100,7 +105,7 @@ def test_operator_can_deactivate_specified_series_activating_main(
     )
 
     response = operator_api_client.post(
-        '{}activate/'.format(get_permitseries_detail_url(series_to_activate)),
+        get_activate_url(series_to_activate),
         data={'deactivate_series': series_to_deactivate},
     )
 
@@ -115,15 +120,18 @@ def test_operator_can_deactivate_specified_series_activating_main(
         assert series.id in series_to_deactivate
 
 
-def test_operator_activates_specified_series_and_deactivates_no_other_series_on_empty_payload(
-    operator_api_client, operator
+@pytest.mark.parametrize('empty_data', [None, {}])
+def test_activate_with_empty_payload(
+    empty_data, operator_api_client, operator
 ):
-    _create_permit_series(count=3, owner=operator.user, active=True)
+    """
+    Without params specified series is activated, nothing is deactivated.
+    """
+    _create_permit_series(count=3, owner=operator.user)
     series_to_activate = PermitSeries.objects.create(owner=operator.user, active=False)
+    url = get_activate_url(series_to_activate)
 
-    response = operator_api_client.post(
-        '{}activate/'.format(get_permitseries_detail_url(series_to_activate), data={}),
-    )
+    response = operator_api_client.post(url, data=empty_data)
 
     assert response.status_code == HTTP_200_OK
     series_to_activate.refresh_from_db()
@@ -132,33 +140,32 @@ def test_operator_activates_specified_series_and_deactivates_no_other_series_on_
     assert PermitSeries.objects.filter(active=False).count() == 0
 
 
-def test_operator_activate_series_doesnot_deactivate_enforcer_owned_series(
+def test_activate_wont_deactivate_enforcer_series(
     operator_api_client, operator, staff_user
 ):
-    _create_permit_series(count=5, owner=operator.user, active=True)
-    _create_permit_series(count=5, owner=staff_user, active=True)
+    _create_permit_series(count=5, owner=operator.user)
+    _create_permit_series(count=5, owner=staff_user)
 
     series_to_activate = PermitSeries.objects.filter(owner=operator.user).first()
     series_to_activate.active = False
     series_to_activate.save()
+    url = get_activate_url(series_to_activate)
 
-    response = operator_api_client.post(
-        '{}activate/'.format(get_permitseries_detail_url(series_to_activate)),
-        data={'deactivate_others': True},
-    )
+    response = operator_api_client.post(url, data={'deactivate_others': True})
 
     assert response.status_code == HTTP_200_OK
     series_to_activate.refresh_from_db()
     assert series_to_activate.active
     assert response.json()['status'] == 'OK'
     assert not PermitSeries.objects.filter(owner=staff_user, active=False).exists()
+    assert PermitSeries.objects.filter(owner=staff_user, active=True).count() == 5
 
 
-def test_operator_cannot_deactivate_series_owned_by_others_even_when_explicitly_specified(
+def test_activate_wont_deactivate_series_owned_by_others(
     operator_api_client, operator, staff_user
 ):
-    _create_permit_series(count=5, owner=operator.user, active=True)
-    _create_permit_series(count=5, owner=staff_user, active=True)
+    _create_permit_series(count=5, owner=operator.user)
+    _create_permit_series(count=5, owner=staff_user)
 
     series_to_activate = PermitSeries.objects.first()
     series_to_activate.active = False
@@ -173,7 +180,7 @@ def test_operator_cannot_deactivate_series_owned_by_others_even_when_explicitly_
     series_to_deactivate = staff_series_to_deactivate + operator_series_to_deactivate
 
     response = operator_api_client.post(
-        '{}activate/'.format(get_permitseries_detail_url(series_to_activate)),
+        get_activate_url(series_to_activate),
         data={'deactivate_series': series_to_deactivate},
     )
 
@@ -186,3 +193,5 @@ def test_operator_cannot_deactivate_series_owned_by_others_even_when_explicitly_
 
     for series in PermitSeries.objects.filter(active=False):
         assert series.id in operator_series_to_deactivate
+
+    assert PermitSeries.objects.filter(owner=staff_user, active=True).count() == 5
