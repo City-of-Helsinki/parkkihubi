@@ -14,12 +14,12 @@ def _get_detail_url(obj):
     return reverse('operator:v1:permit-detail', kwargs={'pk': obj.pk})
 
 
-def _get_permit_data(permit_series, domain):
+def _get_permit_data(permit_series, domain, user):
     return {
         'series': permit_series.id,
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(domain),
+        'areas': generate_areas(domain, permitted_user=user),
     }
 
 
@@ -53,7 +53,7 @@ def test_operator_can_create_permit_with_valid_post_data(
     operator_api_client, permit_series, operator
 ):
     domain, _ = _create_enforcement_domain_and_enforcer(operator.user)
-    permit_data = _get_permit_data(permit_series, domain)
+    permit_data = _get_permit_data(permit_series, domain, operator.user)
     permit_data.update(domain=domain.code)
 
     response = operator_api_client.post(list_url, data=permit_data)

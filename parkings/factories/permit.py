@@ -36,24 +36,25 @@ def generate_subjects(count=1):
     return subjects
 
 
-def create_permit_area(identifier, domain=None):
+def create_permit_area(identifier, domain=None, permitted_user=None):
     geom = generate_multi_polygon()
-    staff_user, created = get_user_model().objects.get_or_create(
-        username='TEST_STAFF',
-        defaults={'is_staff': True}
-    )
+    if permitted_user is None:
+        permitted_user = get_user_model().objects.get_or_create(
+            username='TEST_STAFF',
+            defaults={'is_staff': True}
+        )[0]
     PermitArea.objects.get_or_create(
         identifier=identifier,
         defaults={
             'name': "Kamppi",
             'geom': geom,
-            'permitted_user': staff_user,
+            'permitted_user': permitted_user,
             'domain': domain,
         }
     )
 
 
-def generate_areas(domain=None, count=1):
+def generate_areas(domain=None, count=1, permitted_user=None):
     areas = []
     for c in range(count):
         identifier = fake.random.choice(CAPITAL_LETTERS)
@@ -62,7 +63,7 @@ def generate_areas(domain=None, count=1):
             'end_time': generate_timestamp_string('+1h', '+2h'),
             'area': identifier,
         })
-        create_permit_area(identifier, domain)
+        create_permit_area(identifier, domain, permitted_user)
     return areas
 
 
