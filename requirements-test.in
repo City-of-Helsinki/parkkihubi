@@ -1,3 +1,4 @@
+-c requirements-cov.txt
 freezegun
 pytest
 pytest-cov
