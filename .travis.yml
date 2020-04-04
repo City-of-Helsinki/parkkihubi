@@ -34,4 +34,4 @@ before_script: psql -U postgres -c "create extension postgis"
 
 script: tox
 
-after_success: pip install codecov coverage==4.5.4 && codecov
+after_success: pip install -r requirements-cov.txt && codecov
