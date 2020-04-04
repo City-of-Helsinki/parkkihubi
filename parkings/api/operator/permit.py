@@ -1,8 +1,10 @@
 from django.db.models import Q
+from django.utils.translation import gettext as _
 from rest_framework import mixins, serializers
 from rest_framework.decorators import action
+from rest_framework.viewsets import GenericViewSet
 
-from parkings.models import EnforcementDomain
+from parkings.models import EnforcementDomain, PermitArea
 
 from ..common_permit import (
     ActivePermitByExternalIdSerializer, ActivePermitByExternalIdViewSet,
@@ -38,6 +40,23 @@ class OperatorPermitSerializer(PermitSerializer):
     class Meta(PermitSerializer.Meta):
         fields = PermitSerializer.Meta.fields + ['domain']
 
+    def validate(self, attrs):
+        if self.instance:
+            domain = self.instance.domain
+        else:
+            domain = attrs.get('domain')
+
+        operator_allowed_permitarea = PermitArea.objects.filter(permitted_user=self.context['request'].user)
+        for area in attrs.get('areas', []):
+            permit_area = PermitArea.objects.get(identifier=area['area'], domain=domain)
+            if permit_area not in operator_allowed_permitarea:
+                raise serializers.ValidationError(
+                        _(
+                            'You are not permitted to create permit in this area'
+                        )
+                    )
+        return super().validate(attrs)
+
 
 class OperatorPermitViewSet(PermitViewSet):
     serializer_class = OperatorPermitSerializer
@@ -55,3 +74,21 @@ class OperatorActivePermitByExtIdSerializer(ActivePermitByExternalIdSerializer):
 class OperatorActivePermitByExternalIdViewSet(ActivePermitByExternalIdViewSet):
     permission_classes = [IsOperator]
     serializer_class = OperatorActivePermitByExtIdSerializer
+
+
+class OperatorPermitAreaSerializer(serializers.ModelSerializer):
+    domain = serializers.SlugRelatedField(
+        slug_field='code', queryset=EnforcementDomain.objects.all())
+    code = serializers.CharField(source='identifier')
+
+    class Meta:
+        model = PermitArea
+        fields = ['code', 'domain', 'name']
+
+
+class OperatorPermittedPermitAreaViewSet(mixins.ListModelMixin, GenericViewSet):
+    permission_classes = [IsOperator]
+    serializer_class = OperatorPermitAreaSerializer
+
+    def get_queryset(self):
+        return PermitArea.objects.filter(permitted_user=self.request.user)
