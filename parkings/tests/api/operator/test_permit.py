@@ -14,12 +14,12 @@ def _get_detail_url(obj):
     return reverse('operator:v1:permit-detail', kwargs={'pk': obj.pk})
 
 
-def _get_permit_data(permit_series):
+def _get_permit_data(permit_series, domain):
     return {
         'series': permit_series.id,
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(),
+        'areas': generate_areas(domain),
     }
 
 
@@ -53,7 +53,7 @@ def test_operator_can_create_permit_with_valid_post_data(
     operator_api_client, permit_series, operator
 ):
     domain, _ = _create_enforcement_domain_and_enforcer(operator.user)
-    permit_data = _get_permit_data(permit_series)
+    permit_data = _get_permit_data(permit_series, domain)
     permit_data.update(domain=domain.code)
 
     response = operator_api_client.post(list_url, data=permit_data)
@@ -173,8 +173,14 @@ def test_operator_and_enforcers_cannot_see_each_others_permit(
 
     enforcer_domain = EnforcementDomain.objects.create(code='HEL', name='HelDomain')
     enforcer_permitseries = permit_series_factory(owner=staff_user)
+    hki_domain_areas = generate_areas(enforcer_domain)
     enforcer_permit_list = [
-        permit_factory(subjects=permit_subject, series=enforcer_permitseries, domain=enforcer_domain)
+        permit_factory(
+            subjects=permit_subject,
+            series=enforcer_permitseries,
+            domain=enforcer_domain,
+            areas=hki_domain_areas,
+        )
         for _
         in range(3)
     ]
@@ -182,12 +188,15 @@ def test_operator_and_enforcers_cannot_see_each_others_permit(
 
     operator_domain = EnforcementDomain.objects.create(code='ESP', name='EspooDomain')
     operator_permitseries = permit_series_factory(owner=operator.user)
-    operator_permit_domain = [operator_domain, enforcer_domain]
+    permit_domains = [operator_domain, enforcer_domain]
     operator_permit_list = [
-        permit_factory(subjects=permit_subject, domain=domain, series=operator_permitseries)
-        for domain
-        in operator_permit_domain
-        ]
+        permit_factory(
+            subjects=permit_subject,
+            domain=domain,
+            series=operator_permitseries,
+            areas=generate_areas(domain),
+        ) for domain in permit_domains
+    ]
 
     #  Operator should see only operator_permit_list
     response = operator_api_client.get(list_url)

@@ -4,7 +4,7 @@ from django.utils import timezone
 
 from ..factories.permit import (
     generate_areas, generate_external_ids, generate_subjects)
-from ..models import Permit, PermitLookupItem
+from ..models import Permit, PermitArea, PermitLookupItem
 
 
 @pytest.mark.django_db
@@ -71,7 +71,7 @@ def test_permit_by_subject_manager_method(active_permit):
 def test_permit_by_area_manager_method(active_permit):
     area = active_permit.areas[0]['area']
 
-    filtered_permit_qs = Permit.objects.by_area(area)
+    filtered_permit_qs = Permit.objects.by_area(PermitArea.objects.get(identifier=area))
 
     assert filtered_permit_qs.count() != 0
     for permit in filtered_permit_qs:
@@ -98,6 +98,7 @@ def test_permit_by_time_manager_method_valid_time(active_permit):
 @pytest.mark.django_db
 def test_permitlookupitem_creation_ignored_for_start_date_gte_end_date(
         permit_series):
+    areas = generate_areas()
     permit_data = {
         'series': permit_series,
         'external_id': generate_external_ids(),
@@ -109,7 +110,7 @@ def test_permitlookupitem_creation_ignored_for_start_date_gte_end_date(
         'areas': [{
             'start_time': '2019-05-01T12:00:00+00:00',
             'end_time': '2019-05-30T12:00:00+00:00',
-            'area': 'A',
+            'area': areas[0]['area'],
         }],
     }
     Permit.objects.create(**permit_data)

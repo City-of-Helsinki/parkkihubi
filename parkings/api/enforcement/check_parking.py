@@ -76,7 +76,7 @@ class CheckParking(generics.GenericAPIView):
             "end_time": end_time,
             "location": {
                 "payment_zone": zone,
-                "permit_area": area,
+                "permit_area": area.identifier if area else None,
             },
             "time": time,
         }
@@ -124,7 +124,7 @@ def get_permit_area(location):
     if location is None:
         return None
     area = PermitArea.objects.filter(geom__contains=location).first()
-    return area.identifier if area else None
+    return area if area else None
 
 
 def check_parking(registration_number, zone, area, time):
