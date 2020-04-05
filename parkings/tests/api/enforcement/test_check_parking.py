@@ -10,6 +10,7 @@ from django.utils import timezone
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from parkings.api.monitoring.region import WGS84_SRID
+from parkings.factories.permit import create_permit_series
 from parkings.models import ParkingCheck, PaymentZone, Permit, PermitArea
 from parkings.models.constants import GK25FIN_SRID
 from parkings.tests.api.utils import check_required_fields
@@ -89,10 +90,10 @@ def test_check_parking_invalid_zone_parking(operator, enforcer_api_client, parki
     assert response.data["allowed"] is False
 
 
-def test_check_parking_valid_permit(enforcer_api_client, permit_series_factory, staff_user):
+def test_check_parking_valid_permit(enforcer_api_client, staff_user):
     area = create_area_geom()
     PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
-    permit_series = permit_series_factory(active=True)
+    permit_series = create_permit_series(active=True)
 
     end_time = timezone.now() + datetime.timedelta(days=1)
     start_time = timezone.now()
@@ -116,10 +117,10 @@ def test_check_parking_valid_permit(enforcer_api_client, permit_series_factory, 
     assert response.data["allowed"] is True
 
 
-def test_check_parking_invalid_time_permit(enforcer_api_client, permit_series_factory, staff_user):
+def test_check_parking_invalid_time_permit(enforcer_api_client, staff_user):
     area = create_area_geom()
     PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
-    permit_series = permit_series_factory(active=True)
+    permit_series = create_permit_series(active=True)
 
     end_time = timezone.now()
     start_time = timezone.now() - datetime.timedelta(days=1)
@@ -143,10 +144,10 @@ def test_check_parking_invalid_time_permit(enforcer_api_client, permit_series_fa
     assert response.data["allowed"] is False
 
 
-def test_check_parking_invalid_location(enforcer_api_client, permit_series_factory, staff_user):
+def test_check_parking_invalid_location(enforcer_api_client, staff_user):
     area = create_area_geom()
     PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
-    permit_series = permit_series_factory(active=True)
+    permit_series = create_permit_series(active=True)
 
     end_time = timezone.now() + datetime.timedelta(days=1)
     start_time = timezone.now()

@@ -3,6 +3,7 @@ from django.urls import reverse
 from rest_framework.status import (
     HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_404_NOT_FOUND)
 
+from parkings.factories.permit import create_permit_series
 from parkings.models import PermitSeries
 
 url_list = reverse('operator:v1:permitseries-list')
@@ -10,11 +11,9 @@ url_list = reverse('operator:v1:permitseries-list')
 
 def test_operator_can_view_only_own_permitseries(
     operator_api_client,
-    permit_series,
     admin_user
 ):
-    permit_series.owner = admin_user
-    permit_series.save()
+    permit_series = create_permit_series(owner=admin_user)
 
     response = operator_api_client.post(url_list, data={})
     assert response.status_code == HTTP_201_CREATED
@@ -28,12 +27,10 @@ def test_operator_can_view_only_own_permitseries(
 
 
 def test_operator_can_delete_own_permitseries(
-    operator_api_client,
-    permit_series,
-    admin_user,
-    permit_series_factory
+    operator_api_client, operator, admin_user,
 ):
-    admin_owned_permitseries = permit_series_factory(owner=admin_user)
+    permit_series = create_permit_series(owner=operator.user)
+    admin_owned_permitseries = create_permit_series(owner=admin_user)
 
     url = reverse('operator:v1:permitseries-detail', kwargs={'pk': admin_owned_permitseries.pk})
     response = operator_api_client.delete(url)

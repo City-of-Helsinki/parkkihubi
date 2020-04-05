@@ -3,14 +3,15 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 
 from ..factories.permit import (
-    generate_areas, generate_external_ids, generate_subjects)
+    create_permit, create_permit_series, generate_areas, generate_external_ids,
+    generate_subjects)
 from ..models import Permit, PermitArea, PermitLookupItem
 
 
 @pytest.mark.django_db
-def test_permit_instance_creation_succeeds_with_valid_data(permit_series):
+def test_permit_instance_creation_succeeds_with_valid_data():
     permit_data = {
-        'series': permit_series,
+        'series': create_permit_series(),
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(count=1),
         'areas': generate_areas(count=1),
@@ -25,11 +26,11 @@ def test_permit_instance_creation_succeeds_with_valid_data(permit_series):
 
 
 @pytest.mark.django_db
-def test_permit_instance_creation_errors_with_invalid_subjects(permit_series):
+def test_permit_instance_creation_errors_with_invalid_subjects():
     subjects = generate_subjects()
     del subjects[0]['registration_number']
     permit_data = {
-        'series': permit_series,
+        'series': create_permit_series(),
         'external_id': generate_external_ids(),
         'subjects': subjects,
         'areas': generate_areas(),
@@ -41,11 +42,11 @@ def test_permit_instance_creation_errors_with_invalid_subjects(permit_series):
 
 
 @pytest.mark.django_db
-def test_permit_instance_creation_errors_with_invalid_areas(permit_series):
+def test_permit_instance_creation_errors_with_invalid_areas():
     areas = generate_areas()
     del areas[0]['start_time']
     permit_data = {
-        'series': permit_series,
+        'series': create_permit_series(),
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
         'areas': areas,
@@ -57,7 +58,8 @@ def test_permit_instance_creation_errors_with_invalid_areas(permit_series):
 
 
 @pytest.mark.django_db
-def test_permit_by_subject_manager_method(active_permit):
+def test_permit_by_subject_manager_method():
+    active_permit = create_permit(active=True)
     registration_number = active_permit.subjects[0]['registration_number']
 
     filtered_permit_qs = Permit.objects.by_subject(registration_number)
@@ -68,8 +70,8 @@ def test_permit_by_subject_manager_method(active_permit):
 
 
 @pytest.mark.django_db
-def test_permit_by_area_manager_method(active_permit):
-    area = active_permit.areas[0]['area']
+def test_permit_by_area_manager_method():
+    area = create_permit(active=True).areas[0]['area']
 
     filtered_permit_qs = Permit.objects.by_area(PermitArea.objects.get(identifier=area))
 
@@ -80,7 +82,8 @@ def test_permit_by_area_manager_method(active_permit):
 
 
 @pytest.mark.django_db
-def test_permit_by_time_manager_method_invalid_time(active_permit):
+def test_permit_by_time_manager_method_invalid_time():
+    create_permit(active=True)
     invalid_start_time = str(timezone.now() - timezone.timedelta(days=500))
     filtered_permit_qs = Permit.objects.by_time(invalid_start_time)
 
@@ -88,7 +91,8 @@ def test_permit_by_time_manager_method_invalid_time(active_permit):
 
 
 @pytest.mark.django_db
-def test_permit_by_time_manager_method_valid_time(active_permit):
+def test_permit_by_time_manager_method_valid_time():
+    active_permit = create_permit(active=True)
     valid_start_time = active_permit.lookup_items.first().start_time
     filtered_permit_qs = Permit.objects.by_time(valid_start_time)
 
@@ -96,11 +100,10 @@ def test_permit_by_time_manager_method_valid_time(active_permit):
 
 
 @pytest.mark.django_db
-def test_permitlookupitem_creation_ignored_for_start_date_gte_end_date(
-        permit_series):
+def test_permitlookupitem_creation_ignored_for_start_date_gte_end_date():
     areas = generate_areas()
     permit_data = {
-        'series': permit_series,
+        'series': create_permit_series(),
         'external_id': generate_external_ids(),
         'subjects': [{
             'registration_number': 'ABC-123',

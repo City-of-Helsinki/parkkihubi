@@ -4,10 +4,11 @@ from rest_framework.status import (
     HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND)
 
-from parkings.models import EnforcementDomain, Enforcer, Permit, PermitArea
+from parkings.models import EnforcementDomain, Permit, PermitArea
 
 from ....factories.permit import (
-    generate_areas, generate_external_ids, generate_subjects)
+    create_permit_series, create_permits, generate_areas,
+    generate_external_ids, generate_subjects)
 from ..enforcement.test_check_parking import create_area_geom
 
 list_url = reverse('operator:v1:permit-list')
@@ -15,15 +16,6 @@ list_url = reverse('operator:v1:permit-list')
 
 def _get_detail_url(obj):
     return reverse('operator:v1:permit-detail', kwargs={'pk': obj.pk})
-
-
-def _get_permit_data(permit_series, domain, user):
-    return {
-        'series': permit_series.id,
-        'external_id': generate_external_ids(),
-        'subjects': generate_subjects(),
-        'areas': generate_areas(domain, permitted_user=user),
-    }
 
 
 def _check_response(data, obj):
@@ -45,19 +37,18 @@ def _check_response(data, obj):
     assert obj.areas == data['areas']
 
 
-def _create_enforcement_domain_and_enforcer(user, code='ESP'):
-    domain = EnforcementDomain.objects.create(code=code, name='EspooDomain')
-    enforcer = Enforcer.objects.create(user=user, enforced_domain=domain)
-
-    return (domain, enforcer)
-
-
 def test_operator_can_create_permit_with_valid_post_data(
-    operator_api_client, permit_series, operator
+    operator_api_client, operator
 ):
-    domain, _ = _create_enforcement_domain_and_enforcer(operator.user)
-    permit_data = _get_permit_data(permit_series, domain, operator.user)
-    permit_data.update(domain=domain.code)
+    domain = EnforcementDomain.objects.get_or_create(
+        code='TSTDOM', defaults={'name': 'Test domain'})[0]
+    permit_data = {
+        'series': create_permit_series(owner=operator.user).id,
+        'external_id': generate_external_ids(),
+        'domain': 'TSTDOM',
+        'subjects': generate_subjects(),
+        'areas': generate_areas(domain, permitted_user=operator.user),
+    }
 
     response = operator_api_client.post(list_url, data=permit_data)
 
@@ -66,14 +57,10 @@ def test_operator_can_create_permit_with_valid_post_data(
 
 
 def test_operator_cannot_view_permit_owned_by_other_operator(
-    operator_api_client, operator_2_api_client, operator,
-    operator_2, permit_series_factory, permit_factory,
+    operator_api_client, operator_2_api_client, operator, operator_2,
 ):
-    operator1_owned_permitseries = permit_series_factory(owner=operator.user)
-    operator2_owned_permitseries = permit_series_factory(owner=operator_2.user)
-
-    operator1_permit_list = [permit_factory(series=operator1_owned_permitseries) for _ in range(3)]
-    operator2_permit_list = [permit_factory(series=operator2_owned_permitseries) for _ in range(3)]
+    operator1_permit_list = create_permits(owner=operator.user, count=3)
+    operator2_permit_list = create_permits(owner=operator_2.user, count=3)
 
     response = operator_api_client.get(list_url)
     json_response = response.json()
@@ -111,13 +98,9 @@ def test_operator_cannot_view_permit_owned_by_other_operator(
 
 def test_operator_cannot_modify_permit_owned_by_other_operator(
     operator_api_client, operator, operator_2,
-    permit_series_factory, permit_factory
 ):
-    operator1_owned_permitseries = permit_series_factory(owner=operator.user)
-    operator2_owned_permitseries = permit_series_factory(owner=operator_2.user)
-
-    operator1_permit_list = [permit_factory(series=operator1_owned_permitseries) for _ in range(3)]
-    operator2_permit_list = [permit_factory(series=operator2_owned_permitseries) for _ in range(3)]
+    operator1_permit_list = create_permits(owner=operator.user, count=3)
+    operator2_permit_list = create_permits(owner=operator_2.user, count=3)
 
     operator1_permit = operator1_permit_list[0]
     operator2_permit = operator2_permit_list[0]
@@ -139,13 +122,9 @@ def test_operator_cannot_modify_permit_owned_by_other_operator(
 
 def test_operator_cannot_delete_permit_owned_by_other_operator(
     operator_api_client, operator, operator_2,
-    permit_series_factory, permit_factory
 ):
-    operator1_owned_permitseries = permit_series_factory(owner=operator.user)
-    operator2_owned_permitseries = permit_series_factory(owner=operator_2.user)
-
-    operator1_permit_list = [permit_factory(series=operator1_owned_permitseries) for _ in range(3)]
-    operator2_permit_list = [permit_factory(series=operator2_owned_permitseries) for _ in range(3)]
+    operator1_permit_list = create_permits(owner=operator.user, count=3)
+    operator2_permit_list = create_permits(owner=operator_2.user, count=3)
 
     operator1_permit = operator1_permit_list[0]
     operator2_permit = operator2_permit_list[0]
@@ -167,39 +146,20 @@ def test_operator_cannot_delete_permit_owned_by_other_operator(
 
 
 def test_operator_and_enforcers_cannot_see_each_others_permit(
-    operator_api_client, permit_series_factory, operator, staff_api_client,
-    staff_user, permit_factory
+    operator_api_client, operator, enforcer_api_client, staff_user,
 ):
     reg_number = 'ABC-123'
     permit_subject = generate_subjects()
     permit_subject[0].update(registration_number=reg_number)
 
-    enforcer_domain = EnforcementDomain.objects.create(code='HEL', name='HelDomain')
-    enforcer_permitseries = permit_series_factory(owner=staff_user)
-    hki_domain_areas = generate_areas(enforcer_domain)
-    enforcer_permit_list = [
-        permit_factory(
-            subjects=permit_subject,
-            series=enforcer_permitseries,
-            domain=enforcer_domain,
-            areas=hki_domain_areas,
-        )
-        for _
-        in range(3)
-    ]
-    Enforcer.objects.create(user=staff_user, enforced_domain=enforcer_domain)
+    enforcer = enforcer_api_client.enforcer
+    domain = enforcer.enforced_domain
 
-    operator_domain = EnforcementDomain.objects.create(code='ESP', name='EspooDomain')
-    operator_permitseries = permit_series_factory(owner=operator.user)
-    permit_domains = [operator_domain, enforcer_domain]
-    operator_permit_list = [
-        permit_factory(
-            subjects=permit_subject,
-            domain=domain,
-            series=operator_permitseries,
-            areas=generate_areas(domain),
-        ) for domain in permit_domains
-    ]
+    enforcer_permit_list = create_permits(
+        owner=enforcer.user, domain=domain, count=3)
+
+    operator_permit_list = create_permits(
+        owner=operator.user, domain=domain, count=2)
 
     #  Operator should see only operator_permit_list
     response = operator_api_client.get(list_url)
@@ -214,7 +174,7 @@ def test_operator_and_enforcers_cannot_see_each_others_permit(
     enforcement_permit_url = reverse('enforcement:v1:permit-list')
 
     #  Enforcer should see only enforcer_permit_list
-    response = staff_api_client.get(enforcement_permit_url)
+    response = enforcer_api_client.get(enforcement_permit_url)
     json_response = response.json()
 
     assert response.status_code == HTTP_200_OK
@@ -227,8 +187,7 @@ def test_operator_and_enforcers_cannot_see_each_others_permit(
 @pytest.mark.parametrize('allowed', ['allowed', 'denied'])
 @pytest.mark.parametrize('mode', ['single', 'bulk'])
 def test_area_restriction(
-    allowed, mode,
-    operator_api_client, permit_series_factory, operator, staff_user
+    allowed, mode, operator_api_client, operator, staff_user
 ):
     area = {
         'start_time': '2020-01-01T00:00:00+00:00',
@@ -236,7 +195,7 @@ def test_area_restriction(
         'area': 'AR3A',
     }
 
-    permit_series = permit_series_factory(active=True)
+    permit_series = create_permit_series(active=True, owner=operator.user)
     domain = EnforcementDomain.objects.create(code='HKI', name='Helsinki')
 
     permit_data = {
