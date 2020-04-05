@@ -34,7 +34,7 @@ def test_post_active_permit_by_external_id(enforcer_api_client, enforcer):
     data = {
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas()
+        'areas': generate_areas(domain=enforcer.enforced_domain)
     }
 
     response = enforcer_api_client.post(list_url, data=data)

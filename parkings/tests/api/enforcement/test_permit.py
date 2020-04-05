@@ -37,7 +37,6 @@ def test_unauthorized_user_cannot_create_permit(
     assert response.status_code == HTTP_403_FORBIDDEN
 
 
-@pytest.mark.xfail
 @pytest.mark.django_db
 def test_permit_is_created_with_valid_post_data(enforcer_api_client):
     domain = enforcer_api_client.enforcer.enforced_domain
@@ -128,7 +127,6 @@ def test_permit_is_not_created_with_invalid_post_data(
     assert data['subjects'] == [error]
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize('kind', ['single', 'bulk'])
 @pytest.mark.parametrize('input_timestamp,normalized_timestamp', [
     ('1995-01-01 12:00Z', '1995-01-01T12:00:00+00:00'),
@@ -172,7 +170,6 @@ def test_permit_creation_normalizes_timestamps(
     assert data['areas'][0]['end_time'] == normalized_timestamp
 
 
-@pytest.mark.xfail
 @pytest.mark.django_db
 def test_lookup_item_is_created_for_permit(enforcer_api_client):
     domain = enforcer_api_client.enforcer.enforced_domain
@@ -228,7 +225,6 @@ def test_permit_data_matches_permit_object(enforcer_api_client, enforcer):
     check_permit_areas_keys(response.data['areas'][0])
 
 
-@pytest.mark.xfail
 def test_permit_bulk_create_creates_lookup_items(enforcer_api_client):
     permit_series = create_permit_series(owner=enforcer_api_client.auth_user)
     domain = enforcer_api_client.enforcer.enforced_domain
@@ -254,7 +250,6 @@ def test_permit_bulk_create_creates_lookup_items(enforcer_api_client):
     assert PermitLookupItem.objects.count() == 2
 
 
-@pytest.mark.xfail
 def test_permit_bulk_create_normalizes_timestamps(enforcer_api_client):
     user = enforcer_api_client.auth_user
     domain = enforcer_api_client.enforcer.enforced_domain

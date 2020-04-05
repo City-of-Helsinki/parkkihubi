@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
-from ..models import EnforcementDomain, Permit, PermitSeries
+from ..models import Permit, PermitSeries
 
 
 class PermitSeriesSerializer(serializers.ModelSerializer):
@@ -80,12 +80,6 @@ class PermitSerializer(serializers.ModelSerializer):
             'areas',
         ]
         read_only_fields = ['id']
-
-    def validate(self, attrs):
-        if self.instance is None:
-            if attrs.get('domain', None) is None:
-                attrs['domain'] = EnforcementDomain.get_default_domain()
-        return super(PermitSerializer, self).validate(attrs)
 
 
 class PermitViewSet(viewsets.ModelViewSet):
