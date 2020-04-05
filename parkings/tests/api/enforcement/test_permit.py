@@ -6,7 +6,8 @@ from rest_framework.status import (
 from ....factories.permit import (
     create_permit_area, create_permit_series, create_permits, generate_areas,
     generate_external_ids, generate_subjects)
-from ....models import Permit, PermitLookupItem, PermitSeries
+from ....models import (
+    EnforcementDomain, Permit, PermitLookupItem, PermitSeries)
 
 list_url = reverse('enforcement:v1:permit-list')
 
@@ -50,6 +51,23 @@ def test_permit_is_created_with_valid_post_data(enforcer_api_client):
     response = enforcer_api_client.post(list_url, data=permit_data)
 
     assert response.status_code == HTTP_201_CREATED
+
+
+def test_cannot_override_domain(enforcer_api_client):
+    domain = EnforcementDomain.objects.get_or_create(
+        code='FOODOMAIN', defaults={'name': 'Foo'})[0]
+    permit_data = {
+        'domain': 'FOODOMAIN',
+        'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
+        'external_id': generate_external_ids(),
+        'subjects': generate_subjects(),
+        'areas': generate_areas(domain=domain),
+    }
+
+    response = enforcer_api_client.post(list_url, data=permit_data)
+
+    assert response.json() == {'domain': ['Not allowed']}
+    assert response.status_code == HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db
