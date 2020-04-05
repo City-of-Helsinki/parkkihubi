@@ -85,13 +85,6 @@ class PermitSerializer(serializers.ModelSerializer):
         if self.instance is None:
             if attrs.get('domain', None) is None:
                 attrs['domain'] = EnforcementDomain.get_default_domain()
-            instance = Permit(self.instance, **attrs)
-            instance.clean()
-        else:
-            instance = self.instance
-            for key in attrs:
-                setattr(instance, key, attrs[key])
-            instance.clean()
         return super(PermitSerializer, self).validate(attrs)
 
 
