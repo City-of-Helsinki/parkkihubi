@@ -22,8 +22,3 @@ class PaymentZone(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return self.name
-
-    def save(self, *args, **kwargs):
-        if not self.domain_id:
-            self.domain = EnforcementDomain.get_default_domain()
-        super().save(*args, **kwargs)

@@ -4,7 +4,7 @@ import os
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from parkings.models import PermitArea
+from parkings.models import EnforcementDomain, PermitArea
 
 from .geojson_importer import GeoJsonImporter
 
@@ -25,12 +25,16 @@ class PermitAreaImporter(GeoJsonImporter):
     @transaction.atomic
     def _save_permit_areas(self, permit_areas_dict, permitted_user):
         logger.info('Saving permit areas.')
+        user = get_user_model().objects.filter(username=permitted_user).get()
+        default_domain = EnforcementDomain.get_default_domain()
         count = 0
         permit_area_ids = []
         for area_dict in permit_areas_dict:
+            domain = area_dict.pop('domain', default_domain)
+            area_dict.setdefault('permitted_user', user)
             permit_area, _ = PermitArea.objects.update_or_create(
                 identifier=area_dict['identifier'],
-                permitted_user=get_user_model().objects.filter(username=permitted_user).get(),
+                domain=domain,
                 defaults=area_dict)
             permit_area_ids.append(permit_area.pk)
             count += 1

@@ -31,6 +31,23 @@ INVALID_PARKING_DATA = {
 }
 
 
+def create_payment_zone(client=None, domain=None):
+    assert client or domain
+    return PaymentZone.objects.create(
+        domain=(domain or client.enforcer.enforced_domain), code="1",
+        number=1, name="Maksuvyöhyke 1", geom=create_area_geom())
+
+
+def create_permit_area(client=None, domain=None, permitted_user=None):
+    assert client or (domain and permitted_user)
+    return PermitArea.objects.create(
+        domain=(domain or client.enforcer.enforced_domain),
+        identifier="A",
+        name="Kamppi",
+        permitted_user=(permitted_user or client.auth_user),
+        geom=create_area_geom())
+
+
 def create_area_geom():
     area_wgs84 = [
         Point(x, srid=WGS84_SRID)
@@ -57,8 +74,7 @@ def test_check_parking_required_fields(enforcer_api_client):
 
 
 def test_check_parking_valid_parking(operator, enforcer_api_client, parking_factory):
-    area = create_area_geom()
-    PaymentZone.objects.create(number=1, name="Maksuvyöhyke 1", geom=area)
+    create_payment_zone(enforcer_api_client)
     parking = parking_factory(registration_number="ABC-123", operator=operator, zone=1)
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
@@ -69,8 +85,7 @@ def test_check_parking_valid_parking(operator, enforcer_api_client, parking_fact
 
 
 def test_check_parking_invalid_time_parking(operator, enforcer_api_client, history_parking_factory):
-    area = create_area_geom()
-    PaymentZone.objects.create(number=1, name="Maksuvyöhyke 1", geom=area)
+    create_payment_zone(enforcer_api_client)
     history_parking_factory(registration_number="ABC-123", operator=operator, zone=1)
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
@@ -80,8 +95,7 @@ def test_check_parking_invalid_time_parking(operator, enforcer_api_client, histo
 
 
 def test_check_parking_invalid_zone_parking(operator, enforcer_api_client, parking_factory):
-    area = create_area_geom()
-    PaymentZone.objects.create(number=1, name="Maksuvyöhyke 1", geom=area)
+    create_payment_zone(enforcer_api_client)
     parking_factory(registration_number="ABC-123", operator=operator, zone=2)
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
@@ -91,8 +105,8 @@ def test_check_parking_invalid_zone_parking(operator, enforcer_api_client, parki
 
 
 def test_check_parking_valid_permit(enforcer_api_client, staff_user):
-    area = create_area_geom()
-    PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
+    create_payment_zone(enforcer_api_client)
+    create_permit_area(enforcer_api_client)
     permit_series = create_permit_series(active=True)
 
     end_time = timezone.now() + datetime.timedelta(days=1)
@@ -108,6 +122,7 @@ def test_check_parking_valid_permit(enforcer_api_client, staff_user):
     areas = [{"area": "A", "end_time": str(end_time), "start_time": str(start_time)}]
 
     Permit.objects.create(
+        domain=enforcer_api_client.enforcer.enforced_domain,
         series=permit_series, external_id=12345, subjects=subjects, areas=areas
     )
 
@@ -118,8 +133,7 @@ def test_check_parking_valid_permit(enforcer_api_client, staff_user):
 
 
 def test_check_parking_invalid_time_permit(enforcer_api_client, staff_user):
-    area = create_area_geom()
-    PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
+    create_permit_area(enforcer_api_client)
     permit_series = create_permit_series(active=True)
 
     end_time = timezone.now()
@@ -135,6 +149,7 @@ def test_check_parking_invalid_time_permit(enforcer_api_client, staff_user):
     areas = [{"area": "A", "end_time": str(end_time), "start_time": str(start_time)}]
 
     Permit.objects.create(
+        domain=enforcer_api_client.enforcer.enforced_domain,
         series=permit_series, external_id=12345, subjects=subjects, areas=areas
     )
 
@@ -145,8 +160,7 @@ def test_check_parking_invalid_time_permit(enforcer_api_client, staff_user):
 
 
 def test_check_parking_invalid_location(enforcer_api_client, staff_user):
-    area = create_area_geom()
-    PermitArea.objects.create(name="Kamppi", identifier="A", geom=area, permitted_user=staff_user)
+    create_permit_area(enforcer_api_client)
     permit_series = create_permit_series(active=True)
 
     end_time = timezone.now() + datetime.timedelta(days=1)
@@ -162,6 +176,7 @@ def test_check_parking_invalid_location(enforcer_api_client, staff_user):
     areas = [{"area": "A", "end_time": str(end_time), "start_time": str(start_time)}]
 
     Permit.objects.create(
+        domain=enforcer_api_client.enforcer.enforced_domain,
         series=permit_series, external_id=12345, subjects=subjects, areas=areas
     )
 

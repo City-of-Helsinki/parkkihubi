@@ -3,7 +3,7 @@ import os
 
 from django.db import transaction
 
-from parkings.models import PaymentZone
+from parkings.models import EnforcementDomain, PaymentZone
 
 from .geojson_importer import GeoJsonImporter
 
@@ -25,11 +25,15 @@ class PaymentZoneImporter(GeoJsonImporter):
     @transaction.atomic
     def _save_payment_zones(self, payment_zone_dicts):
         logger.info('Saving payment zones.')
+        default_domain = EnforcementDomain.get_default_domain()
         count = 0
         payment_zone_ids = []
         for payment_dict in payment_zone_dicts:
+            domain = payment_dict.pop('domain', default_domain)
+            code = payment_dict.pop('code', payment_dict.get('number'))
             payment_zone, _ = PaymentZone.objects.update_or_create(
-                number=payment_dict['number'],
+                code=code,
+                domain=domain,
                 defaults=payment_dict)
             payment_zone_ids.append(payment_zone.pk)
             count += 1

@@ -32,11 +32,6 @@ class PermitArea(TimestampedModelMixin):
     def __str__(self):
         return '{}: {}'.format(self.identifier, self.name)
 
-    def save(self, *args, **kwargs):
-        if not self.domain_id:
-            self.domain = EnforcementDomain.get_default_domain()
-        super().save(*args, **kwargs)
-
 
 class PermitSeriesQuerySet(models.QuerySet):
     def active(self):
@@ -134,9 +129,6 @@ class Permit(TimestampedModelMixin, models.Model):
             external_id=self.external_id)
 
     def save(self, using=None, *args, **kwargs):
-        if not self.domain_id:
-            self.domain = EnforcementDomain.get_default_domain()
-
         self.full_clean()
         using = using or router.db_for_write(type(self), instance=self)
         with transaction.atomic(using=using, savepoint=False):

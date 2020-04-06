@@ -5,12 +5,13 @@ from django.utils import timezone
 from ..factories.permit import (
     create_permit, create_permit_series, generate_areas, generate_external_ids,
     generate_subjects)
-from ..models import Permit, PermitArea, PermitLookupItem
+from ..models import EnforcementDomain, Permit, PermitArea, PermitLookupItem
 
 
 @pytest.mark.django_db
 def test_permit_instance_creation_succeeds_with_valid_data():
     permit_data = {
+        'domain': EnforcementDomain.get_default_domain(),
         'series': create_permit_series(),
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(count=1),
@@ -30,6 +31,7 @@ def test_permit_instance_creation_errors_with_invalid_subjects():
     subjects = generate_subjects()
     del subjects[0]['registration_number']
     permit_data = {
+        'domain': EnforcementDomain.get_default_domain(),
         'series': create_permit_series(),
         'external_id': generate_external_ids(),
         'subjects': subjects,
@@ -46,6 +48,7 @@ def test_permit_instance_creation_errors_with_invalid_areas():
     areas = generate_areas()
     del areas[0]['start_time']
     permit_data = {
+        'domain': EnforcementDomain.get_default_domain(),
         'series': create_permit_series(),
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
@@ -103,6 +106,7 @@ def test_permit_by_time_manager_method_valid_time():
 def test_permitlookupitem_creation_ignored_for_start_date_gte_end_date():
     areas = generate_areas()
     permit_data = {
+        'domain': EnforcementDomain.get_default_domain(),
         'series': create_permit_series(),
         'external_id': generate_external_ids(),
         'subjects': [{
