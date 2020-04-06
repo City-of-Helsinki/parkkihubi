@@ -81,6 +81,14 @@ class PermitSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id']
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = self.context['request'].user
+        series_field = self.fields['series']
+        series_qs = series_field.get_queryset()
+        if series_qs:
+            series_field.queryset = series_qs.filter(owner=user)
+
 
 class PermitViewSet(viewsets.ModelViewSet):
     queryset = Permit.objects.all()

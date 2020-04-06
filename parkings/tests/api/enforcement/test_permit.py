@@ -71,6 +71,28 @@ def test_cannot_override_domain(enforcer_api_client):
 
 
 @pytest.mark.django_db
+def test_permit_is_not_created_to_non_owned_series(enforcer_api_client):
+    series = create_permit_series()
+    assert series.owner != enforcer_api_client.auth_user
+    permit_data = {
+        'series': series.id,
+        'external_id': generate_external_ids(),
+        'subjects': generate_subjects(),
+        'areas': generate_areas(),
+    }
+
+    response = enforcer_api_client.post(list_url, data=permit_data)
+
+    assert response.json() == {
+        'series': [
+            'Invalid pk "{}" - object does not exist.'.format(series.pk)
+        ],
+    }
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert Permit.objects.count() == 0
+
+
+@pytest.mark.django_db
 def test_permit_is_created_with_empty_lists(enforcer_api_client):
     permit_data = {
         'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
