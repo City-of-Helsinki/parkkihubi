@@ -1,5 +1,4 @@
 from django.db.models import Q
-from django.utils.translation import gettext as _
 from rest_framework import mixins, serializers
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
@@ -39,23 +38,6 @@ class OperatorPermitSerializer(PermitSerializer):
 
     class Meta(PermitSerializer.Meta):
         fields = PermitSerializer.Meta.fields + ['domain']
-
-    def validate(self, attrs):
-        if self.instance:
-            domain = self.instance.domain
-        else:
-            domain = attrs.get('domain')
-
-        operator_allowed_permitarea = PermitArea.objects.filter(permitted_user=self.context['request'].user)
-        for area in attrs.get('areas', []):
-            permit_area = PermitArea.objects.get(identifier=area['area'], domain=domain)
-            if permit_area not in operator_allowed_permitarea:
-                raise serializers.ValidationError(
-                        _(
-                            'You are not permitted to create permit in this area'
-                        )
-                    )
-        return super().validate(attrs)
 
 
 class OperatorPermitViewSet(PermitViewSet):

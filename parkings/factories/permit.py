@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import factory
 import pytz
 from django.contrib.auth import get_user_model
 
-from parkings.models import Permit, PermitArea, PermitSeries
+from parkings.models import EnforcementDomain, Permit, PermitArea, PermitSeries
 
 from .faker import fake
 from .parking_area import generate_multi_polygon
@@ -43,13 +42,15 @@ def create_permit_area(identifier, domain=None, permitted_user=None):
             username='TEST_STAFF',
             defaults={'is_staff': True}
         )[0]
+    if domain is None:
+        domain = EnforcementDomain.get_default_domain()
     PermitArea.objects.get_or_create(
         identifier=identifier,
+        domain=domain,
         defaults={
             'name': "Kamppi",
             'geom': geom,
             'permitted_user': permitted_user,
-            'domain': domain,
         }
     )
 
@@ -72,21 +73,45 @@ def generate_external_ids(id_length=11):
     return external_id
 
 
-class PermitSeriesFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = PermitSeries
-    owner = factory.SubFactory(UserFactory)
+def create_permits(active=False, owner=None, domain=None, count=3):
+    series = create_permit_series(active=active, owner=owner)
+    return [
+        create_permit(domain=domain, series=series, owner=owner)
+        for _ in range(count)
+    ]
 
 
-class PermitFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Permit
-
-    series = factory.SubFactory(PermitSeriesFactory)
-    external_id = factory.LazyFunction(lambda: generate_external_ids())
-    subjects = factory.LazyFunction(lambda: generate_subjects(count=2))
-    areas = factory.LazyFunction(lambda: generate_areas(count=3))
+def create_permit_series(active=False, owner=None):
+    return PermitSeries.objects.create(
+        active=active,
+        owner=owner or UserFactory(),
+    )
 
 
-class ActivePermitFactory(PermitFactory):
-    series = factory.LazyFunction(lambda: PermitSeriesFactory(active=True))
+def create_permit(
+        domain=None,
+        series=None,
+        external_id=None,
+        owner=None,
+        active=False,
+        subject_count=2,
+        area_count=3,
+):
+    domain = domain or EnforcementDomain.objects.get_or_create(
+        code='TESTDOM', defaults={'name': 'Test domain'})[0]
+    owner = owner or get_user_model().objects.get_or_create(
+        username='TEST_STAFF',
+        defaults={'is_staff': True}
+    )[0]
+    series = series or create_permit_series(active=active, owner=owner)
+    return Permit.objects.get_or_create(
+        domain=domain,
+        series=series,
+        external_id=external_id,
+        subjects=generate_subjects(count=subject_count),
+        areas=generate_areas(
+            domain=domain,
+            count=area_count,
+            permitted_user=owner,
+        ),
+    )[0]
