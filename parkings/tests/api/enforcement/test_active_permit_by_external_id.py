@@ -34,13 +34,16 @@ def test_post_active_permit_by_external_id(enforcer_api_client, enforcer):
     data = {
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(domain=enforcer.enforced_domain)
+        'areas': generate_areas(
+            domain=enforcer.enforced_domain, permitted_user=enforcer.user),
     }
 
     response = enforcer_api_client.post(list_url, data=data)
 
+    returned_id = response.data.pop('id', None)
+    assert response.data == dict(data, series=permit_series.id)
+    assert isinstance(returned_id, int)
     assert response.status_code == HTTP_201_CREATED
-    assert response.data['series'] == permit_series.id
 
 
 @pytest.mark.django_db

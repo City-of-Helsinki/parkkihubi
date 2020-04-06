@@ -7,7 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
-from ..models import Permit, PermitSeries
+from ..models import Permit, PermitArea, PermitSeries
 
 
 class PermitSeriesSerializer(serializers.ModelSerializer):
@@ -88,6 +88,25 @@ class PermitSerializer(serializers.ModelSerializer):
         series_qs = series_field.get_queryset()
         if series_qs:
             series_field.queryset = series_qs.filter(owner=user)
+
+    def validate(self, attrs):
+        attrs = super(PermitSerializer, self).validate(attrs)
+        self._validate_areas(attrs)
+        return attrs
+
+    def _validate_areas(self, attrs):
+        user = self.context['request'].user
+        domain = self.instance.domain if self.instance else attrs['domain']
+        areas = PermitArea.objects.filter(permitted_user=user, domain=domain)
+        area_identifiers = set(x['area'] for x in attrs.get('areas', []))
+        found = areas.filter(identifier__in=area_identifiers)
+        if found.count() != len(area_identifiers):
+            found_identifiers = found.values_list('identifier', flat=True)
+            unknown_areas = sorted(area_identifiers - set(found_identifiers))
+            unknown_list = ', '.join(unknown_areas)
+            raise serializers.ValidationError({
+                'areas': _("Unknown identifiers: {}").format(unknown_list),
+            })
 
 
 class PermitViewSet(viewsets.ModelViewSet):

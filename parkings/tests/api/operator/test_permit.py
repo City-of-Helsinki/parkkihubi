@@ -226,6 +226,5 @@ def test_area_restriction(
         assert response.status_code == HTTP_201_CREATED
         assert isinstance(returned_id, int)
     else:
-        assert response_item == {'non_field_errors': [
-            'You are not permitted to create permit in this area']}
+        assert response_item == {'areas': ['Unknown identifiers: AR3A']}
         assert response.status_code == HTTP_400_BAD_REQUEST

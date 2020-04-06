@@ -12,6 +12,12 @@ from ....models import (
 list_url = reverse('enforcement:v1:permit-list')
 
 
+def generate_areas_data(client):
+    return generate_areas(
+        domain=client.enforcer.enforced_domain,
+        permitted_user=client.auth_user)
+
+
 @pytest.mark.parametrize(
     'user_api',
     ['anonymous_user', 'operator', 'staff']
@@ -40,12 +46,11 @@ def test_unauthorized_user_cannot_create_permit(
 
 @pytest.mark.django_db
 def test_permit_is_created_with_valid_post_data(enforcer_api_client):
-    domain = enforcer_api_client.enforcer.enforced_domain
     permit_data = {
         'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(domain=domain),
+        'areas': generate_areas_data(enforcer_api_client),
     }
 
     response = enforcer_api_client.post(list_url, data=permit_data)
@@ -78,7 +83,7 @@ def test_permit_is_not_created_to_non_owned_series(enforcer_api_client):
         'series': series.id,
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(),
+        'areas': generate_areas_data(enforcer_api_client),
     }
 
     response = enforcer_api_client.post(list_url, data=permit_data)
@@ -153,7 +158,7 @@ def test_permit_is_not_created_with_invalid_post_data(
         'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': 'EXT-1',
         'subjects': subjects,
-        'areas': generate_areas()
+        'areas': generate_areas_data(enforcer_api_client),
     }
 
     if kind == 'single':
@@ -181,8 +186,9 @@ def test_permit_creation_normalizes_timestamps(
         kind,
         input_timestamp, normalized_timestamp):
     domain = enforcer_api_client.enforcer.enforced_domain
+    user = enforcer_api_client.auth_user
     area_identifier = 'area name'
-    create_permit_area(area_identifier, domain=domain)
+    create_permit_area(area_identifier, domain=domain, permitted_user=user)
     permit_data = {
         'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': 'E123',
@@ -212,12 +218,11 @@ def test_permit_creation_normalizes_timestamps(
 
 @pytest.mark.django_db
 def test_lookup_item_is_created_for_permit(enforcer_api_client):
-    domain = enforcer_api_client.enforcer.enforced_domain
     permit_data = {
         'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(domain=domain),
+        'areas': generate_areas_data(enforcer_api_client),
     }
     assert PermitLookupItem.objects.count() == 0
     response = enforcer_api_client.post(list_url, data=permit_data)
@@ -268,18 +273,19 @@ def test_permit_data_matches_permit_object(enforcer_api_client, enforcer):
 def test_permit_bulk_create_creates_lookup_items(enforcer_api_client):
     permit_series = create_permit_series(owner=enforcer_api_client.auth_user)
     domain = enforcer_api_client.enforcer.enforced_domain
+    user = enforcer_api_client.auth_user
     permit_data = [
         {
             "series": permit_series.id,
             "external_id": "E1",
             "subjects": generate_subjects(),
-            "areas": generate_areas(domain=domain),
+            "areas": generate_areas(domain=domain, permitted_user=user),
         },
         {
             "series": permit_series.id,
             "external_id": "E2",
             "subjects": generate_subjects(),
-            "areas": generate_areas(domain=domain),
+            "areas": generate_areas(domain=domain, permitted_user=user),
         },
     ]
 
