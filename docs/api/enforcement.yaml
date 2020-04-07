@@ -146,6 +146,34 @@ components:
           $ref: '#/components/schemas/PermitSubjects'
         areas: &permitAreas
           $ref: '#/components/schemas/PermitAreas'
+    ValidPermit:
+      type: object
+      properties:
+        id:
+          description: Permit id
+          type: integer
+        created_at:
+          description: Permit creation date
+          type: string
+          format: date-time
+        modified_at:
+          description: Permit modified date
+          type: string
+          format: date-time
+        Area:
+          description: Code of the Area the Permit is in
+          type: string
+        registration_number:
+          description: Registration number of vehicle for the permit
+          type: string
+        start_time:
+          description: Start time of the permit
+          type: string
+          format: date-time
+        end_time:
+          description: End time of the permit
+          type: string
+          format: date-time
     PermitSubjects:
       description: >-
         List of subjects of a permit with validity time ranges.  Each
@@ -400,6 +428,46 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Parking'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /valid_permit/:
+    get:
+      tags: ['Parking Validation']
+      summary: Get list of valid permits
+      operationId: getValidPermitList
+      security: [{ApiKey: []}]
+      parameters:
+        - name: time
+          in: query
+          description: >-
+            Time when permit should be valid.  If not given, default
+            is current time.
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: An array of permit objects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    description: Total number of objects
+                    type: integer
+                  next:
+                    description: Link to the next result page
+                    type: string
+                    format: uri
+                  previous:
+                    description: Link to the previous result page
+                    type: string
+                    format: uri
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ValidPermit'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /operator/:

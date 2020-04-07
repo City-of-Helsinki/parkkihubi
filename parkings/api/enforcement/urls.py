@@ -8,6 +8,7 @@ from .enforcement_permit import (
     EnforcementPermitViewSet)
 from .operator import OperatorViewSet
 from .valid_parking import ValidParkingViewSet
+from .valid_permit import ValidPermitViewSet
 
 
 class Router(DefaultRouter):
@@ -31,6 +32,8 @@ router.register('active_permit_by_external_id',
 router.register('permitseries', EnforcementPermitSeriesViewSet, basename='permitseries')
 router.register('valid_parking', ValidParkingViewSet,
                 basename='valid_parking')
+router.register('valid_permits', ValidPermitViewSet,
+                basename='valid_permits')
 
 app_name = 'enforcement'
 urlpatterns = [
