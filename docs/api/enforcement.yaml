@@ -358,7 +358,7 @@ paths:
   /valid_parking/:
     get:
       tags: ['Parking Validation']
-      summary: Get list of valid parkings by registration number
+      summary: Get list of valid parkings by either registration number, time or both
       operationId: getParkingList
       security: [{ApiKey: []}]
       parameters:
@@ -366,14 +366,14 @@ paths:
           in: query
           description: >-
             Registration number of parkings. Dashes are ignored.
+            Required if no time is set.
           schema:
             type: string
-          required: true
         - name: time
           in: query
           description: >-
             Time when parking should be valid.  If not given, default
-            is current time.
+            is current time. Required if no registration number is set.
           schema:
             type: string
             format: date-time
