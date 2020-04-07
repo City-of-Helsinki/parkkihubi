@@ -27,7 +27,8 @@ class OperatorAdmin(admin.ModelAdmin):
 
 @admin.register(PaymentZone)
 class PaymentZoneAdmin(WithAreaField, OSMGeoAdmin):
-    list_display = ['id', 'number', 'name', 'area']
+    list_display = ['id', 'domain', 'number', 'name', 'area']
+    list_filter = ['domain']
     ordering = ('number',)
 
 
@@ -35,10 +36,10 @@ class PaymentZoneAdmin(WithAreaField, OSMGeoAdmin):
 class ParkingAdmin(OSMGeoAdmin):
     date_hierarchy = 'time_start'
     list_display = [
-        'id', 'operator', 'zone', 'parking_area', 'terminal_number',
+        'id', 'operator', 'domain', 'zone', 'parking_area', 'terminal_number',
         'time_start', 'time_end', 'registration_number',
         'created_at', 'modified_at']
-    list_filter = ['operator', 'zone']
+    list_filter = ['operator', 'domain', 'zone']
     ordering = ('-time_start',)
 
 
@@ -51,7 +52,8 @@ class RegionAdmin(WithAreaField, OSMGeoAdmin):
 @admin.register(ParkingArea)
 class ParkingAreaAdmin(WithAreaField, OSMGeoAdmin):
     area_scale = 1
-    list_display = ['id', 'origin_id', 'capacity_estimate', 'area']
+    list_display = ['id', 'origin_id', 'domain', 'capacity_estimate', 'area']
+    list_filter = ['domain']
     ordering = ('origin_id',)
 
 
@@ -78,20 +80,22 @@ class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
 
 @admin.register(ParkingTerminal)
 class ParkingTerminalAdmin(OSMGeoAdmin):
-    list_display = ['id', 'number', 'name']
+    list_display = ['id', 'domain', 'number', 'name']
+    list_filter = ['domain']
 
 
 @admin.register(Permit)
 class PermitAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
-    list_display = ['id', 'series', 'external_id', 'created_at', 'modified_at']
-    list_filter = ['series__active']
+    list_display = ['id', 'domain', 'series', 'external_id', 'created_at', 'modified_at']
+    list_filter = ['series__active', 'domain']
     ordering = ('-series', '-id')
 
 
 @admin.register(PermitArea)
 class PermitAreaAdmin(WithAreaField, OSMGeoAdmin):
-    list_display = ['id', 'identifier', 'name', 'area']
+    list_display = ['id', 'domain', 'identifier', 'name', 'area']
+    list_filter = ['domain']
     ordering = ('identifier',)
 
 
