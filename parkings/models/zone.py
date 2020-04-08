@@ -19,6 +19,7 @@ class PaymentZone(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
     class Meta:
         unique_together = [('domain', 'code')]
+        ordering = ('domain', 'code')
 
     def __str__(self):
         return self.name
