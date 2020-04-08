@@ -447,6 +447,11 @@ paths:
     get:
       tags: ['Permit Series']
       summary: Get list of permit series
+      description: |-
+        Inactive permit series may be deleted from the system.
+        The time limit which defines which series are considered
+        for removal is 3 days by default, but may be configured by the
+        service administrator to a different value.
       operationId: getPermitSeriesList
       security: [{ApiKey: []}]
       responses:
@@ -464,6 +469,11 @@ paths:
     post:
       tags: ['Permit Series']
       summary: Create a permit series object
+      description: |-
+        Inactive permit series may be deleted from the system.
+        The time limit which defines which series are considered
+        for removal is 3 days by default, but may be configured by the
+        service administrator to a different value.
       operationId: createPermitSeries
       security: [{ApiKey: []}]
       requestBody:
@@ -515,10 +525,10 @@ paths:
         Activate the specified permit series and deactivate all other
         permit series owned by you.
 
-        As a side effect this will also delete old inactive permit
-        series from the system.  The time limit which defines which
-        series are considered old is 3 days by default, but may be
-        configured by the service administrator to a different value.
+        Inactive permit series may be deleted from the system.
+        The time limit which defines which series are considered
+        for removal is 3 days by default, but may be configured by the
+        service administrator to a different value.
       operationId: activatePermitSeries
       security: [{ApiKey: []}]
       parameters:
