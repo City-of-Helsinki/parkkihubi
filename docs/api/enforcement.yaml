@@ -391,7 +391,10 @@ paths:
   /valid_parking/:
     get:
       tags: ['Parking Validation']
-      summary: Get list of valid parkings by either registration number, time or both
+      summary: Get list of valid parkings
+      description: >-
+        Get list of valid parkings by either registration number, time
+        or both
       operationId: getParkingList
       security: [{ApiKey: []}]
       parameters:
