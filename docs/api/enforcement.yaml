@@ -48,6 +48,17 @@ components:
   schemas:
     Parking:
       type: object
+      example: &parkingExample
+        id: "ee9feaaa-ebb8-41fc-a6c3-362a3aadb731"
+        created_at: "2020-04-15T11:10:05Z"
+        modified_at: "2020-04-15T13:29:46Z"
+        registration_number: "ABC-123"
+        time_start: "2020-04-15T11:10:05Z"
+        time_end: "2020-04-15T14:00:00Z"
+        zone: 2
+        is_disc_parking: false
+        operator: "63f8374e-1eed-44fa-9224-4cd0c64ddf35"
+        operator_name: "Foobar Parkings"
       properties:
         id:
           description: Unique identifier for the parking object
@@ -148,6 +159,11 @@ components:
           $ref: '#/components/schemas/PermitAreas'
     ValidPermitItem:
       type: object
+      example: &validPermitItemExample
+        area: "B"
+        registration_number: "ABC-123"
+        start_time: "2019-12-31T21:00:00Z"
+        end_time: "2020-12-31T20:59:59Z"
       properties:
         area:
           description: Code of the permit area that this item permits parking to
@@ -401,6 +417,12 @@ paths:
             application/json:
               schema:
                 type: object
+                example:
+                  count: 1
+                  next: null
+                  previous: null
+                  results:
+                    - << : *parkingExample
                 properties: &paginatedResult
                   count:
                     description: Total number of objects
@@ -448,6 +470,23 @@ paths:
             application/json:
               schema:
                 type: object
+                example:
+                  count: 100
+                  next: "https://api.parkkiopas.fi/enforcement/v1/valid_permit_item/?page=2"
+                  previous: null
+                  results:
+                    - << : *validPermitItemExample
+                      area: "A"
+                      registration_number: "ABC-123"
+                    - << : *validPermitItemExample
+                      area: "B"
+                      registration_number: "ABC-123"
+                    - << : *validPermitItemExample
+                      area: "A"
+                      registration_number: "XYZ-456"
+                    - << : *validPermitItemExample
+                      area: "B"
+                      registration_number: "XYZ-456"
                 properties:
                   << : *paginatedResult
                   results:
