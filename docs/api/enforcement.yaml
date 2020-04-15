@@ -146,6 +146,23 @@ components:
           $ref: '#/components/schemas/PermitSubjects'
         areas: &permitAreas
           $ref: '#/components/schemas/PermitAreas'
+    ValidPermitItem:
+      type: object
+      properties:
+        area:
+          description: Code of the permit area that this item permits parking to
+          type: string
+        registration_number:
+          description: Registration number of the vehicle that this item permits parking of
+          type: string
+        start_time:
+          description: Start time of the validity period of this item
+          type: string
+          format: date-time
+        end_time:
+          description: End time of the validity period of this item
+          type: string
+          format: date-time
     PermitSubjects:
       description: >-
         List of subjects of a permit with validity time ranges.  Each
@@ -358,7 +375,7 @@ paths:
   /valid_parking/:
     get:
       tags: ['Parking Validation']
-      summary: Get list of valid parkings by registration number
+      summary: Get list of valid parkings by either registration number, time or both
       operationId: getParkingList
       security: [{ApiKey: []}]
       parameters:
@@ -366,14 +383,14 @@ paths:
           in: query
           description: >-
             Registration number of parkings. Dashes are ignored.
+            Required if no time is set.
           schema:
             type: string
-          required: true
         - name: time
           in: query
           description: >-
             Time when parking should be valid.  If not given, default
-            is current time.
+            is current time. Required if no registration number is set.
           schema:
             type: string
             format: date-time
@@ -400,6 +417,43 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/Parking'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /valid_permit_item/:
+    get:
+      tags: ['Parking Validation']
+      summary: Get list of valid permit items
+      operationId: getValidPermitItemList
+      security: [{ApiKey: []}]
+      parameters:
+        - name: time
+          in: query
+          description: >-
+            Time when returned permit items should be valid. Required if no
+            registration number is set.
+          schema:
+            type: string
+            format: date-time
+        - name: reg_num
+          in: query
+          description: >-
+            Registration number of permit items. Dashes are ignored.
+            Required if no time is set.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: An array of permit items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ValidPermitItem'
         '401':
           $ref: '#/components/responses/Unauthorized'
   /operator/:
