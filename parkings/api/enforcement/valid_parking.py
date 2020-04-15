@@ -12,6 +12,7 @@ from .permissions import IsEnforcer
 
 class ValidParkingSerializer(serializers.ModelSerializer):
     operator_name = serializers.CharField(source='operator.name')
+    zone = serializers.IntegerField(source='zone.number')
 
     class Meta:
         model = Parking

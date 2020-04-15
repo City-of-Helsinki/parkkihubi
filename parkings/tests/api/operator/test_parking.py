@@ -6,7 +6,9 @@ from django.conf import settings
 from django.urls import reverse
 from freezegun import freeze_time
 
-from parkings.models import EnforcementDomain, Parking
+from parkings.factories import EnforcerFactory
+from parkings.factories.parking import create_payment_zone
+from parkings.models import Parking, EnforcementDomain
 
 from ..utils import (
     ALL_METHODS, check_method_status_codes, check_required_fields, delete,
@@ -47,8 +49,10 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
     """
 
     # string or integer valued fields should match 1:1
-    for field in {'registration_number', 'zone'}:
+    for field in {'registration_number'}:
         assert parking_data[field] == getattr(parking_obj, field)
+
+    assert parking_data['zone'] == parking_obj.zone.number
 
     assert parking_data['time_start'] == parking_obj.time_start.strftime('%Y-%m-%dT%H:%M:%SZ')
 
@@ -102,6 +106,8 @@ def test_parking_required_fields(operator_api_client, parking):
 
 
 def test_post_parking(operator_api_client, operator, new_parking_data):
+    create_payment_zone(code=str(new_parking_data['zone']), number=new_parking_data['zone'])
+
     response_parking_data = post(operator_api_client, list_url, new_parking_data)
 
     # check data in the response
@@ -120,6 +126,8 @@ def test_post_parking_optional_fields_omitted(operator_api_client, new_parking_d
     new_parking_data.pop('time_end')
     new_parking_data.pop('location')
 
+    create_payment_zone(code=str(new_parking_data['zone']), number=new_parking_data['zone'])
+
     response_parking_data = post(operator_api_client, list_url, new_parking_data)
 
     new_parking_data['time_end'] = None
@@ -133,6 +141,7 @@ def test_post_parking_optional_fields_null(operator_api_client, new_parking_data
     new_parking_data['time_end'] = None
     new_parking_data['location'] = None
 
+    create_payment_zone(code=str(new_parking_data['zone']), number=new_parking_data['zone'])
     response_parking_data = post(operator_api_client, list_url, new_parking_data)
 
     check_response_parking_data(new_parking_data, response_parking_data)
@@ -142,6 +151,7 @@ def test_post_parking_optional_fields_null(operator_api_client, new_parking_data
 
 def test_put_parking(operator_api_client, parking, updated_parking_data):
     detail_url = get_detail_url(parking)
+    create_payment_zone(code='2', number=2)
     response_parking_data = put(operator_api_client, detail_url, updated_parking_data)
 
     # check data in the response
@@ -154,6 +164,7 @@ def test_put_parking(operator_api_client, parking, updated_parking_data):
 
 def test_put_parking_optional_fields_omitted(operator_api_client, parking, updated_parking_data):
     detail_url = get_detail_url(parking)
+    create_payment_zone(code='2', number=2)
     updated_parking_data.pop('time_end')
     updated_parking_data.pop('location')
 
@@ -168,6 +179,7 @@ def test_put_parking_optional_fields_omitted(operator_api_client, parking, updat
 
 def test_put_parking_optional_fields_null(operator_api_client, parking, updated_parking_data):
     detail_url = get_detail_url(parking)
+    create_payment_zone(code='2', number=2)
     updated_parking_data['time_end'] = None
     updated_parking_data['location'] = None
 
@@ -180,15 +192,19 @@ def test_put_parking_optional_fields_null(operator_api_client, parking, updated_
 
 def test_patch_parking(operator_api_client, parking):
     detail_url = get_detail_url(parking)
-    new_zone = parking.zone % 3 + 1
-    response_parking_data = patch(operator_api_client, detail_url, {'zone': new_zone})
+    new_zone_number = parking.zone.number % 3 + 1
+    new_zone = create_payment_zone(
+        code=str(new_zone_number),
+        number=new_zone_number,
+        id=new_zone_number)
+    response_parking_data = patch(operator_api_client, detail_url, {'zone': new_zone.id})
 
     # check data in the response
-    check_response_parking_data({'zone': new_zone}, response_parking_data)
+    check_response_parking_data({'zone': new_zone.id}, response_parking_data)
 
     # check the actual object
     parking.refresh_from_db()
-    assert parking.zone == new_zone
+    assert parking.zone.number == new_zone.number
     assert parking.domain.code == response_parking_data['domain']
 
 
@@ -202,10 +218,20 @@ def test_delete_parking(operator_api_client, parking):
 def test_operator_cannot_be_set(operator_api_client, operator, operator_2, new_parking_data, updated_parking_data):
     new_parking_data['operator'] = str(operator_2.id)
 
+    create_payment_zone(
+        id=new_parking_data['zone'],
+        code=str(new_parking_data['zone']),
+        number=new_parking_data['zone'])
+
     # POST
     response_parking_data = post(operator_api_client, list_url, new_parking_data)
     new_parking = Parking.objects.get(id=response_parking_data['id'])
     assert new_parking.operator == operator
+
+    create_payment_zone(
+        id=updated_parking_data['zone'],
+        code=str(updated_parking_data['zone']),
+        number=updated_parking_data['zone'])
 
     # PUT
     detail_url = get_detail_url(new_parking)
@@ -226,7 +252,14 @@ def test_cannot_modify_other_than_own_parkings(operator_2_api_client, parking, n
     delete(operator_2_api_client, detail_url, 404)
 
 
-def test_cannot_modify_parking_after_modify_period(operator_api_client, new_parking_data, updated_parking_data):
+def test_cannot_modify_parking_after_modify_period(
+        operator_api_client, new_parking_data, updated_parking_data, operator
+):
+    create_payment_zone(
+        id=new_parking_data['zone'],
+        code=str(new_parking_data['zone']),
+        number=new_parking_data['zone'])
+
     start_time = datetime.datetime(2010, 1, 1, 12, 00)
     error_message = 'Grace period has passed. Only "time_end" can be updated via PATCH.'
     error_code = 'grace_period_over'
@@ -255,6 +288,11 @@ def test_cannot_modify_parking_after_modify_period(operator_api_client, new_park
 
 
 def test_can_modify_time_end_after_modify_period(operator_api_client, new_parking_data):
+    create_payment_zone(
+        id=new_parking_data['zone'],
+        code=str(new_parking_data['zone']),
+        number=new_parking_data['zone'])
+
     start_time = datetime.datetime(2010, 1, 1, 12, 00)
 
     with freeze_time(start_time):
@@ -290,6 +328,11 @@ def test_time_start_cannot_be_after_time_end(operator_api_client, parking, new_p
 
 
 def test_parking_registration_number_special_chars(operator_api_client, new_parking_data):
+    create_payment_zone(
+        id=new_parking_data['zone'],
+        code=str(new_parking_data['zone']),
+        number=new_parking_data['zone'])
+
     new_parking_data['registration_number'] = 'ÅÄÖÆØ-:'
 
     response_parking_data = post(operator_api_client, list_url, new_parking_data)
@@ -302,6 +345,11 @@ def test_parking_registration_number_special_chars(operator_api_client, new_park
 def test_default_enforcement_domain_is_used_on_parking_creation_if_not_specified(
     operator_api_client, new_parking_data
 ):
+    create_payment_zone(
+        id=new_parking_data['zone'],
+        code=str(new_parking_data['zone']),
+        number=new_parking_data['zone'])
+
     response_parking_data = post(operator_api_client, list_url, new_parking_data)
 
     assert response_parking_data['domain'] == EnforcementDomain.get_default_domain().code
@@ -310,6 +358,9 @@ def test_default_enforcement_domain_is_used_on_parking_creation_if_not_specified
 def test_enforcement_domain_can_be_specified_on_parking_creation(operator_api_client, new_parking_data):
     enforcement_domain = EnforcementDomain.objects.create(code='ESP', name='Espoo')
     new_parking_data.update(domain=enforcement_domain.code)
+    create_payment_zone(id=new_parking_data['zone'],
+                        code=str(new_parking_data['zone']),
+                        number=new_parking_data['zone'])
 
     response_parking_data = post(operator_api_client, list_url, new_parking_data)
 

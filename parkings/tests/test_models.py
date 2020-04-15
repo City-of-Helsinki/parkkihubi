@@ -5,6 +5,7 @@ from django.contrib.gis.geos import Point
 from django.test import override_settings
 from django.utils.timezone import now, utc
 
+from parkings.factories.parking import create_payment_zone
 from parkings.models import Operator, Parking, ParkingCheck, ParkingTerminal
 
 
@@ -12,18 +13,19 @@ def test_operator_instance_creation():
     Operator(name="name", user_id=1)
 
 
-def test_parking_instance_creation():
-    create_parking()
+@pytest.mark.django_db
+def test_parking_instance_creation(enforcer):
+    create_parking(enforcer)
 
 
-def create_parking(operator_id=1, registration_number='ABC-123', **kwargs):
+def create_parking(enforcer, operator_id=1, registration_number='ABC-123', **kwargs):
     return Parking(
         location=Point(60.193609, 24.951394),
         operator_id=operator_id,
         registration_number=registration_number,
         time_end=now() + datetime.timedelta(days=1),
         time_start=now(),
-        zone=3,
+        zone=create_payment_zone(domain=enforcer.enforced_domain),
         **kwargs
     )
 
@@ -73,10 +75,10 @@ def test_parking_check_str():
 
 
 @pytest.mark.django_db
-def test_terminal_set_on_save(admin_user):
+def test_terminal_set_on_save(admin_user, enforcer):
     operator = Operator.objects.get_or_create(user=admin_user)[0]
     terminal = ParkingTerminal.objects.get_or_create(number=1234)[0]
-    parking = create_parking(operator_id=operator.pk, terminal_number=1234)
+    parking = create_parking(enforcer, operator_id=operator.pk, terminal_number=1234)
     assert parking.terminal_number == 1234
     assert parking.terminal is None
     parking.save()
@@ -84,21 +86,21 @@ def test_terminal_set_on_save(admin_user):
 
 
 @pytest.mark.django_db
-def test_location_set_from_terminal(admin_user):
+def test_location_set_from_terminal(admin_user, enforcer):
     operator = Operator.objects.get_or_create(user=admin_user)[0]
     terminal = ParkingTerminal.objects.get_or_create(
         number=4567, defaults={
             'location': Point(61, 25), 'name': "Test terminal"})[0]
-    parking = create_parking(operator_id=operator.pk, terminal_number=4567)
+    parking = create_parking(enforcer, operator_id=operator.pk, terminal_number=4567)
     parking.location = None
     parking.save()
     assert parking.location == terminal.location
 
 
 @pytest.mark.django_db
-def test_parking_save_with_nondigit_terminal_number(admin_user):
+def test_parking_save_with_nondigit_terminal_number(admin_user, enforcer):
     operator = Operator.objects.get_or_create(user=admin_user)[0]
-    parking = create_parking(operator_id=operator.pk, terminal_number='123a')
+    parking = create_parking(enforcer, operator_id=operator.pk, terminal_number='123a')
     parking.location = None
     parking.save()
     assert parking.terminal is None
@@ -107,12 +109,12 @@ def test_parking_save_with_nondigit_terminal_number(admin_user):
 
 
 @pytest.mark.django_db
-def test_location_not_overridden_from_terminal(admin_user):
+def test_location_not_overridden_from_terminal(admin_user, enforcer):
     operator = Operator.objects.get_or_create(user=admin_user)[0]
     terminal = ParkingTerminal.objects.get_or_create(
         number=4567, defaults={
             'location': Point(61, 25), 'name': "Test terminal"})[0]
-    parking = create_parking(operator_id=operator.pk, terminal_number=4567)
+    parking = create_parking(enforcer, operator_id=operator.pk, terminal_number=4567)
     location = parking.location
     parking.save()
     assert parking.location == location
@@ -134,9 +136,10 @@ def test_parking_terminal_str():
     ('Xyz-456-123', 'XYZ456123'),
     ('Cool Reg 42', 'COOLREG42'),
 ])
-def test_normalized_reg_num(admin_user, reg_num, normalized):
+def test_normalized_reg_num(admin_user, reg_num, normalized, enforcer):
     operator = Operator.objects.get_or_create(user=admin_user)[0]
     parking = create_parking(
+        enforcer,
         operator_id=operator.pk,
         registration_number=reg_num)
     assert parking.registration_number == reg_num

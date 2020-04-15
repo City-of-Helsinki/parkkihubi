@@ -112,12 +112,12 @@ def get_location(params):
 def get_payment_zone(location):
     if location is None:
         return None
-    zone_numbers = (
+    zone = (
         PaymentZone.objects
         .filter(geom__contains=location)
         .order_by("-number")[:1]
-        .values_list("number", flat=True))
-    return zone_numbers[0] if zone_numbers else None
+        .values_list("number", flat=True)).first()
+    return zone
 
 
 def get_permit_area(location):
@@ -143,7 +143,7 @@ def check_parking(registration_number, zone, area, time):
         .valid_at(time)
         .only("id", "zone", "time_end"))
     for parking in active_parkings:
-        if zone is None or parking.zone <= zone:
+        if zone is None or parking.zone.number <= zone:
             return ("parking", parking, parking.time_end)
 
     if area:

@@ -7,6 +7,7 @@ from ...models import Parking
 class ParkingSerializer(gis_serializers.GeoFeatureModelSerializer):
     operator_name = serializers.CharField(
         source='operator.name', read_only=True)
+    zone = serializers.IntegerField(source='zone.number')
 
     class Meta:
         model = Parking

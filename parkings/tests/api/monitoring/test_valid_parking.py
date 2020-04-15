@@ -69,10 +69,11 @@ def check_parking_feature_matches_parking_object(parking_feature, parking_obj):
     assert parking_feature['geometry']['coordinates'] == list(
         parking_obj.location.coords)
     props = parking_feature['properties']
-    direct_fields = ['registration_number', 'terminal_number', 'zone']
+    direct_fields = ['registration_number', 'terminal_number']
     for field in direct_fields:
         assert props[field] == getattr(parking_obj, field)
 
+    assert props['zone'] == parking_obj.zone.number
     assert props['created_at'] == iso8601_us(parking_obj.created_at)
     assert props['modified_at'] == iso8601_us(parking_obj.modified_at)
     assert props['time_start'] == iso8601(parking_obj.time_start)

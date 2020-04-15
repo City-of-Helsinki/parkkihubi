@@ -1,10 +1,12 @@
 import pytz
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import mixins, serializers, viewsets
+from rest_framework.exceptions import NotFound
 
-from parkings.models import EnforcementDomain, Parking
+from parkings.models import EnforcementDomain, Parking, PaymentZone
 
 from ..common import ParkingException
 from .permissions import IsOperator
@@ -14,6 +16,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
     status = serializers.ReadOnlyField(source='get_state')
     domain = serializers.SlugRelatedField(
         slug_field='code', queryset=EnforcementDomain.objects.all())
+    zone = serializers.IntegerField(source='zone.number', allow_null=True)
 
     class Meta:
         model = Parking
@@ -97,8 +100,25 @@ class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin
     queryset = Parking.objects.order_by('time_start')
     serializer_class = OperatorAPIParkingSerializer
 
+    def _get_zone(self):
+        try:
+            code = self.request.data['zone']
+            return PaymentZone.objects.get(code=code)
+        except ObjectDoesNotExist:
+            raise NotFound(_('Zone does not exist.'))
+
     def perform_create(self, serializer):
-        serializer.save(operator=self.request.user.operator)
+        if self.request.data.get('is_disc_parking') and not self.request.data.get('zone'):
+            zone = None
+        else:
+            zone = self._get_zone()
+        serializer.save(operator=self.request.user.operator, zone=zone)
+
+    def perform_update(self, serializer):
+        if self.request.data.get('zone'):
+            serializer.save(zone=self._get_zone())
+        else:
+            serializer.save()
 
     def get_queryset(self):
         return super().get_queryset().filter(operator=self.request.user.operator)

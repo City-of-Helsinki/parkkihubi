@@ -104,11 +104,8 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
     """
     Check that a parking data dict and an actual Parking object match.
     """
-
-    # string and integer valued fields should match 1:1
-    for field in {'registration_number', 'zone'}:
-        assert parking_data[field] == getattr(parking_obj, field)
-
+    assert parking_data['registration_number'] == getattr(parking_obj, 'registration_number')
+    assert parking_data['zone'] == parking_obj.zone.number
     assert parking_data['id'] == str(parking_obj.id)  # UUID -> str
     assert parking_data['operator'] == str(parking_obj.operator.id)
     assert parking_data['created_at'] == iso8601_us(parking_obj.created_at)
