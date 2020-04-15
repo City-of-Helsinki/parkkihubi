@@ -651,7 +651,16 @@ paths:
   /permit/:
     get:
       tags: ['Permits']
-      summary: Get list of parking permits
+      summary: Get list of your parking permits
+      description: |-
+        Get a list of parking permits that you own.  Note however, that
+        there might be also other permits in the system.
+
+        Note: This endpoint is meant for permit managing purposes only.
+        To check validity of a parking use the [Parking
+        Validation](#tag/Parking-Validation) endpoints (e.g.  [``POST
+        /check_parking/``](#operation/checkParking) or [``GET
+        /valid_permit_item/``](#operation/getValidPermitItemList)).
       operationId: getPermitList
       security: [{ApiKey: []}]
       responses:
