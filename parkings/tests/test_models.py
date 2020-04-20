@@ -164,3 +164,10 @@ def test_normalized_reg_num(admin_user, reg_num, normalized, enforcer):
 ])
 def test_normalize_reg_num_function(reg_num, result):
     assert Parking.normalize_reg_num(reg_num) == result
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('code,result', [('1', 1), ('1A', '1A'), ])
+def test_zone_casted_code(code, result):
+    zone = create_payment_zone(code=code)
+    assert zone.casted_code == result

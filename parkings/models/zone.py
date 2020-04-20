@@ -23,3 +23,7 @@ class PaymentZone(TimestampedModelMixin):
 
     def __str__(self):
         return self.name
+
+    @property
+    def casted_code(self):
+        return int(self.code) if self.code.isdigit() else self.code

@@ -16,7 +16,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
     status = serializers.ReadOnlyField(source='get_state')
     domain = serializers.SlugRelatedField(
         slug_field='code', queryset=EnforcementDomain.objects.all())
-    zone = serializers.IntegerField(source='zone.number', allow_null=True)
+    zone = serializers.CharField(source='zone.code', allow_null=True)
 
     class Meta:
         model = Parking
@@ -81,6 +81,9 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+
+        if instance.zone:
+            representation['zone'] = instance.zone.casted_code
         if not instance.is_disc_parking:
             representation.pop('is_disc_parking')
         return representation
@@ -101,18 +104,22 @@ class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin
     serializer_class = OperatorAPIParkingSerializer
 
     def _get_zone(self):
+        if self.request.data.get('domain'):
+            domain = EnforcementDomain.objects.get(code=self.request.data.get('domain'))
+        else:
+            domain = EnforcementDomain.get_default_domain()
+        zone_code = self.request.data['zone']
         try:
-            code = self.request.data['zone']
-            return PaymentZone.objects.get(code=code)
+            return PaymentZone.objects.get(domain=domain, code=zone_code)
         except ObjectDoesNotExist:
             raise NotFound(_('Zone does not exist.'))
 
     def perform_create(self, serializer):
         if self.request.data.get('is_disc_parking') and not self.request.data.get('zone'):
-            zone = None
+            serializer.save(operator=self.request.user.operator)
         else:
             zone = self._get_zone()
-        serializer.save(operator=self.request.user.operator, zone=zone)
+            serializer.save(operator=self.request.user.operator, zone=zone)
 
     def perform_update(self, serializer):
         if self.request.data.get('zone'):

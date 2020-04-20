@@ -7,6 +7,9 @@ from django.utils.timezone import utc
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN)
 
+from parkings.factories import EnforcerFactory
+from parkings.factories.parking import create_payment_zone
+
 from ..utils import (
     ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes,
     check_response_objects, get, get_ids_from_results)
@@ -105,7 +108,7 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
     Check that a parking data dict and an actual Parking object match.
     """
     assert parking_data['registration_number'] == getattr(parking_obj, 'registration_number')
-    assert parking_data['zone'] == parking_obj.zone.number
+    assert parking_data['zone'] == parking_obj.zone.casted_code
     assert parking_data['id'] == str(parking_obj.id)  # UUID -> str
     assert parking_data['operator'] == str(parking_obj.operator.id)
     assert parking_data['created_at'] == iso8601_us(parking_obj.created_at)
@@ -218,3 +221,51 @@ def test_enforcer_can_view_only_parkings_from_domain_they_enforce(
 
     assert response['count'] == 1
     assert response['results'][0]['id'] == str(visible_parking.id)
+
+
+@pytest.mark.parametrize("parking_type", ALL_PARKING_KINDS)
+def test_endpoint_can_return_zone_as_string_or_integer(
+    enforcer_api_client, parking_type, parking, disc_parking, enforcer
+):
+    parking_object = get_parking_object(parking_type, parking, disc_parking)
+    parking_object.domain = enforcer.enforced_domain
+    parking_object.save()
+
+    parking_object.zone.code = '5'
+    parking_object.zone.save()
+    data = get(enforcer_api_client, get_url('list_by_reg_num', parking_object))
+    parking_data = data['results'][0]
+    assert parking_data['zone'] == 5
+
+    parking_object.zone.code = '5A'
+    parking_object.zone.save()
+    data = get(enforcer_api_client, get_url('list_by_reg_num', parking_object))
+    parking_data = data['results'][0]
+    assert parking_data['zone'] == '5A'
+
+
+def test_endpoint_returns_parkings_with_same_zone_code_in_correct_domain(
+        enforcer_api_client, staff_api_client, operator, enforcer, parking_factory, staff_user
+):
+    zone_1 = create_payment_zone(code='Z', domain=enforcer.enforced_domain)
+    EnforcerFactory(user=staff_user)
+    domain = staff_user.enforcer.enforced_domain
+    zone_2 = create_payment_zone(code='Z', domain=domain)
+
+    parking_1 = parking_factory(registration_number="ABC-123", operator=operator, zone=zone_1)
+    parking_1.domain = zone_1.domain
+    parking_1.save()
+
+    parking_2 = parking_factory(registration_number="ABC-123", operator=operator, zone=zone_2)
+    parking_2.domain = zone_2.domain
+    parking_2.save()
+
+    data_1 = get(enforcer_api_client, get_url('list_by_reg_num', parking_1))
+    assert len(data_1['results']) == 1
+    parking_data_1 = data_1['results'][0]
+    assert parking_data_1['id'] == str(parking_1.id)
+
+    data_2 = get(staff_api_client, get_url('list_by_reg_num', parking_2))
+    assert len(data_2['results']) == 1
+    parking_data_2 = data_2['results'][0]
+    assert parking_data_2['id'] == str(parking_2.id)

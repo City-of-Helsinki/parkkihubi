@@ -6,13 +6,14 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, viewsets
 
-from ...models import Parking
+from ...models import Parking, PaymentZone
 from .permissions import IsEnforcer
 
 
 class ValidParkingSerializer(serializers.ModelSerializer):
     operator_name = serializers.CharField(source='operator.name')
-    zone = serializers.IntegerField(source='zone.number')
+    zone = serializers.SlugRelatedField(
+        slug_field='code', queryset=PaymentZone.objects.all())
 
     class Meta:
         model = Parking
@@ -31,6 +32,8 @@ class ValidParkingSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+
+        representation['zone'] = instance.zone.casted_code
 
         if not instance.is_disc_parking:
             representation.pop('is_disc_parking')
