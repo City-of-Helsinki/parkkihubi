@@ -1,12 +1,12 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.utils.timezone import localtime, now
 from django.utils.translation import ugettext_lazy as _
 
 from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from parkings.models.operator import Operator
 from parkings.models.parking_area import ParkingArea
+from parkings.models.zone import PaymentZone
 
 from .enforcement_domain import EnforcementDomain
 from .parking_terminal import ParkingTerminal
@@ -81,11 +81,9 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     domain = models.ForeignKey(
         EnforcementDomain, on_delete=models.PROTECT,
         related_name='parkings', null=True,)
-    zone = models.IntegerField(
-        verbose_name=_("zone number"),
-        null=True, blank=True,
-        validators=[MinValueValidator(1), MaxValueValidator(3), ]
-    )
+    zone = models.ForeignKey(
+        PaymentZone, related_name='parkings', on_delete=models.PROTECT,
+        verbose_name=_("PaymentZone"), null=True, blank=True)
     is_disc_parking = models.BooleanField(verbose_name=_("disc parking"), default=False)
 
     objects = ParkingQuerySet.as_manager()

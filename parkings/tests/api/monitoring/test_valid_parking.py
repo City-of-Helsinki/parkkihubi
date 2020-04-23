@@ -69,10 +69,11 @@ def check_parking_feature_matches_parking_object(parking_feature, parking_obj):
     assert parking_feature['geometry']['coordinates'] == list(
         parking_obj.location.coords)
     props = parking_feature['properties']
-    direct_fields = ['registration_number', 'terminal_number', 'zone']
+    direct_fields = ['registration_number', 'terminal_number']
     for field in direct_fields:
         assert props[field] == getattr(parking_obj, field)
 
+    assert props['zone'] == parking_obj.zone.casted_code
     assert props['created_at'] == iso8601_us(parking_obj.created_at)
     assert props['modified_at'] == iso8601_us(parking_obj.modified_at)
     assert props['time_start'] == iso8601(parking_obj.time_start)
@@ -87,3 +88,19 @@ def iso8601(dt):
 
 def iso8601_us(dt):
     return dt.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
+
+
+def test_endpoint_can_return_zone_as_string_or_integer(monitoring_api_client, parking):
+    parking.zone.code = '5'
+    parking.zone.save()
+    result = monitoring_api_client.get(
+        list_url, data={'time': parking.time_start.isoformat()})
+    parking_feature = result.data['features'][0]
+    assert parking_feature['properties']['zone'] == 5
+
+    parking.zone.code = '5A'
+    parking.zone.save()
+    result = monitoring_api_client.get(
+        list_url, data={'time': parking.time_start.isoformat()})
+    parking_feature = result.data['features'][0]
+    assert parking_feature['properties']['zone'] == '5A'

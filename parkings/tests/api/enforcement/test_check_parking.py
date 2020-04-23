@@ -10,8 +10,9 @@ from django.utils import timezone
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from parkings.api.monitoring.region import WGS84_SRID
+from parkings.factories.parking import create_payment_zone
 from parkings.factories.permit import create_permit_series
-from parkings.models import ParkingCheck, PaymentZone, Permit, PermitArea
+from parkings.models import ParkingCheck, Permit, PermitArea
 from parkings.models.constants import GK25FIN_SRID
 from parkings.tests.api.utils import check_required_fields
 
@@ -30,12 +31,19 @@ INVALID_PARKING_DATA = {
     "location": {"longitude": 24.9, "latitude": 60.4},
 }
 
+GEOM_1 = [
+    (24.8, 60.3),  # North West corner
+    (25.0, 60.3),  # North East corner
+    (25.0, 60.1),  # South East corner
+    (24.8, 60.1),  # South West corner
+]
 
-def create_payment_zone(client=None, domain=None):
-    assert client or domain
-    return PaymentZone.objects.create(
-        domain=(domain or client.enforcer.enforced_domain), code="1",
-        number=1, name="Maksuvyöhyke 1", geom=create_area_geom())
+GEOM_2 = [
+    (26.8, 64.3),  # North West corner
+    (26.0, 64.3),  # North East corner
+    (26.0, 64.1),  # South East corner
+    (26.8, 64.1),  # South West corner
+]
 
 
 def create_permit_area(client=None, domain=None, permitted_user=None):
@@ -48,16 +56,8 @@ def create_permit_area(client=None, domain=None, permitted_user=None):
         geom=create_area_geom())
 
 
-def create_area_geom():
-    area_wgs84 = [
-        Point(x, srid=WGS84_SRID)
-        for x in [
-            (24.8, 60.3),  # North West corner
-            (25.0, 60.3),  # North East corner
-            (25.0, 60.1),  # South East corner
-            (24.8, 60.1),  # South West corner
-        ]
-    ]
+def create_area_geom(geom=GEOM_1):
+    area_wgs84 = [Point(x, srid=WGS84_SRID) for x in geom]
     area_gk25fin = [
         x.transform(GK25FIN_SRID, clone=True) for x in area_wgs84
     ]
@@ -74,8 +74,7 @@ def test_check_parking_required_fields(enforcer_api_client):
 
 
 def test_check_parking_valid_parking(operator, enforcer_api_client, parking_factory):
-    create_payment_zone(enforcer_api_client)
-    parking = parking_factory(registration_number="ABC-123", operator=operator, zone=1)
+    parking = parking_factory(registration_number="ABC-123", operator=operator, zone=create_payment_zone())
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
@@ -85,8 +84,7 @@ def test_check_parking_valid_parking(operator, enforcer_api_client, parking_fact
 
 
 def test_check_parking_invalid_time_parking(operator, enforcer_api_client, history_parking_factory):
-    create_payment_zone(enforcer_api_client)
-    history_parking_factory(registration_number="ABC-123", operator=operator, zone=1)
+    history_parking_factory(registration_number="ABC-123", operator=operator, zone=create_payment_zone())
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
@@ -95,8 +93,9 @@ def test_check_parking_invalid_time_parking(operator, enforcer_api_client, histo
 
 
 def test_check_parking_invalid_zone_parking(operator, enforcer_api_client, parking_factory):
-    create_payment_zone(enforcer_api_client)
-    parking_factory(registration_number="ABC-123", operator=operator, zone=2)
+    create_payment_zone(geom=create_area_geom(), number=1, code="1")
+    zone = create_payment_zone(geom=create_area_geom(geom=GEOM_2), number=2, code="2")
+    parking_factory(registration_number="ABC-123", operator=operator, zone=zone)
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
@@ -105,7 +104,6 @@ def test_check_parking_invalid_zone_parking(operator, enforcer_api_client, parki
 
 
 def test_check_parking_valid_permit(enforcer_api_client, staff_user):
-    create_payment_zone(enforcer_api_client)
     create_permit_area(enforcer_api_client)
     permit_series = create_permit_series(active=True)
 

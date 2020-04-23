@@ -4,10 +4,10 @@ from django.utils.translation import ugettext_lazy as _
 
 from .constants import GK25FIN_SRID
 from .enforcement_domain import EnforcementDomain
-from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
+from .mixins import TimestampedModelMixin
 
 
-class PaymentZone(TimestampedModelMixin, UUIDPrimaryKeyMixin):
+class PaymentZone(TimestampedModelMixin):
     domain = models.ForeignKey(
         EnforcementDomain, on_delete=models.PROTECT,
         related_name='payment_zones')
@@ -23,3 +23,7 @@ class PaymentZone(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
     def __str__(self):
         return self.name
+
+    @property
+    def casted_code(self):
+        return int(self.code) if self.code.isdigit() else self.code
