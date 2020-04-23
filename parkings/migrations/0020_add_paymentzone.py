@@ -27,6 +27,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'abstract': False,
+                'ordering': ('domain', 'code'),
             },
         ),
     ]
