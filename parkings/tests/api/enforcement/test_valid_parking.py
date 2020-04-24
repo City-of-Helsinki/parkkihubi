@@ -17,8 +17,14 @@ from ..utils import (
 list_url = reverse('enforcement:v1:valid_parking-list')
 
 
-def list_url_for(reg_num):
-    return '{url}?reg_num={reg_num}'.format(url=list_url, reg_num=reg_num)
+def list_url_for(reg_num=None, time=None):
+    assert reg_num or time
+    if not time:
+        return '{url}?reg_num={reg_num}'.format(url=list_url, reg_num=reg_num)
+    elif not reg_num:
+        return '{url}?time={time}'.format(url=list_url, time=time)
+    else:
+        return '{url}?reg_num={reg_num}&time={time}'.format(url=list_url, reg_num=reg_num, time=iso8601(time))
 
 
 list_url_for_abc = list_url_for('ABC-123')
@@ -28,7 +34,11 @@ def get_url(kind, parking):
     if kind == 'list':
         return list_url
     elif kind == 'list_by_reg_num':
-        return list_url_for(parking.registration_number)
+        return list_url_for(reg_num=parking.registration_number)
+    elif kind == 'list_by_time':
+        return list_url_for(time=datetime.now())
+    elif kind == 'list_by_reg_num_and_time':
+        return list_url_for(reg_num=parking.registration_number, time=datetime.now())
     else:
         assert kind == 'detail'
         return reverse('enforcement:v1:valid_parking-detail',
@@ -43,7 +53,7 @@ def get_parking_object(parking_type, parking, disc_parking):
         return disc_parking
 
 
-ALL_URL_KINDS = ['list', 'list_by_reg_num', 'detail']
+ALL_URL_KINDS = ['list', 'list_by_reg_num', 'list_by_time', 'list_by_reg_num_and_time', 'detail']
 ALL_PARKING_KINDS = ['paid', 'disc_parking']
 
 
@@ -65,10 +75,11 @@ def test_disallowed_methods(enforcer_api_client, parking, url_kind):
         enforcer_api_client, [url], disallowed_methods, 405)
 
 
-def test_reg_num_is_required(enforcer_api_client, parking):
+def test_reg_num_or_time_is_required(enforcer_api_client, parking):
     response = enforcer_api_client.get(list_url)
+    error_message = 'Either time or registration number required.'
     assert response.status_code == HTTP_400_BAD_REQUEST
-    assert response.data == {'reg_num': ['This field is required.']}
+    assert error_message in response.data
 
 
 def test_list_endpoint_base_fields(enforcer_api_client):

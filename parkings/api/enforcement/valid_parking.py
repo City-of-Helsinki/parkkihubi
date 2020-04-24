@@ -48,7 +48,7 @@ class ValidParkingSerializer(serializers.ModelSerializer):
 
 class ValidParkingFilter(django_filters.rest_framework.FilterSet):
     reg_num = django_filters.CharFilter(
-        label=_("Registration number"), method='filter_reg_num', required=True)
+        label=_("Registration number"), method='filter_reg_num')
     time = django_filters.IsoDateTimeFilter(
         label=_("Time"), method='filter_time')
 
@@ -66,6 +66,12 @@ class ValidParkingFilter(django_filters.rest_framework.FilterSet):
             data = data.copy()
             data.setdefault('time', timezone.now())
         super().__init__(data, *args, **kwargs)
+
+    def is_valid(self):
+        super(ValidParkingFilter, self).is_valid()
+        if not self.request.query_params.get("reg_num") and not self.request.query_params.get("time"):
+            raise serializers.ValidationError(_("Either time or registration number required."))
+        return True
 
     def filter_reg_num(self, queryset, name, value):
         """
