@@ -55,11 +55,13 @@ class CheckParking(generics.GenericAPIView):
         registration_number = params.get("registration_number")
         (wgs84_location, gk25_location) = get_location(params)
 
-        zone = get_payment_zone(gk25_location)
-        area = get_permit_area(gk25_location)
+        domain = request.user.enforcer.enforced_domain
+
+        zone = get_payment_zone(gk25_location, domain)
+        area = get_permit_area(gk25_location, domain)
 
         (allowed_by, parking, end_time) = check_parking(
-            registration_number, zone, area, time)
+            registration_number, zone, area, time, domain)
 
         allowed = bool(allowed_by)
 
@@ -69,7 +71,7 @@ class CheckParking(generics.GenericAPIView):
             # ago (where "a few minutes" is the grace duration)
             past_time = time - get_grace_duration()
             (_allowed_by, parking, end_time) = check_parking(
-                registration_number, zone, area, past_time)
+                registration_number, zone, area, past_time, domain)
 
         result = {
             "allowed": allowed,
@@ -109,31 +111,32 @@ def get_location(params):
     return (wgs84_location, gk25_location)
 
 
-def get_payment_zone(location):
+def get_payment_zone(location, domain):
     if location is None:
         return None
     zone = (
         PaymentZone.objects
-        .filter(geom__contains=location)
+        .filter(geom__contains=location, domain=domain)
         .order_by("-number")[:1]
         .values_list("number", flat=True)).first()
     return zone
 
 
-def get_permit_area(location):
+def get_permit_area(location, domain):
     if location is None:
         return None
-    area = PermitArea.objects.filter(geom__contains=location).first()
+    area = PermitArea.objects.filter(geom__contains=location, domain=domain).first()
     return area if area else None
 
 
-def check_parking(registration_number, zone, area, time):
+def check_parking(registration_number, zone, area, time, domain):
     """
     Check parking allowance from the database.
 
     :type registration_number: str
     :type zone: int|None
     :type area: str|None
+    :type domain: parkings.models.EnforcementDomain
     :type time: datetime.datetime
     :rtype: (str, Parking|None, datetime.datetime)
     """
@@ -141,7 +144,8 @@ def check_parking(registration_number, zone, area, time):
         Parking.objects
         .registration_number_like(registration_number)
         .valid_at(time)
-        .only("id", "zone", "time_end"))
+        .only("id", "zone", "time_end")
+        .filter(domain=domain))
     for parking in active_parkings:
         if zone is None or parking.zone.number <= zone:
             return ("parking", parking, parking.time_end)
@@ -154,6 +158,7 @@ def check_parking(registration_number, zone, area, time):
             .by_subject(registration_number)
             .by_area(area)
             .values_list("end_time", flat=True)
+            .filter(permit__domain=domain)
             .first())
 
         if permit_end_time:

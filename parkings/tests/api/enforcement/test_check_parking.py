@@ -10,6 +10,7 @@ from django.utils import timezone
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 
 from parkings.api.monitoring.region import WGS84_SRID
+from parkings.factories import EnforcerFactory
 from parkings.factories.parking import create_payment_zone
 from parkings.factories.permit import create_permit_series
 from parkings.models import ParkingCheck, Permit, PermitArea
@@ -68,13 +69,34 @@ def create_area_geom(geom=GEOM_1):
     return MultiPolygon(polygons)
 
 
+def create_permit(domain, permit_series=None, end_time=None):
+    end_time = end_time or timezone.now() + datetime.timedelta(days=1)
+    start_time = timezone.now()
+    series = permit_series or create_permit_series(active=True)
+
+    subjects = [
+        {
+            "end_time": str(end_time),
+            "start_time": str(start_time),
+            "registration_number": "ABC-123",
+        }
+    ]
+    areas = [{"area": "A", "end_time": str(end_time), "start_time": str(start_time)}]
+
+    Permit.objects.create(
+        domain=domain,
+        series=series, external_id=12345, subjects=subjects, areas=areas
+    )
+
+
 def test_check_parking_required_fields(enforcer_api_client):
     expected_required_fields = {"registration_number", "location"}
     check_required_fields(enforcer_api_client, list_url, expected_required_fields)
 
 
-def test_check_parking_valid_parking(operator, enforcer_api_client, parking_factory):
-    parking = parking_factory(registration_number="ABC-123", operator=operator, zone=create_payment_zone())
+def test_check_parking_valid_parking(operator, enforcer, enforcer_api_client, parking_factory):
+    zone = create_payment_zone(domain=enforcer.enforced_domain)
+    parking = parking_factory(registration_number="ABC-123", operator=operator, zone=zone, domain=zone.domain)
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
@@ -83,8 +105,9 @@ def test_check_parking_valid_parking(operator, enforcer_api_client, parking_fact
     assert response.data["end_time"] == parking.time_end
 
 
-def test_check_parking_invalid_time_parking(operator, enforcer_api_client, history_parking_factory):
-    history_parking_factory(registration_number="ABC-123", operator=operator, zone=create_payment_zone())
+def test_check_parking_invalid_time_parking(operator, enforcer, enforcer_api_client, history_parking_factory):
+    zone = create_payment_zone(domain=enforcer.enforced_domain)
+    history_parking_factory(registration_number="ABC-123", operator=operator, zone=zone, domain=zone.domain)
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
@@ -105,24 +128,7 @@ def test_check_parking_invalid_zone_parking(operator, enforcer_api_client, parki
 
 def test_check_parking_valid_permit(enforcer_api_client, staff_user):
     create_permit_area(enforcer_api_client)
-    permit_series = create_permit_series(active=True)
-
-    end_time = timezone.now() + datetime.timedelta(days=1)
-    start_time = timezone.now()
-
-    subjects = [
-        {
-            "end_time": str(end_time),
-            "start_time": str(start_time),
-            "registration_number": "ABC-123",
-        }
-    ]
-    areas = [{"area": "A", "end_time": str(end_time), "start_time": str(start_time)}]
-
-    Permit.objects.create(
-        domain=enforcer_api_client.enforcer.enforced_domain,
-        series=permit_series, external_id=12345, subjects=subjects, areas=areas
-    )
+    create_permit(domain=enforcer_api_client.enforcer.enforced_domain)
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
@@ -132,25 +138,8 @@ def test_check_parking_valid_permit(enforcer_api_client, staff_user):
 
 def test_check_parking_invalid_time_permit(enforcer_api_client, staff_user):
     create_permit_area(enforcer_api_client)
-    permit_series = create_permit_series(active=True)
-
-    end_time = timezone.now()
-    start_time = timezone.now() - datetime.timedelta(days=1)
-
-    subjects = [
-        {
-            "end_time": str(end_time),
-            "start_time": str(start_time),
-            "registration_number": "ABC-123",
-        }
-    ]
-    areas = [{"area": "A", "end_time": str(end_time), "start_time": str(start_time)}]
-
-    Permit.objects.create(
-        domain=enforcer_api_client.enforcer.enforced_domain,
-        series=permit_series, external_id=12345, subjects=subjects, areas=areas
-    )
-
+    end_time = timezone.now() - datetime.timedelta(days=1)
+    create_permit(domain=enforcer_api_client.enforcer.enforced_domain, end_time=end_time)
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
 
     assert response.status_code == HTTP_200_OK
@@ -159,24 +148,7 @@ def test_check_parking_invalid_time_permit(enforcer_api_client, staff_user):
 
 def test_check_parking_invalid_location(enforcer_api_client, staff_user):
     create_permit_area(enforcer_api_client)
-    permit_series = create_permit_series(active=True)
-
-    end_time = timezone.now() + datetime.timedelta(days=1)
-    start_time = timezone.now()
-
-    subjects = [
-        {
-            "end_time": str(end_time),
-            "start_time": str(start_time),
-            "registration_number": "ABC-123",
-        }
-    ]
-    areas = [{"area": "A", "end_time": str(end_time), "start_time": str(start_time)}]
-
-    Permit.objects.create(
-        domain=enforcer_api_client.enforcer.enforced_domain,
-        series=permit_series, external_id=12345, subjects=subjects, areas=areas
-    )
+    create_permit(domain=enforcer_api_client.enforcer.enforced_domain)
 
     response = enforcer_api_client.post(list_url, data=INVALID_PARKING_DATA)
 
@@ -328,3 +300,33 @@ def test_action_is_logged(enforcer_api_client):
     assert recorded_check.time == response.data["time"]
     assert recorded_check.time_overridden is False
     assert recorded_check.performer
+
+
+def test_enforcer_can_view_only_own_parking(enforcer_api_client, parking_factory, enforcer):
+    zone = create_payment_zone(domain=enforcer.enforced_domain)
+    parking = parking_factory(registration_number='ABC-123', zone=zone, domain=zone.domain)
+    parking_factory(registration_number='ABC-123')
+
+    response = enforcer_api_client.post(list_url, data=PARKING_DATA)
+
+    assert response.status_code == HTTP_200_OK
+    assert response.data["allowed"] is True
+    assert response.data["end_time"] == parking.time_end
+
+
+def test_enforcer_can_view_only_own_permit(enforcer_api_client, staff_user, enforcer):
+    create_permit_area(enforcer_api_client)
+
+    end_time = timezone.now() + datetime.timedelta(days=2)
+    create_permit(domain=enforcer.enforced_domain, end_time=end_time)
+
+    EnforcerFactory(user=staff_user)
+    domain = staff_user.enforcer.enforced_domain
+    create_permit_area(domain=domain, permitted_user=staff_user)
+    create_permit(domain=domain)
+
+    response = enforcer_api_client.post(list_url, data=PARKING_DATA)
+
+    assert response.status_code == HTTP_200_OK
+    assert response.data["allowed"] is True
+    assert response.data["end_time"] == end_time
