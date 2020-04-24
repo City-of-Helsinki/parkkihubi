@@ -27,6 +27,10 @@ class EnforcementDomain(TimestampedModelMixin):
         return cls.objects.get_or_create(
             code=code, defaults={"name": name})[0]
 
+    @classmethod
+    def get_default_domain_code(cls):
+        return settings.DEFAULT_ENFORCEMENT_DOMAIN[1]
+
 
 class Enforcer(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     name = models.CharField(verbose_name=_("name"), max_length=80)

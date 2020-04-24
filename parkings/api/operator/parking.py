@@ -1,15 +1,15 @@
 import pytz
 from django.conf import settings
-from django.core.exceptions import ObjectDoesNotExist
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import mixins, serializers, viewsets
-from rest_framework.exceptions import NotFound
 
 from parkings.models import EnforcementDomain, Parking, PaymentZone
 
 from ..common import ParkingException
 from .permissions import IsOperator
+
+DEFAULT_DOMAIN_CODE = EnforcementDomain.get_default_domain_code()
 
 
 class OperatorAPIParkingSerializer(serializers.ModelSerializer):
@@ -17,7 +17,8 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
     domain = serializers.SlugRelatedField(
         slug_field='code', queryset=EnforcementDomain.objects.all(),
         default=EnforcementDomain.get_default_domain)
-    zone = serializers.CharField(source='zone.code', allow_null=True)
+    zone = serializers.SlugRelatedField(
+        slug_field='code', queryset=PaymentZone.objects.all())
 
     class Meta:
         model = Parking
@@ -47,13 +48,16 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
         self.fields['time_end'].timezone = pytz.utc
         self.fields['zone'].required = True
 
-        self._set_required_extra_fields()
-
-    def _set_required_extra_fields(self):
         initial_data = getattr(self, 'initial_data', None)
-        if initial_data and self.initial_data.get('is_disc_parking', False):
+
+        if initial_data and initial_data.get('is_disc_parking', False):
             self.fields['location'].required = True
             self.fields['zone'].required = False
+
+        if initial_data:
+            domain = initial_data.get('domain', DEFAULT_DOMAIN_CODE)
+            self.fields['zone'].queryset = (
+                PaymentZone.objects.filter(domain__code=domain))
 
     def validate(self, data):
         if self.instance and (now() - self.instance.created_at) > settings.PARKKIHUBI_TIME_PARKINGS_EDITABLE:
@@ -100,29 +104,8 @@ class OperatorAPIParkingViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin
     queryset = Parking.objects.order_by('time_start')
     serializer_class = OperatorAPIParkingSerializer
 
-    def _get_zone(self):
-        if self.request.data.get('domain'):
-            domain = EnforcementDomain.objects.get(code=self.request.data.get('domain'))
-        else:
-            domain = EnforcementDomain.get_default_domain()
-        zone_code = self.request.data['zone']
-        try:
-            return PaymentZone.objects.get(domain=domain, code=zone_code)
-        except ObjectDoesNotExist:
-            raise NotFound(_('Zone does not exist.'))
-
     def perform_create(self, serializer):
-        if self.request.data.get('is_disc_parking') and not self.request.data.get('zone'):
-            serializer.save(operator=self.request.user.operator)
-        else:
-            zone = self._get_zone()
-            serializer.save(operator=self.request.user.operator, zone=zone)
-
-    def perform_update(self, serializer):
-        if self.request.data.get('zone'):
-            serializer.save(zone=self._get_zone())
-        else:
-            serializer.save()
+        serializer.save(operator=self.request.user.operator)
 
     def get_queryset(self):
         return super().get_queryset().filter(operator=self.request.user.operator)
