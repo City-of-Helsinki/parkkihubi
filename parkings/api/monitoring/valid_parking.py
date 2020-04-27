@@ -38,3 +38,6 @@ class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
     bbox_filter_field = 'location'
     filter_backends = [DjangoFilterBackend, WGS84InBBoxFilter]
     bbox_filter_include_overlapping = True
+
+    def get_queryset(self):
+        return super().get_queryset().filter(domain=self.request.user.monitor.domain)
