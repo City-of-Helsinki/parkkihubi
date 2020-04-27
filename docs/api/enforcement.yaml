@@ -9,7 +9,7 @@ info:
     **Note**: This is a review version of the API specification.  The
     specification contains some parts that are not yet frozen and their
     contents might change before the final non-review version.
-  version: "1.2.0.rc1.2020-04-15"  # remove above warning when releasing 1.2.0
+  version: "1.2.0.rc2.2020-04-24"  # remove above warning when releasing 1.2.0
 servers:
   - url: https://api.parkkiopas.fi/enforcement/v1/
     description: Production server
@@ -82,10 +82,12 @@ components:
         time_end:
           description: End time of the parking
           type: string
+          nullable: true
           format: date-time
         zone:
-          description: Parking zone id
-          type: integer
+          description: Payment zone code
+          oneOf: [{type: integer}, {type: string}]
+          nullable: true
         is_disc_parking:
           description: >-
             Specify whether this is a parking disc parking.
@@ -164,6 +166,8 @@ components:
         registration_number: "ABC-123"
         start_time: "2019-12-31T21:00:00Z"
         end_time: "2020-12-31T20:59:59Z"
+        operator: "63f8374e-1eed-44fa-9224-4cd0c64ddf35"
+        operator_name: "Foobar Parkings"
       properties:
         area:
           description: Code of the permit area that this item permits parking to
@@ -179,6 +183,15 @@ components:
           description: End time of the validity period of this item
           type: string
           format: date-time
+        operator:
+          description: Id of the operator
+          type: string
+          nullable: true
+          format: uuid
+        operator_name:
+          description: Name of the operator
+          type: string
+          nullable: true
     PermitSubjects:
       description: >-
         List of subjects of a permit with validity time ranges.  Each
