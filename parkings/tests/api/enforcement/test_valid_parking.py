@@ -263,6 +263,8 @@ def test_endpoint_returns_parkings_with_same_zone_code_in_correct_domain(
     domain = staff_user.enforcer.enforced_domain
     zone_2 = create_payment_zone(code='Z', domain=domain)
 
+    assert zone_1.domain.code != zone_2.domain.code
+
     parking_1 = parking_factory(registration_number="ABC-123", operator=operator, zone=zone_1)
     parking_1.domain = zone_1.domain
     parking_1.save()
@@ -275,8 +277,10 @@ def test_endpoint_returns_parkings_with_same_zone_code_in_correct_domain(
     assert len(data_1['results']) == 1
     parking_data_1 = data_1['results'][0]
     assert parking_data_1['id'] == str(parking_1.id)
+    assert parking_data_1['zone'] == 'Z'
 
     data_2 = get(staff_api_client, get_url('list_by_reg_num', parking_2))
     assert len(data_2['results']) == 1
     parking_data_2 = data_2['results'][0]
     assert parking_data_2['id'] == str(parking_2.id)
+    assert parking_data_2['zone'] == 'Z'
