@@ -61,4 +61,9 @@ class Migration(migrations.Migration):
             name='permitted_user',
             field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL, verbose_name='permitted_user'),
         ),
+        migrations.AlterField(
+            model_name='permitlookupitem',
+            name='area_identifier',
+            field=models.CharField(max_length=10, null=True, blank=True),
+        ),
     ]

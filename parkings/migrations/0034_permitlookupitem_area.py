@@ -12,6 +12,14 @@ def _fill_area_fks(apps, schema_editor):
         items.update(area=permit_area)
 
 
+def _fill_area_identifiers(apps, schema_editor):
+    permit_area_model = apps.get_model('parkings', 'PermitArea')
+    permit_lookup_item = apps.get_model('parkings', 'PermitLookupItem')
+    for permit_area in permit_area_model.objects.all():
+        items = permit_lookup_item.objects.filter(area=permit_area)
+        items.update(area_identifier=permit_area.identifier)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -29,6 +37,7 @@ class Migration(migrations.Migration):
             model_name='permitlookupitem',
             name='parkings_pe_registr_84b475_idx',
         ),
+        migrations.RunPython(migrations.RunPython.noop, _fill_area_identifiers),
         migrations.RemoveField(
             model_name='permitlookupitem',
             name='area_identifier',
