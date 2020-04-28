@@ -4,7 +4,7 @@ from ...models import Region
 from ...pagination import Pagination
 from ..common import WGS84InBBoxFilter
 from ..utils import parse_timestamp_or_now
-from .permissions import MonitoringApiPermission
+from .permissions import IsMonitor
 
 
 class RegionStatisticsSerializer(serializers.ModelSerializer):
@@ -19,7 +19,7 @@ class RegionStatisticsSerializer(serializers.ModelSerializer):
 
 
 class RegionStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [MonitoringApiPermission]
+    permission_classes = [IsMonitor]
     queryset = Region.objects.all()
     serializer_class = RegionStatisticsSerializer
     pagination_class = Pagination

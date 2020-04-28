@@ -1,5 +1,4 @@
 import pytest
-from django.contrib.auth.models import Group
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.status import (
@@ -118,8 +117,6 @@ def test_monitor_can_view_only_parkings_from_their_domain(
         monitoring_api_client, staff_api_client, staff_user, parking_factory, monitor_factory
 ):
     monitor_factory(user=staff_user)
-    monitoring_group = Group.objects.get(name='monitoring')
-    monitoring_group.user_set.add(staff_user)
 
     parking_1 = parking_factory(domain=monitoring_api_client.monitor.domain)
     parking_2 = parking_factory(domain=staff_user.monitor.domain)
