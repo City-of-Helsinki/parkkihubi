@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('parkings', '0028_digital_disc_changes'),
+        ('parkings', '0030_alter_permit_area_id'),
     ]
 
     operations = [

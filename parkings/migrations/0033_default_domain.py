@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parkings', '0030_domain_data'),
+        ('parkings', '0032_domain_data'),
     ]
 
     operations = [

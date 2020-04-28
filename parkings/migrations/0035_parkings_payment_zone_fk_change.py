@@ -20,7 +20,7 @@ def _generate_missing_payment_zone(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parkings', '0034_alter_payment_zone_id'),
+        ('parkings', '0034_permitlookupitem_area'),
     ]
 
     operations = [

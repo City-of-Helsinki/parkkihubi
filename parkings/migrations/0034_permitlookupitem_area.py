@@ -15,7 +15,7 @@ def _fill_area_fks(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parkings', '0032_alter_permit_area_id'),
+        ('parkings', '0033_default_domain'),
     ]
 
     operations = [
