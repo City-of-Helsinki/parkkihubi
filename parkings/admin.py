@@ -51,7 +51,8 @@ class ParkingAdmin(OSMGeoAdmin):
 
 @admin.register(Region)
 class RegionAdmin(WithAreaField, OSMGeoAdmin):
-    list_display = ['id', 'name', 'capacity_estimate', 'area']
+    list_display = ['id', 'domain', 'name', 'capacity_estimate', 'area']
+    list_filter = ['domain']
     ordering = ('name',)
 
 

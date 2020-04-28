@@ -34,4 +34,4 @@ class RegionStatisticsViewSet(viewsets.ReadOnlyModelViewSet):
             .with_parking_count(time)
             .values('id', 'parking_count')
             .order_by('id')
-            .filter(parking_count__gt=0))
+            .filter(parking_count__gt=0, domain=self.request.user.monitor.domain))

@@ -119,7 +119,7 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     def get_region(self):
         if not self.location:
             return None
-        return Region.objects.filter(geom__intersects=self.location).first()
+        return Region.objects.filter(geom__intersects=self.location, domain=self.domain).first()
 
     def get_closest_area(self, max_distance=50):
         if self.location:
