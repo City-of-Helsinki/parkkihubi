@@ -4,10 +4,10 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 from .constants import GK25FIN_SRID
-from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
+from .mixins import TimestampedModelMixin
 
 
-class PaymentZone(TimestampedModelMixin, UUIDPrimaryKeyMixin):
+class PaymentZone(TimestampedModelMixin):
     number = models.IntegerField(
         unique=True, validators=[MinValueValidator(1), MaxValueValidator(3)],
         verbose_name=_('zone number'))

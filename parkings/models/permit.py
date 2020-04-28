@@ -9,11 +9,11 @@ from django.utils.translation import gettext_lazy as _
 from ..fields import CleaningJsonField
 from ..validators import DictListValidator, TextField, TimestampField
 from .constants import GK25FIN_SRID
-from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
+from .mixins import TimestampedModelMixin
 from .parking import Parking
 
 
-class PermitArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
+class PermitArea(TimestampedModelMixin):
     name = models.CharField(max_length=40, verbose_name=_('name'))
     identifier = models.CharField(
         max_length=10, unique=True, verbose_name=_('identifier'))
