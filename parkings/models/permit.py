@@ -9,18 +9,24 @@ from django.utils.translation import gettext_lazy as _
 from ..fields import CleaningJsonField
 from ..validators import DictListValidator, TextField, TimestampField
 from .constants import GK25FIN_SRID
+from .enforcement_domain import EnforcementDomain
 from .mixins import TimestampedModelMixin
 from .parking import Parking
 
 
 class PermitArea(TimestampedModelMixin):
     name = models.CharField(max_length=40, verbose_name=_('name'))
-    identifier = models.CharField(
-        max_length=10, unique=True, verbose_name=_('identifier'))
+    domain = models.ForeignKey(
+        EnforcementDomain, on_delete=models.PROTECT,
+        related_name='permit_areas')
+    identifier = models.CharField(max_length=10, verbose_name=_('identifier'))
     geom = gis_models.MultiPolygonField(
         srid=GK25FIN_SRID, verbose_name=_('geometry'))
+    permitted_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name=_("permitted_user"))
 
     class Meta:
+        unique_together = [('domain', 'identifier')]
         ordering = ('identifier',)
 
     def __str__(self):
@@ -34,20 +40,28 @@ class PermitSeriesQuerySet(models.QuerySet):
     def latest_active(self):
         return self.active().order_by('-modified_at').first()
 
-    def prunable(self):
-        limit = timezone.now() - settings.PARKKIHUBI_PERMITS_PRUNABLE_AFTER
+    def prunable(self, time_limit=None):
+        limit = time_limit or (
+            timezone.now() - settings.PARKKIHUBI_PERMITS_PRUNABLE_AFTER)
         return self.filter(created_at__lt=limit, active=False)
 
 
 class PermitSeries(TimestampedModelMixin, models.Model):
     active = models.BooleanField(default=False)
-
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name=_("owner"))
     objects = PermitSeriesQuerySet.as_manager()
 
     class Meta:
         ordering = ('created_at', 'id')
         verbose_name = _("permit series")
         verbose_name_plural = _("permit series")
+
+    @classmethod
+    def delete_prunable_series(cls, time_limit=None):
+        prunable = cls.objects.prunable(time_limit)
+        Permit.objects.filter(series__in=prunable).delete()
+        prunable.delete()
 
     def __str__(self):
         return str(self.id)
@@ -65,8 +79,8 @@ class PermitQuerySet(models.QuerySet):
         lookup_items = PermitLookupItem.objects.by_subject(registration_number)
         return self.filter(lookup_items__in=lookup_items).distinct()
 
-    def by_area(self, area_identifier):
-        lookup_items = PermitLookupItem.objects.by_area(area_identifier)
+    def by_area(self, area):
+        lookup_items = PermitLookupItem.objects.by_area(area)
         return self.filter(lookup_items__in=lookup_items).distinct()
 
     def bulk_create(self, permits, *args, **kwargs):
@@ -82,6 +96,9 @@ class PermitQuerySet(models.QuerySet):
 
 
 class Permit(TimestampedModelMixin, models.Model):
+    domain = models.ForeignKey(
+        EnforcementDomain, on_delete=models.PROTECT,
+        related_name='permits')
     series = models.ForeignKey(PermitSeries, on_delete=models.PROTECT)
     external_id = models.CharField(max_length=50, null=True, blank=True)
     subjects = CleaningJsonField(blank=True, validators=[DictListValidator({
@@ -132,7 +149,7 @@ class Permit(TimestampedModelMixin, models.Model):
                     permit=self,
                     registration_number=Parking.normalize_reg_num(
                         subject['registration_number']),
-                    area_identifier=area['area'],
+                    area=PermitArea.objects.get(identifier=area['area'], domain=self.domain),
                     start_time=max_start_time,
                     end_time=min_end_time
                 )
@@ -149,15 +166,15 @@ class PermitLookupItemQuerySet(models.QuerySet):
         normalized_reg_num = Parking.normalize_reg_num(registration_number)
         return self.filter(registration_number=normalized_reg_num)
 
-    def by_area(self, area_identifier):
-        return self.filter(area_identifier=area_identifier)
+    def by_area(self, area):
+        return self.filter(area=area)
 
 
 class PermitLookupItem(models.Model):
     permit = models.ForeignKey(
         Permit, related_name="lookup_items", on_delete=models.CASCADE)
     registration_number = models.CharField(max_length=20)
-    area_identifier = models.CharField(max_length=10)
+    area = models.ForeignKey(PermitArea, on_delete=models.PROTECT, default=None, null=True, blank=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
 
@@ -167,15 +184,15 @@ class PermitLookupItem(models.Model):
         indexes = [
             models.Index(fields=[
                 'registration_number', 'start_time', 'end_time',
-                'area_identifier', 'permit']),
+                'area', 'permit']),
         ]
         ordering = ('registration_number', 'start_time', 'end_time')
 
     def __str__(self):
         return (
             '{start_time:%Y-%m-%d %H:%M} -- {end_time:%Y-%m-%d %H:%M} / '
-            '{registration_number} / {area_identifier}'
+            '{registration_number} / {area}'
         ).format(
             start_time=self.start_time, end_time=self.end_time,
             registration_number=self.registration_number,
-            area_identifier=self.area_identifier)
+            area=self.area.identifier)

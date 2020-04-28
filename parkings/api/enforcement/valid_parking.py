@@ -4,13 +4,21 @@ import django_filters
 from django.conf import settings
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from rest_framework import permissions, serializers, viewsets
+from rest_framework import serializers, viewsets
 
 from ...models import Parking
+from .permissions import IsEnforcer
+
+
+class CharOrIntegerField(serializers.CharField):
+    def to_representation(self, value):
+        str_value = super().to_representation(value)
+        return int(str_value) if str_value.isdigit() else str_value
 
 
 class ValidParkingSerializer(serializers.ModelSerializer):
     operator_name = serializers.CharField(source='operator.name')
+    zone = CharOrIntegerField(source='zone.code')
 
     class Meta:
         model = Parking
@@ -43,7 +51,7 @@ class ValidParkingSerializer(serializers.ModelSerializer):
 
 class ValidParkingFilter(django_filters.rest_framework.FilterSet):
     reg_num = django_filters.CharFilter(
-        label=_("Registration number"), method='filter_reg_num', required=True)
+        label=_("Registration number"), method='filter_reg_num')
     time = django_filters.IsoDateTimeFilter(
         label=_("Time"), method='filter_time')
 
@@ -61,6 +69,12 @@ class ValidParkingFilter(django_filters.rest_framework.FilterSet):
             data = data.copy()
             data.setdefault('time', timezone.now())
         super().__init__(data, *args, **kwargs)
+
+    def is_valid(self):
+        super(ValidParkingFilter, self).is_valid()
+        if not self.request.query_params.get("reg_num") and not self.request.query_params.get("time"):
+            raise serializers.ValidationError(_("Either time or registration number required."))
+        return True
 
     def filter_reg_num(self, queryset, name, value):
         """
@@ -86,7 +100,7 @@ class ValidParkingFilter(django_filters.rest_framework.FilterSet):
 
 
 class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsEnforcer]
     queryset = Parking.objects.order_by('-time_end')
     serializer_class = ValidParkingSerializer
     filterset_class = ValidParkingFilter
@@ -135,6 +149,9 @@ class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
     def _get_filterset(self, queryset):
         filter_backend = self.filter_backends[0]()
         return filter_backend.get_filterset(self.request, queryset, self)
+
+    def get_queryset(self):
+        return super().get_queryset().filter(domain=self.request.user.enforcer.enforced_domain)
 
 
 def get_grace_duration(default=datetime.timedelta(minutes=15)):

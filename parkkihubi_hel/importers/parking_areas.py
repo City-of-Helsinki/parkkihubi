@@ -3,7 +3,7 @@ import time
 
 from django.db import transaction
 
-from parkings.models import ParkingArea
+from parkings.models import EnforcementDomain, ParkingArea
 
 from .wfs_importer import WfsImporter
 
@@ -80,6 +80,7 @@ class ParkingAreaImporter(WfsImporter):
 
     def _create_parking_area(self, area_dict):
         parking_area = ParkingArea(
+            domain=EnforcementDomain.get_default_domain(),
             origin_id=area_dict['origin_id'],
             geom=area_dict['geom'],
             capacity_estimate=area_dict['capacity_estimate'],

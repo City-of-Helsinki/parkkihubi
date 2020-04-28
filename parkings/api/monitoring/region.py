@@ -4,7 +4,7 @@ from rest_framework import serializers, viewsets
 
 from ...models import ParkingArea, Region
 from ..common import WGS84InBBoxFilter
-from .permissions import MonitoringApiPermission
+from .permissions import IsMonitor
 
 WGS84_SRID = 4326
 
@@ -45,10 +45,13 @@ class RegionSerializer(gis_serializers.GeoFeatureModelSerializer):
 
 
 class RegionViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [MonitoringApiPermission]
+    permission_classes = [IsMonitor]
     queryset = Region.objects.all().order_by('id')
     serializer_class = RegionSerializer
     pagination_class = gis_pagination.GeoJsonPagination
     bbox_filter_field = 'geom'
     filter_backends = [WGS84InBBoxFilter]
     bbox_filter_include_overlapping = True
+
+    def get_queryset(self):
+        return super().get_queryset().filter(domain=self.request.user.monitor.domain)

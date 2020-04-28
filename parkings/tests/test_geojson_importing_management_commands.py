@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from django.contrib.auth import get_user_model
 from django.core.management import call_command
 
 from parkings.models import PaymentZone, PermitArea
@@ -22,6 +23,7 @@ def test_import_payment_zones():
 
 @pytest.mark.django_db
 def test_permit_area_importer():
-    call_command(import_geojson_permit_areas.Command(), permit_areas)
+    test_user = get_user_model().objects.create(username='TEST_USER', is_staff=True)
+    call_command(import_geojson_permit_areas.Command(), permit_areas, test_user.username)
 
     assert PermitArea.objects.count() == 1

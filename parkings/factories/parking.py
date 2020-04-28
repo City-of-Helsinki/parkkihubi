@@ -4,7 +4,8 @@ import factory
 import pytz
 from django.contrib.gis.geos import Point
 
-from parkings.models import Parking
+from parkings.factories import EnforcementDomainFactory
+from parkings.models import Parking, PaymentZone
 
 from .faker import fake
 from .operator import OperatorFactory
@@ -18,6 +19,17 @@ def generate_registration_number():
     return '%s-%s' % (letters, numbers)
 
 
+def create_payment_zone(**kwargs):
+    from parkings.tests.api.enforcement.test_check_parking import create_area_geom
+    kwargs.setdefault('domain', EnforcementDomainFactory())
+    kwargs.setdefault('number', 1)
+    kwargs.setdefault('code', "1")
+    kwargs.setdefault('name', "Maksuvyöhyke 1")
+    kwargs.setdefault('geom', create_area_geom())
+    zone = PaymentZone.objects.create(**kwargs)
+    return zone
+
+
 class ParkingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Parking
@@ -29,7 +41,7 @@ class ParkingFactory(factory.django.DjangoModelFactory):
     registration_number = factory.LazyFunction(generate_registration_number)
     time_start = factory.LazyFunction(lambda: fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc))
     time_end = factory.LazyFunction(lambda: fake.date_time_between(start_date='+1h', end_date='+2h', tzinfo=pytz.utc))
-    zone = factory.LazyFunction(lambda: fake.random.randint(1, 3))
+    zone = factory.LazyFunction(create_payment_zone)
 
 
 class DiscParkingFactory(ParkingFactory):

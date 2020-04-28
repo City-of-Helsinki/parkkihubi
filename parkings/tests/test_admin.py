@@ -5,7 +5,7 @@ from django.test.client import Client
 from django.urls import reverse
 from rest_framework.status import HTTP_200_OK
 
-from ..factories import PermitFactory
+from ..factories.permit import create_permit
 from ..models import ParkingCheck
 
 
@@ -53,7 +53,7 @@ class TestParkingCheckAdmin(ObjAdminTestCase):
 
 class TestPermitLookupItemAdmin(ObjAdminTestCase):
     def create_object(self):
-        permit = PermitFactory()
+        permit = create_permit()
         return permit.lookup_items.first()
 
     def test_is_readonly(self):

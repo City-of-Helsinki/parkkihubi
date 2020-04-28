@@ -1,6 +1,7 @@
-from rest_framework import permissions, serializers, viewsets
+from rest_framework import serializers, viewsets
 
 from ...models import Operator
+from .permissions import IsEnforcer
 
 
 class OperatorSerializer(serializers.ModelSerializer):
@@ -15,6 +16,6 @@ class OperatorSerializer(serializers.ModelSerializer):
 
 
 class OperatorViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [IsEnforcer]
     queryset = Operator.objects.order_by('name')
     serializer_class = OperatorSerializer

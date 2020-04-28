@@ -4,50 +4,109 @@ from rest_framework.status import (
     HTTP_200_OK, HTTP_201_CREATED, HTTP_400_BAD_REQUEST, HTTP_403_FORBIDDEN)
 
 from ....factories.permit import (
-    generate_areas, generate_external_ids, generate_subjects)
-from ....models import Permit, PermitLookupItem
+    create_permit_area, create_permit_series, create_permits, generate_areas,
+    generate_external_ids, generate_subjects)
+from ....models import (
+    EnforcementDomain, Permit, PermitLookupItem, PermitSeries)
 
 list_url = reverse('enforcement:v1:permit-list')
 
 
+def generate_areas_data(client):
+    return generate_areas(
+        domain=client.enforcer.enforced_domain,
+        permitted_user=client.auth_user)
+
+
+@pytest.mark.parametrize(
+    'user_api',
+    ['anonymous_user', 'operator', 'staff']
+)
 @pytest.mark.django_db
-def test_unauthorized_user_cannot_create_permit(user_api_client, permit_series):
+def test_unauthorized_user_cannot_create_permit(
+    user_api_client, operator_api_client, staff_api_client, user_api
+):
+    if user_api == 'anonymous_user':
+        client = user_api_client
+    elif user_api == 'operator':
+        client = operator_api_client
+    else:
+        client = staff_api_client
     permit_data = {
-        'series': permit_series.id,
+        'series': create_permit_series(owner=client.auth_user).id,
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
         'areas': generate_areas(),
     }
 
-    response = user_api_client.post(list_url, data=permit_data)
+    response = client.post(list_url, data=permit_data)
 
     assert response.status_code == HTTP_403_FORBIDDEN
 
 
 @pytest.mark.django_db
-def test_permit_is_created_with_valid_post_data(staff_api_client, permit_series):
+def test_permit_is_created_with_valid_post_data(enforcer_api_client):
     permit_data = {
-        'series': permit_series.id,
+        'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(),
+        'areas': generate_areas_data(enforcer_api_client),
     }
 
-    response = staff_api_client.post(list_url, data=permit_data)
+    response = enforcer_api_client.post(list_url, data=permit_data)
 
     assert response.status_code == HTTP_201_CREATED
 
 
-@pytest.mark.django_db
-def test_permit_is_created_with_empty_lists(staff_api_client, permit_series):
+def test_cannot_override_domain(enforcer_api_client):
+    domain = EnforcementDomain.objects.get_or_create(
+        code='FOODOMAIN', defaults={'name': 'Foo'})[0]
     permit_data = {
-        'series': permit_series.id,
+        'domain': 'FOODOMAIN',
+        'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
+        'external_id': generate_external_ids(),
+        'subjects': generate_subjects(),
+        'areas': generate_areas(domain=domain),
+    }
+
+    response = enforcer_api_client.post(list_url, data=permit_data)
+
+    assert response.json() == {'domain': ['Not allowed']}
+    assert response.status_code == HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
+def test_permit_is_not_created_to_non_owned_series(enforcer_api_client):
+    series = create_permit_series()
+    assert series.owner != enforcer_api_client.auth_user
+    permit_data = {
+        'series': series.id,
+        'external_id': generate_external_ids(),
+        'subjects': generate_subjects(),
+        'areas': generate_areas_data(enforcer_api_client),
+    }
+
+    response = enforcer_api_client.post(list_url, data=permit_data)
+
+    assert response.json() == {
+        'series': [
+            'Invalid pk "{}" - object does not exist.'.format(series.pk)
+        ],
+    }
+    assert response.status_code == HTTP_400_BAD_REQUEST
+    assert Permit.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_permit_is_created_with_empty_lists(enforcer_api_client):
+    permit_data = {
+        'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': "E-123",
         'subjects': [],
         'areas': [],
     }
 
-    response = staff_api_client.post(list_url, data=permit_data)
+    response = enforcer_api_client.post(list_url, data=permit_data)
 
     assert response.status_code == HTTP_201_CREATED
 
@@ -93,20 +152,20 @@ INVALID_DATA_TEST_CASES = {
 @pytest.mark.parametrize('test_case', INVALID_DATA_TEST_CASES.keys())
 @pytest.mark.django_db
 def test_permit_is_not_created_with_invalid_post_data(
-        staff_api_client, kind, permit_series, test_case):
+        enforcer_api_client, kind, test_case):
     (subjects, error) = INVALID_DATA_TEST_CASES[test_case]
     invalid_permit_data = {
-        'series': permit_series.id,
+        'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': 'EXT-1',
         'subjects': subjects,
-        'areas': generate_areas()
+        'areas': generate_areas_data(enforcer_api_client),
     }
 
     if kind == 'single':
-        response = staff_api_client.post(list_url, data=invalid_permit_data)
+        response = enforcer_api_client.post(list_url, data=invalid_permit_data)
         data = response.data
     else:
-        response = staff_api_client.post(list_url, data=[invalid_permit_data])
+        response = enforcer_api_client.post(list_url, data=[invalid_permit_data])
         data = response.data[0]
 
     assert response.status_code == HTTP_400_BAD_REQUEST
@@ -123,11 +182,15 @@ def test_permit_is_not_created_with_invalid_post_data(
 ])
 @pytest.mark.django_db
 def test_permit_creation_normalizes_timestamps(
-        staff_api_client, permit_series,
+        enforcer_api_client,
         kind,
         input_timestamp, normalized_timestamp):
+    domain = enforcer_api_client.enforcer.enforced_domain
+    user = enforcer_api_client.auth_user
+    area_identifier = 'area name'
+    create_permit_area(area_identifier, domain=domain, permitted_user=user)
     permit_data = {
-        'series': permit_series.id,
+        'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': 'E123',
         'subjects': [{
             'start_time': '1970-01-01T00:00:00+00:00',
@@ -137,15 +200,15 @@ def test_permit_creation_normalizes_timestamps(
         'areas': [{
             'start_time': '1970-01-01T00:00:00+00:00',
             'end_time': input_timestamp,
-            'area': 'area name',
+            'area': area_identifier,
         }],
     }
 
     if kind == 'single':
-        response = staff_api_client.post(list_url, data=permit_data)
+        response = enforcer_api_client.post(list_url, data=permit_data)
         data = response.data
     else:
-        response = staff_api_client.post(list_url, data=[permit_data])
+        response = enforcer_api_client.post(list_url, data=[permit_data])
         data = response.data[0]
 
     assert response.status_code == HTTP_201_CREATED
@@ -154,22 +217,24 @@ def test_permit_creation_normalizes_timestamps(
 
 
 @pytest.mark.django_db
-def test_lookup_item_is_created_for_permit(staff_api_client, permit_series):
+def test_lookup_item_is_created_for_permit(enforcer_api_client):
     permit_data = {
-        'series': permit_series.id,
+        'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(),
+        'areas': generate_areas_data(enforcer_api_client),
     }
     assert PermitLookupItem.objects.count() == 0
-    response = staff_api_client.post(list_url, data=permit_data)
+    response = enforcer_api_client.post(list_url, data=permit_data)
 
     assert response.status_code == HTTP_201_CREATED
     assert PermitLookupItem.objects.count() == 1
 
 
-def test_api_endpoint_returns_correct_data(staff_api_client, permit):
-    response = staff_api_client.get(list_url)
+def test_api_endpoint_returns_correct_data(enforcer_api_client, enforcer):
+    create_permits(owner=enforcer.user, count=1)[0]
+
+    response = enforcer_api_client.get(list_url)
 
     assert response.status_code == HTTP_200_OK
     check_permit_object_keys(response.data['results'][0])
@@ -189,10 +254,11 @@ def check_permit_areas_keys(data):
     assert set(data.keys()) == {'start_time', 'end_time', 'area'}
 
 
-def test_permit_data_matches_permit_object(staff_api_client, permit):
+def test_permit_data_matches_permit_object(enforcer_api_client, enforcer):
+    permit = create_permits(owner=enforcer.user, count=1)[0]
     permit_detail_url = '{}{}/'.format(list_url, permit.id)
 
-    response = staff_api_client.get(permit_detail_url)
+    response = enforcer_api_client.get(permit_detail_url)
 
     assert response.status_code == HTTP_200_OK
     assert response.data['id'] == permit.id
@@ -204,35 +270,41 @@ def test_permit_data_matches_permit_object(staff_api_client, permit):
     check_permit_areas_keys(response.data['areas'][0])
 
 
-def test_permit_bulk_create_creates_lookup_items(
-        staff_api_client, permit_series):
+def test_permit_bulk_create_creates_lookup_items(enforcer_api_client):
+    permit_series = create_permit_series(owner=enforcer_api_client.auth_user)
+    domain = enforcer_api_client.enforcer.enforced_domain
+    user = enforcer_api_client.auth_user
     permit_data = [
         {
             "series": permit_series.id,
             "external_id": "E1",
             "subjects": generate_subjects(),
-            "areas": generate_areas(),
+            "areas": generate_areas(domain=domain, permitted_user=user),
         },
         {
             "series": permit_series.id,
             "external_id": "E2",
             "subjects": generate_subjects(),
-            "areas": generate_areas(),
+            "areas": generate_areas(domain=domain, permitted_user=user),
         },
     ]
 
     assert PermitLookupItem.objects.count() == 0
-    response = staff_api_client.post(list_url, data=permit_data)
+    response = enforcer_api_client.post(list_url, data=permit_data)
 
     assert response.status_code == HTTP_201_CREATED
     assert PermitLookupItem.objects.count() == 2
 
 
-def test_permit_bulk_create_normalizes_timestamps(
-        staff_api_client, permit_series):
+def test_permit_bulk_create_normalizes_timestamps(enforcer_api_client):
+    user = enforcer_api_client.auth_user
+    domain = enforcer_api_client.enforcer.enforced_domain
+    permit = create_permits(owner=user, domain=domain, count=1)[0]
+    area_code1 = permit.areas[0]['area']
+    area_code2 = permit.areas[1]['area']
     permit_data = [
         {
-            "series": permit_series.id,
+            "series": permit.series.id,
             "external_id": "E1",
             'subjects': [{
                 'start_time': '1970-01-01T01:23:00+01:23',
@@ -242,11 +314,11 @@ def test_permit_bulk_create_normalizes_timestamps(
             'areas': [{
                 'start_time': '1970-01-01T00:00:00Z',
                 'end_time': '2030-06-30T11:00+02:00',
-                'area': 'AREA 51',
+                'area': area_code1,
             }],
         },
         {
-            "series": permit_series.id,
+            "series": permit.series.id,
             "external_id": "E2",
             'subjects': [{
                 'start_time': '1969-12-31T22:00:00-02:00',
@@ -256,15 +328,16 @@ def test_permit_bulk_create_normalizes_timestamps(
             'areas': [{
                 'start_time': '1970-01-01T00:00:00+00:00',
                 'end_time': '2030-06-30T09:00Z',
-                'area': 'AREA 52',
+                'area': area_code2,
             }],
         },
     ]
 
-    response = staff_api_client.post(list_url, data=permit_data)
+    response = enforcer_api_client.post(list_url, data=permit_data)
 
     assert response.status_code == HTTP_201_CREATED
-    (permit1, permit2) = list(Permit.objects.order_by('external_id'))
+    created_permits = Permit.objects.filter(external_id__in=['E1', 'E2'])
+    (permit1, permit2) = list(created_permits.order_by('external_id'))
     assert permit1.subjects[0]['start_time'] == '1970-01-01T00:00:00+00:00'
     assert permit1.subjects[0]['end_time'] == '2030-06-30T09:00:00+00:00'
     assert permit1.areas[0]['start_time'] == '1970-01-01T00:00:00+00:00'
@@ -273,3 +346,41 @@ def test_permit_bulk_create_normalizes_timestamps(
     assert permit2.subjects[0]['end_time'] == '2030-06-30T09:00:00+00:00'
     assert permit2.areas[0]['start_time'] == '1970-01-01T00:00:00+00:00'
     assert permit2.areas[0]['end_time'] == '2030-06-30T09:00:00+00:00'
+
+
+def test_permitseries_created_by_user_gets_the_user_as_owner(enforcer_api_client, enforcer):
+    url = reverse('enforcement:v1:permitseries-list')
+
+    response = enforcer_api_client.post(url, data={})
+
+    assert response.status_code == HTTP_201_CREATED
+    assert PermitSeries.objects.count() == 1
+    assert PermitSeries.objects.first().owner == enforcer.user
+
+
+def test_permit_visibility_is_limited_to_owner(
+    enforcer_api_client, enforcer, operator,
+):
+    enforcer_owned_permit = create_permits(owner=enforcer.user, count=1)[0]
+    create_permits(owner=operator.user, count=1)
+
+    response = enforcer_api_client.get(list_url)
+
+    assert response.status_code == HTTP_200_OK
+    assert response.json()['count'] == 1
+    assert response.json()['results'][0]['id'] == enforcer_owned_permit.id
+
+
+def test_permit_series_visibility_is_limited_to_owner(
+    enforcer_api_client, enforcer, operator
+):
+    url = reverse('enforcement:v1:permitseries-list')
+    enforcer_owned_permitseries = create_permit_series(owner=enforcer.user)
+    create_permit_series(owner=operator.user)
+
+    response = enforcer_api_client.get(url)
+
+    assert response.status_code == HTTP_200_OK
+    assert response.json()['count'] == 1
+    assert PermitSeries.objects.count() == 2
+    assert response.json()['results'][0]['id'] == enforcer_owned_permitseries.id

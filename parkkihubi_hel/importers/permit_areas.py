@@ -1,8 +1,9 @@
 import logging
 
+from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from parkings.models import PermitArea
+from parkings.models import EnforcementDomain, PermitArea
 
 from .wfs_importer import WfsImporter
 
@@ -15,19 +16,21 @@ class PermitAreaImporter(WfsImporter):
     """
     wfs_typename = 'Asukas_ja_yrityspysakointivyohykkeet_alue'
 
-    def import_permit_areas(self):
+    def import_permit_areas(self, permitted_user):
         permit_area_dicts = self.download_and_parse()
-        count = self._save_permit_areas(permit_area_dicts)
+        count = self._save_permit_areas(permit_area_dicts, permitted_user)
         logger.info('Created or updated {} permit areas'.format(count))
 
     @transaction.atomic
-    def _save_permit_areas(self, permit_areas_dict):
+    def _save_permit_areas(self, permit_areas_dict, permitted_user):
         logger.info('Saving permit areas.')
         count = 0
         permit_area_ids = []
         for area_dict in permit_areas_dict:
             permit_area, _ = PermitArea.objects.update_or_create(
+                domain=EnforcementDomain.get_default_domain(),
                 identifier=area_dict['identifier'],
+                permitted_user=get_user_model().objects.filter(username=permitted_user).get(),
                 defaults=area_dict)
             permit_area_ids.append(permit_area.pk)
             count += 1

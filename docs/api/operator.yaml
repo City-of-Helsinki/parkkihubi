@@ -4,10 +4,12 @@ info:
   description: >-
     Parkkihubi Operator REST API Documentation
 
-    Authentication: Every request must have header:
+    # Warning about review version
 
-        Authorization: ApiKey <your api key>
-  version: "1.1.0"
+    **Note**: This is a review version of the API specification.  The
+    specification contains some parts that are not yet frozen and their
+    contents might change before the final non-review version.
+  version: "1.2.0.rc2.2020-04-24"
 servers:
   - url: https://api.parkkiopas.fi/operator/v1/
     description: Production server
@@ -16,13 +18,456 @@ servers:
   - url: http://localhost:8000/operator/v1/
     description: Local development server
 tags:
+  - name: Enforcement Domains
+    description: >-
+      Endpoint for listing the available enforcement domains
+  - name: Payment Zones
+    description: >-
+      Endpoint for listing the available payment zones
+  - name: Permit Areas
+    description: >-
+      Endpoint for listing the available permit areas
   - name: Parkings
     description: >-
       Endpoints for creating and updating parkings
   - name: Parking Information Queries
     description: >-
       Endpoint for performing parking spot information queries
+  - name: Permit Series
+    description: >-
+      Creating, listing and activating permit series
+  - name: Permits
+    description: >-
+      Parking permit management
+  - name: Active Permits by External Id
+    description: >-
+      Managing parking permits in the currently active series by the
+      external identifiers of the permits
+components:
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      name: Authorization
+      in: header
+      description: |-
+        Requests must have value `ApiKey <your_api_key>` in the
+        `Authorization` header, i.e. the HTTP header should look like:
+
+            Authorization: ApiKey <your_api_key>
+  schemas:
+    EnforcementDomain:
+      type: object
+      example:
+        code: "HKI"
+        name: "Helsingin kaupunki"
+      properties:
+        code:
+          description: Code of the enforcement domain
+          type: string
+          maxLength: 10
+        name:
+          description: Name of the enforcement domain
+          type: string
+      required:
+        - code
+        - name
+    Parking:
+      type: object
+      example:
+        id: 70fb01a8-a17f-4b14-9b99-0060c748411c
+        status: valid
+        created_at: "2016-12-10T20:34:38Z"
+        modified_at: "2016-12-11T21:34:22Z"
+        location:
+          type: Point
+          coordinates: [24.938466, 60.170014]
+        registration_number: LOL-007
+        time_start: "2016-12-24T21:00:00Z"
+        time_end: "2016-12-24T22:00:00Z"
+        domain: "HKI"
+        zone: "2"
+      properties:
+        id:
+          description: Unique identifier for the parking
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          description: Status of the parking
+          type: string
+          enum: [valid, not_valid]
+          readOnly: true
+        created_at:
+          description: Creation time for the parking
+          type: string
+          format: dateTime
+          readOnly: true
+        modified_at:
+          description: Modification time for the parking
+          type: string
+          format: dateTime
+          readOnly: true
+        location: &parkingLocation
+          $ref: '#/components/schemas/Location'
+        terminal_number: &parkingTerminalNumber
+          description: >-
+            Payment terminal number, if the parking was bought
+            from a payment terminal.
+          type: string
+          default: ''
+        registration_number: &parkingRegistrationNumber
+          description: Registration number of the parked vehicle
+          type: string
+        time_start: &parkingTimeStart
+          description: Start time for the parking
+          type: string
+          format: dateTime
+        time_end: &parkingTimeEnd
+          description: End time for the parking
+          type: string
+          nullable: true
+          format: dateTime
+        domain: &parkingDomain
+          description: >-
+            Code of the enforcement domain that is allowed
+            to see the parking.
+          type: string
+        zone: &parkingZone
+          description: Payment zone code
+          oneOf: [{type: integer}, {type: string}]
+          nullable: true
+          maxLength: 10
+        is_disc_parking: &parkingIsDiscParking
+          description: >-
+            Specify whether this is a parking disc parking.
+
+            Note: For compatibility reasons this field is present in the
+            result only for parking disc parkings, i.e. when the value
+            is true.
+          type: boolean
+      required:
+        - registration_number
+        - time_start
+        - domain
+        - zone
+    Location:
+      description: Location in GeoJSON format
+      type: object
+      example:
+        type: Point
+        coordinates: [24.938466, 60.170014]
+      properties:
+        type:
+          description: Geometry type
+          type: string
+          enum: [Point]
+        coordinates:
+          description: >-
+            An array of coordinates describing the location geometry.
+            The items are WGS84 longitude and latitude in that order.
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: number
+            format: float
+    ParkingInfo:
+      description: Parking spot information
+      type: object
+      example:
+        location:
+          type: "Point"
+          coordinates: [24.938466, 60.170014]
+        terminal_number: "34B"
+        domain: "HKI"
+        zone: "2"
+        rules:
+          - after: "2019-11-15T06:00:00Z"
+            policy: "disc"
+            maximum_duration: 120
+          - after: "2019-11-15T16:00:00Z"
+            policy: "free"
+          - after: "2019-11-16T07:00:00Z"
+            policy: "disc"
+            maximum_duration: 120
+          - after: "2019-11-16T13:00:00Z"
+            policy: "free"
+          - after: "2019-11-17T02:00:00Z"
+            policy: "denied"
+          - after: "2019-11-18T02:00:00Z"
+            policy: "free"
+          - after: "2019-11-18T06:00:00Z"
+            policy: "disc"
+            maximum_duration: 120
+          - after: "2019-11-18T16:00:00Z"
+            policy: "free"
+          - after: "2019-11-19T02:00:00Z"
+            policy: "unknown"
+      required:
+        - location
+        - zone
+        - rules
+      properties:
+        location:
+          $ref: '#/components/schemas/Location'
+        terminal_number:
+          description: >-
+            Number of the closest payment terminal, if there is any near
+            the given location.
+          type: string
+        zone:
+          << : *parkingZone
+          description: Payment zone code of the parking spot
+        rules:
+          description: >-
+            List of rules that determine if parking is allowed and on
+            what conditions.  Each rule is valid for a time period
+            starting from the "after" timestamp specified in the rule
+            and ending to "after" timestamp of the next rule.
+          type: array
+          maxItems: 100
+          items:
+            type: object
+            required:
+              - after
+              - policy
+            properties:
+              after:
+                description: Start time of this rule
+                type: string
+                format: dateTime
+              policy:
+                description: >-
+                  What kind of parking is allowed during this period.
+
+                  Options are:
+                    * `paid`: Must pay the parking fee
+                    * `disc`: Must use a parking disc (regular or digital)
+                    * `free`: Parking is allowed for free without a disc
+                    * `denied`: Parking is not allowed
+                    * `unknown`: There is no information available
+                type: string
+                enum: ["paid", "disc", "free", "denied", "unknown"]
+              maximum_duration:
+                description: >-
+                  Maximum duration of parking during this period, in
+                  minutes.
+
+                  Note: Start times of parking disc parkings are rounded
+                  to next half hour, which might allow almost 30 minutes
+                  more parking time in practice.
+                type: integer
+    PaymentZone:
+      type: object
+      example:
+        domain: "HKI"
+        code: "2"
+        name: "Maksuvyöhyke 2"
+      required:
+        - domain
+        - code
+        - name
+      properties:
+        domain:
+          description: Enforcement domain code of the payment zone
+          type: string
+          maxLength: 10
+        code:
+          description: Code of the payment zone
+          type: string
+          maxLength: 10
+        name:
+          description: Name of the payment zone
+          type: string
+    PermitSeries:
+      type: object
+      properties:
+        id:
+          description: Unique identifier of the permit series
+          type: integer
+        created_at:
+          description: Creation time of the permit series
+          type: string
+          format: date-time
+          readOnly: true
+        modified_at:
+          description: Modification time of the permit series
+          type: string
+          format: date-time
+          readOnly: true
+        active:
+          description: Specifies whether the series is currently active
+          type: boolean
+    Permit:
+      type: object
+      required:
+        - domain
+        - series
+      properties:
+        id:
+          description: Unique identifier of the permit object
+          type: integer
+        domain: &permitDomain
+          description: >-
+            Code of the enforcement domain that is allowed
+            to see the permit.
+          type: string
+        external_id: &permitExternalId
+          description: External id of the permit
+          type: string
+        series: &permitSeries
+          description: Permit series id
+          type: integer
+        subjects: &permitSubjects
+          $ref: '#/components/schemas/PermitSubjects'
+        areas: &permitAreas
+          $ref: '#/components/schemas/PermitAreas'
+    PermitSubjects:
+      description: >-
+        List of subjects of a permit with validity time ranges.  Each
+        subject is identified by its registration number.
+      type: array
+      items:
+        $ref: '#/components/schemas/PermitSubjectsItem'
+    PermitSubjectsItem:
+      description: >-
+        Subject of a permit, i.e. a vehicle.  The permit applies to the
+        specified subject for validity period specified by the start and
+        end times.
+      type: object
+      properties:
+        start_time:
+          description: Start time of the validity period
+          type: string
+          format: date-time
+        end_date:
+          description: End time of the validity period
+          type: string
+          format: date-time
+        registration_number:
+          description: >-
+            Registration number of vehicle, which is subject to the permit
+          type: string
+          maxLength: 20
+    PermitAreas:
+      description: >-
+        List of permit area codes with validity time ranges
+      type: array
+      items:
+        $ref: '#/components/schemas/PermitAreasItem'
+    PermitAreasItem:
+      type: object
+      properties:
+        start_time:
+          description: Start time of the parking
+          type: string
+          format: date-time
+        end_date:
+          description: End time of the parking
+          type: string
+          format: date-time
+        area:
+          description: >-
+            Code of the area.
+
+            The list of allowed values to use here varies by operator,
+            i.e. only certain operators can create permits for specific
+            areas.  The list of allowed areas can be fetched from the
+            [``GET /permit_area/``](#operation/getPermitAreas) endpoint.
+            Contact the service administrator to get your own areas into
+            the system.
+          type: string
+          maxLength: 10
+    PermitArea:
+      type: object
+      example:
+        domain: "HKI"
+        code: "FooBar:123"
+        name: "Area 123 of FooBar operator"
+      required:
+        - domain
+        - code
+        - name
+      properties:
+        domain:
+          description: Enforcement domain code of the permit area
+          type: string
+          maxLength: 10
+        code:
+          description: Code of the permit area
+          type: string
+          maxLength: 10
+        name:
+          description: Name of the permit area
+          type: string
+  responses:
+    PaginatedResponse:  # 200
+      description: An array of objects
+      content:
+        application/json:
+          schema:
+            type: object
+            properties: &paginatedResult
+              count:
+                description: Total number of objects
+                type: integer
+              next:
+                description: Link to the next result page
+                type: string
+                format: uri
+              previous:
+                description: Link to the previous result page
+                type: string
+                format: uri
+              results:
+                type: array
+                items:
+                  type: object
+    BadRequest:  # 400
+      description: Bad request, details in request body
+      content:
+        application/json:
+          schema:
+            example:
+              registration_number: [Enter a valid value.]
+    Unauthorized:  # 401
+      description: Unauthorized access
+    Forbidden:  # 403
+      description: Forbidden request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              code:
+                type: string
+                enum: [unknown_error, permission_denied, grace_period_over]
+              detail:
+                type: string
+            example:
+              code: grace_period_over
+              detail: Grace period has passed. Only "time_end" can be updated via PATCH.
+    NotFound:  # 404
+      description: Parking not found
 paths:
+  /enforcement_domain/:
+    get:
+      tags: ['Enforcement Domains']
+      summary: Get list of the enforcement domains
+      operationId: getEnforcementDomains
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of enforcement domains
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/EnforcementDomain'
   /parking/:
     post:
       tags: ['Parkings']
@@ -32,7 +477,7 @@ paths:
       requestBody:
         required: true
         description: Parking to add to the system
-        content:
+        content: &parkingBodyContent
           application/json:
             schema:
               anyOf:
@@ -44,33 +489,30 @@ paths:
                     registration_number: LOL-007
                     time_start: "2016-12-24T21:00:00Z"
                     time_end: "2016-12-24T22:00:00Z"
-                    zone: 2
+                    domain: "HKI"
+                    zone: "2"
                   type: object
                   properties:
                     location:
-                      $ref: '#/components/schemas/Location'
+                      << : *parkingLocation
                     terminal_number:
-                      description: >-
-                        Payment terminal number, if the parking was bought
-                        from a payment terminal.
-                      type: string
-                      default: ''
+                      << : *parkingTerminalNumber
                     registration_number:
-                      description: Registration number for the parking
-                      type: string
+                      << : *parkingRegistrationNumber
                     time_start:
-                      description: Start time for the parking
-                      type: string
-                      format: dateTime
+                      << : *parkingTimeStart
                     time_end:
-                      description: End time for the parking
-                      type: string
-                      format: dateTime
-                    zone:
-                      description: Payment zone
-                      type: integer
-                      enum: [1, 2, 3]
+                      << : *parkingTimeEnd
+                    domain:
+                      << : *parkingDomain
+                    zone: &parkingZoneInput
+                      << : *parkingZone
+                      description: >-
+                        Payment zone code.  Note: Even though type is
+                        specified as string, integer values are also
+                        accepted for backward compatibility.
                     is_disc_parking:
+                      << : *parkingIsDiscParking
                       description: >-
                         Specify whether this is a parking disc parking.
 
@@ -78,8 +520,6 @@ paths:
                         request and will then default to false.  This
                         way the API for regular paid parkings is
                         compatible with the previous version.
-                      type: boolean
-                      enum: [false]
                       default: false
                   required:
                     - registration_number
@@ -93,31 +533,25 @@ paths:
                     registration_number: LOL-007
                     time_start: "2016-12-24T21:00:00Z"
                     is_disc_parking: true
+                    domain: "HKI"
                   type: object
                   properties:
                     location:
-                      $ref: '#/components/schemas/Location'
+                      << : *parkingLocation
                     terminal_number:
-                      description: >-
-                        Payment terminal number, if the parking was bought
-                        from a payment terminal.
-                      type: string
-                      default: ''
+                      << : *parkingTerminalNumber
                     registration_number:
-                      description: Registration number for the parking
-                      type: string
+                      << : *parkingRegistrationNumber
                     time_start:
-                      description: Start time for the parking
-                      type: string
-                      format: dateTime
+                      << : *parkingTimeStart
                     time_end:
-                      description: End time for the parking
-                      type: string
-                      format: dateTime
+                      << : *parkingTimeEnd
+                    domain:
+                      << : *parkingDomain
                     is_disc_parking:
+                      << : *parkingIsDiscParking
                       description: >-
                         Specify whether this is a parking disc parking.
-                      type: boolean
                       enum: [true]
                   required:
                     - registration_number
@@ -138,54 +572,22 @@ paths:
   /parking/{parking_id}/:
     put:
       tags: ['Parkings']
-      summary: Update a parking by its ID
-      operationId: updateParkingById
+      summary: Replace a parking by its ID
+      operationId: replaceParkingById
       security: [{ApiKey: []}]
       parameters:
         - name: parking_id
           in: path
           required: true
-          description: ID of the parking to update
+          description: ID of the parking to replace
           schema:
             type: string
             format: uuid
       requestBody:
         required: true
-        description: Parking to add to the system
+        description: Parking data to put over the previous data
         content:
-          application/json:
-            schema:
-              type: object
-              example:
-                location:
-                  type: Point
-                  coordinates: [24.938466, 60.170014]
-                registration_number: LOL-007
-                time_start: "2016-12-24T21:00:00Z"
-                time_end: "2016-12-24T22:00:00Z"
-                zone: 2
-              properties:
-                location:
-                  $ref: '#/components/schemas/Location'
-                registration_number:
-                  description: Registration number for the parking
-                  type: string
-                time_start:
-                  description: Start time for the parking
-                  type: string
-                  format: dateTime
-                time_end:
-                  description: End time for the parking
-                  type: string
-                  format: dateTime
-                zone:
-                  description: Payment zone
-                  type: integer
-                  enum: [1, 2, 3]
-              required:
-                - registration_number
-                - time_start
-                - zone
+          << : *parkingBodyContent
       responses:
         '200':
           description: The parking was updated successfully
@@ -204,7 +606,7 @@ paths:
     patch:
       tags: ['Parkings']
       summary: Partial update a parking by its ID
-      operationId: partialUpdateParkingById
+      operationId: updateParkingById
       security: [{ApiKey: []}]
       parameters:
         - name: parking_id
@@ -216,7 +618,7 @@ paths:
             format: uuid
       requestBody:
         required: true
-        description: Parking to add to the system
+        description: Parking data to update
         content:
           application/json:
             schema:
@@ -225,22 +627,23 @@ paths:
                 time_end: "2016-12-25T22:00:00Z"
               properties:
                 location:
-                  $ref: '#/components/schemas/Location'
+                  << : *parkingLocation
+                terminal_number:
+                  << : *parkingTerminalNumber
                 registration_number:
-                  description: Registration number for the parking
-                  type: string
+                  << : *parkingRegistrationNumber
                 time_start:
-                  description: Start time for the parking
-                  type: string
-                  format: dateTime
+                  << : *parkingTimeStart
                 time_end:
-                  description: End time for the parking
-                  type: string
-                  format: dateTime
+                  << : *parkingTimeEnd
+                domain:
+                  << : *parkingDomain
                 zone:
-                  description: Payment zone
-                  type: integer
-                  enum: [1, 2, 3]
+                  << : *parkingZoneInput
+                is_disc_parking:
+                  << : *parkingIsDiscParking
+                  description: >-
+                    Specify whether this is a parking disc parking.
       responses:
         '200':
           description: The parking was updated successfully
@@ -310,8 +713,12 @@ paths:
                     terminal_number:
                       description: Payment terminal number
                       type: string
+                    domain:
+                      description: Code of the enforcement domain
+                      type: string
                   required:
                     - terminal_number
+                    - domain
       responses:
         '200':
           description: Parking spot information query succeeded
@@ -325,213 +732,507 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-components:
-  securitySchemes:
-    ApiKey:
-      type: apiKey
-      name: Authorization
-      in: header
-  schemas:
-    Parking:
-      type: object
-      example:
-        id: 70fb01a8-a17f-4b14-9b99-0060c748411c
-        status: valid
-        created_at: "2016-12-10T20:34:38Z"
-        modified_at: "2016-12-11T21:34:22Z"
-        location:
-          type: Point
-          coordinates: [24.938466, 60.170014]
-        registration_number: LOL-007
-        time_start: "2016-12-24T21:00:00Z"
-        time_end: "2016-12-24T22:00:00Z"
-        zone: 2
-      properties:
-        id:
-          description: Unique identifier for the parking
-          type: string
-          format: uuid
-          readOnly: true
-        status:
-          description: Status of the parking
-          type: string
-          enum: [valid, not_valid]
-          readOnly: true
-        created_at:
-          description: Creation time for the parking
-          type: string
-          format: dateTime
-          readOnly: true
-        modified_at:
-          description: Modification time for the parking
-          type: string
-          format: dateTime
-          readOnly: true
-        location:
-          $ref: '#/components/schemas/Location'
-        terminal_number:
+  /payment_zone/:
+    get:
+      tags: ['Payment Zones']
+      summary: Get list of the payment zones
+      operationId: getPaymentZones
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of payment zones
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/PaymentZone'
+  /permit_area/:
+    get:
+      tags: ['Permit Areas']
+      summary: Get list of the permit areas you are allowed to use
+      operationId: getPermitAreas
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of permit areas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/PermitArea'
+  /permitseries/:
+    get:
+      tags: ['Permit Series']
+      summary: Get list of permit series
+      description: |-
+        Inactive permit series may be deleted from the system.
+        The time limit which defines which series are considered
+        for removal is 3 days by default, but may be configured by the
+        service administrator to a different value.
+      operationId: getPermitSeriesList
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of permit series
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/PermitSeries'
+    post:
+      tags: ['Permit Series']
+      summary: Create a permit series object
+      description: |-
+        Inactive permit series may be deleted from the system.
+        The time limit which defines which series are considered
+        for removal is 3 days by default, but may be configured by the
+        service administrator to a different value.
+      operationId: createPermitSeries
+      security: [{ApiKey: []}]
+      requestBody:
+        description: Permit series to add to the system
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '201':
+          description: Permit series was created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermitSeries'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /permitseries/{permitseries_id}/:
+    get:
+      tags: ['Permit Series']
+      summary: Get details of a permit series
+      operationId: getPermitSeriesDetails
+      security: [{ApiKey: []}]
+      parameters:
+        - &permitSeriesParamId
+          name: permitseries_id
+          in: path
           description: >-
-            Payment terminal number, if the parking was bought
-            from a payment terminal.
-          type: string
-          default: ''
-        registration_number:
-          description: Registration number for the parking
-          type: string
-        time_start:
-          description: Start time for the parking
-          type: string
-          format: dateTime
-        time_end:
-          description: End time for the parking
-          type: string
-          format: dateTime
-        zone:
-          description: Payment zone
-          type: integer
-          enum: [1, 2, 3]
-        is_disc_parking:
-          description: >-
-            Specify whether this is a parking disc parking.
-
-            Note: For compatibility reasons this field is present in the
-            result only for parking disc parkings, i.e. when the value
-            is true.
-          type: boolean
-      required:
-        - registration_number
-        - time_start
-        - zone
-    Location:
-      description: Location in GeoJSON format
-      type: object
-      example:
-        type: Point
-        coordinates: [24.938466, 60.170014]
-      properties:
-        type:
-          description: Geometry type
-          type: string
-          enum: [Point]
-        coordinates:
-          description: >-
-            An array of coordinates describing the location geometry.
-            The items are WGS84 longitude and latitude in that order.
-          type: array
-          minItems: 2
-          maxItems: 2
-          items:
-            type: number
-            format: float
-    ParkingInfo:
-      description: Parking spot information
-      type: object
-      example:
-        location:
-          type: "Point"
-          coordinates: [24.938466, 60.170014]
-        terminal_number: "34B"
-        zone: 2
-        rules:
-          - after: "2019-11-15T06:00:00Z"
-            policy: "disc"
-            maximum_duration: 120
-          - after: "2019-11-15T16:00:00Z"
-            policy: "free"
-          - after: "2019-11-16T07:00:00Z"
-            policy: "disc"
-            maximum_duration: 120
-          - after: "2019-11-16T13:00:00Z"
-            policy: "free"
-          - after: "2019-11-17T02:00:00Z"
-            policy: "denied"
-          - after: "2019-11-18T02:00:00Z"
-            policy: "free"
-          - after: "2019-11-18T06:00:00Z"
-            policy: "disc"
-            maximum_duration: 120
-          - after: "2019-11-18T16:00:00Z"
-            policy: "free"
-          - after: "2019-11-19T02:00:00Z"
-            policy: "unknown"
-      required:
-        - location
-        - zone
-        - rules
-      properties:
-        location:
-          $ref: '#/components/schemas/Location'
-        terminal_number:
-          description: >-
-            Number of the closest payment terminal, if there is any near
-            the given location.
-          type: string
-        zone:
-          description: Payment zone of the parking spot
-          type: integer
-        rules:
-          description: >-
-            List of rules that determine if parking is allowed and on
-            what conditions.  Each rule is valid for a time period
-            starting from the "after" timestamp specified in the rule
-            and ending to "after" timestamp of the next rule.
-          type: array
-          maxItems: 100
-          items:
-            type: object
-            required:
-              - after
-              - policy
-            properties:
-              after:
-                description: Start time of this rule
-                type: string
-                format: dateTime
-              policy:
-                description: >-
-                  What kind of parking is allowed during this period.
-
-                  Options are:
-                    * `paid`: Must pay the parking fee
-                    * `disc`: Must use a parking disc (regular or digital)
-                    * `free`: Parking is allowed for free without a disc
-                    * `denied`: Parking is not allowed
-                    * `unknown`: There is no information available
-                type: string
-                enum: ["paid", "disc", "free", "denied", "unknown"]
-              maximum_duration:
-                description: >-
-                  Maximum duration of parking during this period, in
-                  minutes.
-
-                  Note: Start times of parking disc parkings are rounded
-                  to next half hour, which might allow almost 30 minutes
-                  more parking time in practice.
-                type: integer
-  responses:
-    BadRequest:  # 400
-      description: Bad request, details in request body
-      content:
-        application/json:
+            Id of the permit series
           schema:
-            example:
-              registration_number: [Enter a valid value.]
-    Unauthorized:  # 401
-      description: Unauthorized access
-    Forbidden:  # 403
-      description: Forbidden request
-      content:
-        application/json:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: A permit series object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermitSeries'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: ['Permit Series']
+      summary: Delete a permit series
+      operationId: deletePermitSeries
+      security: [{ApiKey: []}]
+      parameters:
+        - << : *permitSeriesParamId
+      responses:
+        '204':
+          description: The permit series was deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /permitseries/{permitseries_id}/activate/:
+    post:
+      tags: ['Permit Series']
+      summary: Activate a permit series
+      description: |-
+        Activate the specified permit series and possibly deactivate
+        some other permit series owned by you.
+
+        Inactive permit series may be deleted from the system.
+        The time limit which defines which series are considered
+        for removal is 3 days by default, but may be configured by the
+        service administrator to a different value.
+      operationId: activatePermitSeries
+      security: [{ApiKey: []}]
+      parameters:
+        - << : *permitSeriesParamId
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - title: Do not deactivate any series (the default)
+                  example: {}
+                  type: object
+                  properties: {}
+                - title: Deactivate some other series
+                  example:
+                    deactivate_series: [2, 3, 4]
+                  type: object
+                  properties:
+                    deactivate_series:
+                      description: >-
+                        A list of permit series ids to deactivate while
+                        activating the specified permit series.
+                      type: array
+                      items:
+                        type: integer
+                      default: []
+                - title: Deactivate all other series
+                  type: object
+                  properties:
+                    deactivate_others:
+                      description: >-
+                        Deactivate all other permit series while
+                        activating the specified permit series.
+                      type: boolean
+                      enum: [true]
+                  required:
+                    - deactivate_others
+      responses:
+        '200':
+          description: Activation succeeded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: ["OK", "No change"]
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /permit/:
+    get:
+      tags: ['Permits']
+      summary: Get list of parking permits
+      operationId: getPermitList
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of permit objects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/Permit'
+    post:
+      tags: ['Permits']
+      summary: Create a permit object
+      operationId: createPermit
+      security: [{ApiKey: []}]
+      requestBody:
+        description: Permit to add to the system
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties: &permitProperties
+                series:
+                  << : *permitSeries
+                domain:
+                  << : *permitDomain
+                external_id:
+                  << : *permitExternalId
+                subjects:
+                  << : *permitSubjects
+                areas:
+                  << : *permitAreas
+              required:
+                - series
+                - domain
+                - subjects
+                - areas
+      responses:
+        '201':
+          description: Permit object was created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /permit/{permit_id}/:
+    get:
+      tags: ['Permits']
+      summary: Get details of a permit
+      operationId: getPermitDetails
+      security: [{ApiKey: []}]
+      parameters:
+      - &permitParamId
+        name: permit_id
+        in: path
+        description: >-
+          Id of the permit
+        schema:
+          type: integer
+        required: true
+      responses:
+        '200':
+          description: A permit object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: ['Permits']
+      summary: Replace a permit
+      operationId: replacePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - << : *permitParamId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Permit'
+      responses:
+        '200':
+          description: The permit object was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: ['Permits']
+      summary: Update a permit
+      operationId: updatePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - << : *permitParamId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                << : *permitProperties
+        required: false
+      responses:
+        '200':
+          description: Permit was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: ['Permits']
+      summary: Delete a permit
+      operationId: deletePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - << : *permitParamId
+      responses:
+        '204':
+          description: The permit was deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /active_permit_by_external_id/:
+    get:
+      tags: ['Active Permits by External Id']
+      summary: Get list of permits in the active series
+      operationId: getActivePermitList
+      security: [{ApiKey: []}]
+      responses:
+        '200':
+          description: An array of permit objects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  << : *paginatedResult
+                  results:
+                    items:
+                      $ref: '#/components/schemas/Permit'
+    post:
+      tags: ['Active Permits by External Id']
+      summary: Create a permit to the active series
+      operationId: createActivePermit
+      security: [{ApiKey: []}]
+      requestBody:
+        description: Permit to add to the system
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - domain
+                - external_id
+              properties:
+                domain:
+                  << : *permitDomain
+                external_id:
+                  description: External id of the permit
+                  type: string
+                subjects:
+                  $ref: '#/components/schemas/PermitSubjects'
+                areas:
+                  $ref: '#/components/schemas/PermitAreas'
+      responses:
+        '200':
+          description: Creation of the permit succeeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+  /active_permit_by_external_id/{external_id}/:
+    get:
+      tags: ['Active Permits by External Id']
+      summary: Get details of a permit in the active series
+      operationId: getActivePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - &permitParamExternalId
+          name: external_id
+          in: path
+          description: >-
+            External id of the permit
           schema:
-            type: object
-            properties:
-              code:
-                type: string
-                enum: [unknown_error, permission_denied, grace_period_over]
-              detail:
-                type: string
-            example:
-              code: grace_period_over
-              detail: Grace period has passed. Only "time_end" can be updated via PATCH.
-    NotFound:  # 404
-      description: Parking not found
+            type: string
+          required: true
+      responses:
+        '200':
+          description: A permit object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: ['Active Permits by External Id']
+      summary: Update a permit in the active series
+      operationId: updateActivePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - << : *permitParamExternalId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                domain:
+                  << : *permitDomain
+                subjects:
+                  << : *permitSubjects
+                areas:
+                  << : *permitAreas
+      responses:
+        '200':
+          description: Permit was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: ['Active Permits by External Id']
+      summary: Replace a permit in the active series
+      operationId: replaceActivePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - << : *permitParamExternalId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Permit'
+      responses:
+        '200':
+          description: The permit object was updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Permit'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: ['Active Permits by External Id']
+      summary: Delete a permit from the active series
+      operationId: deleteActivePermit
+      security: [{ApiKey: []}]
+      parameters:
+        - << : *permitParamExternalId
+      responses:
+        '204':
+          description: The permit was deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'

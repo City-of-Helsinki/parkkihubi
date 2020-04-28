@@ -2,15 +2,23 @@ import pytz
 from django.conf import settings
 from django.utils.timezone import now
 from django.utils.translation import ugettext_lazy as _
-from rest_framework import mixins, permissions, serializers, viewsets
+from rest_framework import mixins, serializers, viewsets
 
-from parkings.models import Operator, Parking
+from parkings.models import EnforcementDomain, Parking, PaymentZone
 
 from ..common import ParkingException
+from .permissions import IsOperator
+
+DEFAULT_DOMAIN_CODE = EnforcementDomain.get_default_domain_code()
 
 
 class OperatorAPIParkingSerializer(serializers.ModelSerializer):
     status = serializers.ReadOnlyField(source='get_state')
+    domain = serializers.SlugRelatedField(
+        slug_field='code', queryset=EnforcementDomain.objects.all(),
+        default=EnforcementDomain.get_default_domain)
+    zone = serializers.SlugRelatedField(
+        slug_field='code', queryset=PaymentZone.objects.all())
 
     class Meta:
         model = Parking
@@ -21,6 +29,7 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
             'time_start', 'time_end',
             'zone',
             'status', 'is_disc_parking',
+            'domain',
         )
 
         # these are needed because by default a PUT request that does not contain some optional field
@@ -39,13 +48,16 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
         self.fields['time_end'].timezone = pytz.utc
         self.fields['zone'].required = True
 
-        self._set_required_extra_fields()
-
-    def _set_required_extra_fields(self):
         initial_data = getattr(self, 'initial_data', None)
-        if initial_data and self.initial_data.get('is_disc_parking', False):
+
+        if initial_data and initial_data.get('is_disc_parking', False):
             self.fields['location'].required = True
             self.fields['zone'].required = False
+
+        if initial_data:
+            domain = initial_data.get('domain', DEFAULT_DOMAIN_CODE)
+            self.fields['zone'].queryset = (
+                PaymentZone.objects.filter(domain__code=domain))
 
     def validate(self, data):
         if self.instance and (now() - self.instance.created_at) > settings.PARKKIHUBI_TIME_PARKINGS_EDITABLE:
@@ -70,29 +82,15 @@ class OperatorAPIParkingSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
+
+        if instance.zone:
+            representation['zone'] = instance.zone.casted_code
         if not instance.is_disc_parking:
             representation.pop('is_disc_parking')
         return representation
 
 
-class OperatorAPIParkingPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        """
-        Allow only operators to create/modify a parking.
-        """
-        user = request.user
-
-        if not user.is_authenticated:
-            return False
-
-        try:
-            user.operator
-            return True
-        except Operator.DoesNotExist:
-            pass
-
-        return False
-
+class OperatorAPIParkingPermission(IsOperator):
     def has_object_permission(self, request, view, obj):
         """
         Allow operators to modify only their own parkings.

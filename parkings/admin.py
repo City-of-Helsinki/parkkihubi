@@ -3,8 +3,27 @@ from django.contrib.gis.admin import OSMGeoAdmin
 
 from .admin_utils import ReadOnlyAdmin, WithAreaField
 from .models import (
-    Operator, Parking, ParkingArea, ParkingCheck, ParkingTerminal, PaymentZone,
-    Permit, PermitArea, PermitLookupItem, PermitSeries, Region)
+    EnforcementDomain, Enforcer, Monitor, Operator, Parking, ParkingArea,
+    ParkingCheck, ParkingTerminal, PaymentZone, Permit, PermitArea,
+    PermitLookupItem, PermitSeries, Region)
+
+
+@admin.register(Enforcer)
+class EnforcerAdmin(WithAreaField, OSMGeoAdmin):
+    list_display = ['id', 'name', 'user', 'enforced_domain']
+    ordering = ('name',)
+
+
+@admin.register(EnforcementDomain)
+class EnforcementDomainAdmin(WithAreaField, OSMGeoAdmin):
+    list_display = ['id', 'code', 'name', 'area']
+    ordering = ('code',)
+
+
+@admin.register(Monitor)
+class MonitorAdmin(admin.ModelAdmin):
+    list_display = ['name', 'user', 'domain']
+    list_filter = ['domain']
 
 
 @admin.register(Operator)
@@ -14,7 +33,8 @@ class OperatorAdmin(admin.ModelAdmin):
 
 @admin.register(PaymentZone)
 class PaymentZoneAdmin(WithAreaField, OSMGeoAdmin):
-    list_display = ['id', 'number', 'name', 'area']
+    list_display = ['id', 'domain', 'number', 'name', 'area']
+    list_filter = ['domain']
     ordering = ('number',)
 
 
@@ -22,23 +42,25 @@ class PaymentZoneAdmin(WithAreaField, OSMGeoAdmin):
 class ParkingAdmin(OSMGeoAdmin):
     date_hierarchy = 'time_start'
     list_display = [
-        'id', 'operator', 'zone', 'parking_area', 'terminal_number',
+        'id', 'operator', 'domain', 'zone', 'parking_area', 'terminal_number',
         'time_start', 'time_end', 'registration_number',
         'created_at', 'modified_at']
-    list_filter = ['operator', 'zone']
+    list_filter = ['operator', 'domain', 'zone']
     ordering = ('-time_start',)
 
 
 @admin.register(Region)
 class RegionAdmin(WithAreaField, OSMGeoAdmin):
-    list_display = ['id', 'name', 'capacity_estimate', 'area']
+    list_display = ['id', 'domain', 'name', 'capacity_estimate', 'area']
+    list_filter = ['domain']
     ordering = ('name',)
 
 
 @admin.register(ParkingArea)
 class ParkingAreaAdmin(WithAreaField, OSMGeoAdmin):
     area_scale = 1
-    list_display = ['id', 'origin_id', 'capacity_estimate', 'area']
+    list_display = ['id', 'origin_id', 'domain', 'capacity_estimate', 'area']
+    list_filter = ['domain']
     ordering = ('origin_id',)
 
 
@@ -65,20 +87,22 @@ class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
 
 @admin.register(ParkingTerminal)
 class ParkingTerminalAdmin(OSMGeoAdmin):
-    list_display = ['id', 'number', 'name']
+    list_display = ['id', 'domain', 'number', 'name']
+    list_filter = ['domain']
 
 
 @admin.register(Permit)
 class PermitAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
-    list_display = ['id', 'series', 'external_id', 'created_at', 'modified_at']
-    list_filter = ['series__active']
+    list_display = ['id', 'domain', 'series', 'external_id', 'created_at', 'modified_at']
+    list_filter = ['series__active', 'domain']
     ordering = ('-series', '-id')
 
 
 @admin.register(PermitArea)
 class PermitAreaAdmin(WithAreaField, OSMGeoAdmin):
-    list_display = ['id', 'identifier', 'name', 'area']
+    list_display = ['id', 'domain', 'identifier', 'name', 'area']
+    list_filter = ['domain']
     ordering = ('identifier',)
 
 
@@ -86,7 +110,7 @@ class PermitAreaAdmin(WithAreaField, OSMGeoAdmin):
 class PermitLookupItemAdmin(ReadOnlyAdmin):
     list_display = [
         'id', 'series', 'permit',
-        'registration_number', 'area_identifier',
+        'registration_number', 'area',
         'start_time', 'end_time']
     list_filter = ['permit__series__active']
     ordering = ('-permit__series', 'permit')

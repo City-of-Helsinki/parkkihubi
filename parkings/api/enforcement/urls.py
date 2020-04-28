@@ -3,10 +3,12 @@ from rest_framework.routers import DefaultRouter
 
 from ..url_utils import versioned_url
 from .check_parking import CheckParking
+from .enforcement_permit import (
+    EnforcementActivePermitByExternalIdViewSet, EnforcementPermitSeriesViewSet,
+    EnforcementPermitViewSet)
 from .operator import OperatorViewSet
-from .permit import (
-    ActivePermitByExternalIdViewSet, PermitSeriesViewSet, PermitViewSet)
 from .valid_parking import ValidParkingViewSet
+from .valid_permit_item import ValidPermitItemViewSet
 
 
 class Router(DefaultRouter):
@@ -24,12 +26,13 @@ class Router(DefaultRouter):
 
 router = Router()
 router.register('operator', OperatorViewSet, basename='operator')
-router.register('permit', PermitViewSet, basename='permit')
+router.register('permit', EnforcementPermitViewSet, basename='permit')
 router.register('active_permit_by_external_id',
-                ActivePermitByExternalIdViewSet, basename='activepermit')
-router.register('permitseries', PermitSeriesViewSet, basename='permitseries')
+                EnforcementActivePermitByExternalIdViewSet, basename='activepermit')
+router.register('permitseries', EnforcementPermitSeriesViewSet, basename='permitseries')
 router.register('valid_parking', ValidParkingViewSet,
                 basename='valid_parking')
+router.register('valid_permit_item', ValidPermitItemViewSet, basename='valid_permit_item')
 
 app_name = 'enforcement'
 urlpatterns = [
