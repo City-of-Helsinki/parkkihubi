@@ -107,7 +107,7 @@ def _get_or_create_enforcement_domain(apps):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('parkings', '0029_enforcement_domain'),
+        ('parkings', '0031_enforcement_domain'),
     ]
 
     operations = [

@@ -13,7 +13,7 @@ def _generate_area_ids(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parkings', '0031_default_domain'),
+        ('parkings', '0029_alter_payment_zone_id'),
     ]
 
     operations = [

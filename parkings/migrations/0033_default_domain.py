@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parkings', '0030_domain_data'),
+        ('parkings', '0032_domain_data'),
     ]
 
     operations = [
@@ -60,5 +60,10 @@ class Migration(migrations.Migration):
             model_name='permitarea',
             name='permitted_user',
             field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL, verbose_name='permitted_user'),
+        ),
+        migrations.AlterField(
+            model_name='permitlookupitem',
+            name='area_identifier',
+            field=models.CharField(max_length=10, null=True, blank=True),
         ),
     ]

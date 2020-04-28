@@ -12,7 +12,7 @@ def _generate_payment_zone_ids(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('parkings', '0033_permitlookupitem_area'),
+        ('parkings', '0028_digital_disc_changes'),
     ]
 
     operations = [
