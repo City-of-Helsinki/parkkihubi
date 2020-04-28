@@ -112,4 +112,8 @@ class Migration(migrations.Migration):
             name='permitarea',
             unique_together={('domain', 'identifier')},
         ),
+        migrations.AlterModelOptions(
+            name='paymentzone',
+            options={'ordering': ('domain', 'code')},
+        ),
     ]
