@@ -204,7 +204,6 @@ CORS_ORIGIN_ALLOW_ALL = True
 ##############
 # Parkkihubi #
 ##############
-MONITORING_GROUP_NAME = 'monitoring'
 PARKKIHUBI_TIME_PARKINGS_EDITABLE = timedelta(minutes=2)
 PARKKIHUBI_TIME_OLD_PARKINGS_VISIBLE = timedelta(minutes=15)
 PARKKIHUBI_NONE_END_TIME_REPLACEMENT = env.str(

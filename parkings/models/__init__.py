@@ -1,4 +1,5 @@
 from .enforcement_domain import EnforcementDomain, Enforcer
+from .monitor import Monitor
 from .operator import Operator
 from .parking import Parking, ParkingQuerySet
 from .parking_area import ParkingArea
@@ -11,6 +12,7 @@ from .zone import PaymentZone
 __all__ = [
     'EnforcementDomain',
     'Enforcer',
+    'Monitor',
     'Operator',
     'Parking',
     'ParkingArea',

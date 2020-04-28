@@ -26,6 +26,7 @@ def test_get_regions_empty(monitoring_api_client):
 def test_get_regions_with_data(monitoring_api_client, region, parking_area):
     parking_area.geom = region.geom
     parking_area.save()
+    region.domain = monitoring_api_client.monitor.domain
     region.save()  # Update capacity_estimate
 
     result = monitoring_api_client.get(list_url)
@@ -58,3 +59,19 @@ def test_get_regions_with_data(monitoring_api_client, region, parking_area):
 
 def tuples_to_lists(tuples_of_tuples):
     return json.loads(json.dumps(tuples_of_tuples))
+
+
+def test_monitor_can_view_only_regions_in_their_domain(monitoring_api_client, region_factory, parking_area):
+    non_visible_region = region_factory()
+    parking_area.geom = non_visible_region.geom
+    parking_area.save()
+    non_visible_region.save()
+    result = monitoring_api_client.get(list_url)
+    assert result.data['count'] == 0
+
+    visible_region = region_factory(domain=monitoring_api_client.monitor.domain)
+    parking_area.geom = visible_region.geom
+    parking_area.save()
+    visible_region.save()
+    result = monitoring_api_client.get(list_url)
+    assert result.data['count'] == 1

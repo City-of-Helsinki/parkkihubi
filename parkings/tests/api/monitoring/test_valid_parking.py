@@ -1,5 +1,6 @@
 import pytest
 from django.urls import reverse
+from django.utils import timezone
 from rest_framework.status import (
     HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN, HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -32,6 +33,9 @@ def test_disallowed_methods(monitoring_api_client, parking, kind):
 
 
 def test_list_endpoint_data(monitoring_api_client, parking):
+    parking.domain = monitoring_api_client.monitor.domain
+    parking.save()
+
     result = monitoring_api_client.get(
         list_url, data={'time': parking.time_start.isoformat()})
     assert set(result.data.keys()) == {
@@ -91,6 +95,9 @@ def iso8601_us(dt):
 
 
 def test_endpoint_can_return_zone_as_string_or_integer(monitoring_api_client, parking):
+    parking.domain = monitoring_api_client.monitor.domain
+    parking.save()
+
     parking.zone.code = '5'
     parking.zone.save()
     result = monitoring_api_client.get(
@@ -104,3 +111,23 @@ def test_endpoint_can_return_zone_as_string_or_integer(monitoring_api_client, pa
         list_url, data={'time': parking.time_start.isoformat()})
     parking_feature = result.data['features'][0]
     assert parking_feature['properties']['zone'] == '5A'
+
+
+def test_monitor_can_view_only_parkings_from_their_domain(
+        monitoring_api_client, staff_api_client, staff_user, parking_factory, monitor_factory
+):
+    monitor_factory(user=staff_user)
+
+    parking_1 = parking_factory(domain=monitoring_api_client.monitor.domain)
+    parking_2 = parking_factory(domain=staff_user.monitor.domain)
+
+    result_1 = monitoring_api_client.get(list_url, data={'time': iso8601(timezone.now())})
+    result_2 = staff_api_client.get(list_url, data={'time': iso8601(timezone.now())})
+
+    assert result_1.data['count'] == 1
+    parking_feature_1 = result_1.data['features'][0]
+    assert parking_feature_1['id'] == str(parking_1.id)
+
+    assert result_2.data['count'] == 1
+    parking_feature_2 = result_2.data['features'][0]
+    assert parking_feature_2['id'] == str(parking_2.id)

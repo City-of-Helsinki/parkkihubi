@@ -1,15 +1,22 @@
-from django.conf import settings
 from rest_framework import permissions
 
+from parkings.models import Monitor
 
-class MonitoringApiPermission(permissions.IsAuthenticated):
+
+class IsMonitor(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not super().has_permission(request, view):
+        """
+        Allow only monitors to proceed further.
+        """
+        user = request.user
+
+        if not user.is_authenticated:
             return False
 
-        user_groups = request.user.groups
-        group_name = getattr(settings, 'MONITORING_GROUP_NAME', 'monitoring')
+        try:
+            user.monitor
+            return True
+        except Monitor.DoesNotExist:
+            pass
 
-        is_in_monitoring_group = (user_groups.filter(name=group_name).exists())
-
-        return is_in_monitoring_group
+        return False

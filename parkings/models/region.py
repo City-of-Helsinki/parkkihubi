@@ -5,6 +5,8 @@ from django.db.models import Case, Count, Q, When
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
+from parkings.models import EnforcementDomain
+
 from .mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from .parking_area import ParkingArea
 
@@ -26,6 +28,7 @@ class Region(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         blank=True, null=True,
         verbose_name=_("capacity estimate"),
     )
+    domain = models.ForeignKey(EnforcementDomain, on_delete=models.PROTECT, related_name='regions')
 
     objects = RegionQuerySet.as_manager()
 
@@ -38,6 +41,8 @@ class Region(TimestampedModelMixin, UUIDPrimaryKeyMixin):
 
     def save(self, *args, **kwargs):
         self.capacity_estimate = self.calculate_capacity_estimate()
+        if not self.domain_id:
+            self.domain = EnforcementDomain.get_default_domain()
         super().save(*args, **kwargs)
 
     def calculate_capacity_estimate(self):

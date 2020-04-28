@@ -6,7 +6,7 @@ from rest_framework import viewsets
 
 from ...models import Parking
 from ..common import WGS84InBBoxFilter
-from .permissions import MonitoringApiPermission
+from .permissions import IsMonitor
 from .serializers import ParkingSerializer
 
 
@@ -27,7 +27,7 @@ class ValidParkingFilter(django_filters.rest_framework.FilterSet):
 
 
 class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
-    permission_classes = [MonitoringApiPermission]
+    permission_classes = [IsMonitor]
     queryset = (
         Parking.objects
         .order_by('time_start')
@@ -38,3 +38,6 @@ class ValidParkingViewSet(viewsets.ReadOnlyModelViewSet):
     bbox_filter_field = 'location'
     filter_backends = [DjangoFilterBackend, WGS84InBBoxFilter]
     bbox_filter_include_overlapping = True
+
+    def get_queryset(self):
+        return super().get_queryset().filter(domain=self.request.user.monitor.domain)
