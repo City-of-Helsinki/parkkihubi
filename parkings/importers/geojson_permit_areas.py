@@ -4,8 +4,7 @@ import os
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from parkings.models import EnforcementDomain, PermitArea
-
+from ..models import PermitArea
 from .geojson_importer import GeoJsonImporter
 
 logger = logging.getLogger(__name__)
@@ -26,7 +25,7 @@ class PermitAreaImporter(GeoJsonImporter):
     def _save_permit_areas(self, permit_areas_dict, permitted_user):
         logger.info('Saving permit areas.')
         user = get_user_model().objects.filter(username=permitted_user).get()
-        default_domain = EnforcementDomain.get_default_domain()
+        default_domain = self.get_default_domain()
         count = 0
         permit_area_ids = []
         for area_dict in permit_areas_dict:
@@ -38,7 +37,6 @@ class PermitAreaImporter(GeoJsonImporter):
                 defaults=area_dict)
             permit_area_ids.append(permit_area.pk)
             count += 1
-        PermitArea.objects.exclude(pk__in=permit_area_ids).delete()
         return count
 
     def _parse_member(self, member):
