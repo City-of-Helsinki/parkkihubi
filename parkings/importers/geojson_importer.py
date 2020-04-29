@@ -1,7 +1,7 @@
 import abc
 import json
 
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 
 
 class GeoJsonImporter(metaclass=abc.ABCMeta):
@@ -17,4 +17,9 @@ class GeoJsonImporter(metaclass=abc.ABCMeta):
         pass
 
     def get_polygons(self, geom):
-        return GEOSGeometry(json.dumps(geom))
+        result = GEOSGeometry(json.dumps(geom))
+
+        if isinstance(result, Polygon):
+            result = MultiPolygon(result)
+
+        return result
