@@ -119,7 +119,8 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
     Check that a parking data dict and an actual Parking object match.
     """
     assert parking_data['registration_number'] == getattr(parking_obj, 'registration_number')
-    assert parking_data['zone'] == parking_obj.zone.casted_code
+    assert parking_data['zone'] == (parking_obj.zone.casted_code
+                                    if parking_obj.zone else None)
     assert parking_data['id'] == str(parking_obj.id)  # UUID -> str
     assert parking_data['operator'] == str(parking_obj.operator.id)
     assert parking_data['created_at'] == iso8601_us(parking_obj.created_at)
@@ -131,10 +132,14 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
 
 
 def iso8601(dt):
+    if not dt:
+        return None
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
 def iso8601_us(dt):
+    if not dt:
+        return None
     return dt.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
 
@@ -234,11 +239,10 @@ def test_enforcer_can_view_only_parkings_from_domain_they_enforce(
     assert response['results'][0]['id'] == str(visible_parking.id)
 
 
-@pytest.mark.parametrize("parking_type", ALL_PARKING_KINDS)
 def test_endpoint_can_return_zone_as_string_or_integer(
-    enforcer_api_client, parking_type, parking, disc_parking, enforcer
+    enforcer_api_client, parking, enforcer
 ):
-    parking_object = get_parking_object(parking_type, parking, disc_parking)
+    parking_object = parking
     parking_object.domain = enforcer.enforced_domain
     parking_object.save()
 

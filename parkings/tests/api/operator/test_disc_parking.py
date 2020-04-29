@@ -44,10 +44,19 @@ def test_post_disc_parking(operator_api_client, operator, disc_parking_data):
         assert response_parking_data[key] == disc_parking_data[key]
 
 
-def test_end_disc_parking_with_patch(operator_api_client, operator, disc_parking):
+@pytest.mark.parametrize('kind', ['had time_end', 'didnt have time_end'])
+def test_end_disc_parking_with_patch(
+        kind, operator_api_client, operator, disc_parking):
     detail_url = get_detail_url(disc_parking)
 
-    new_time_end = disc_parking.time_end + datetime.timedelta(days=1)
+    if kind == 'had time_end':
+        disc_parking.time_end = (
+            disc_parking.time_start + datetime.timedelta(hours=5))
+    else:
+        disc_parking.time_end = None
+    disc_parking.save()
+
+    new_time_end = disc_parking.time_start + datetime.timedelta(hours=2)
     time_end = new_time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     patch(operator_api_client, detail_url, data={'time_end': time_end})

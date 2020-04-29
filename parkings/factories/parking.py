@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from datetime import timedelta
 
 import factory
@@ -46,6 +48,8 @@ class ParkingFactory(factory.django.DjangoModelFactory):
 
 class DiscParkingFactory(ParkingFactory):
     is_disc_parking = True
+    time_end = None
+    zone = None
 
 
 def get_time_far_enough_in_past():
