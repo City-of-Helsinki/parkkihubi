@@ -29,7 +29,7 @@ class PaymentZoneImporter(GeoJsonImporter):
         payment_zone_ids = []
         for payment_dict in payment_zone_dicts:
             domain = payment_dict.pop('domain', default_domain)
-            code = payment_dict.pop('code', payment_dict.get('number'))
+            code = payment_dict.pop('code', str(payment_dict.get('number')))
             payment_zone, _ = PaymentZone.objects.update_or_create(
                 code=code,
                 domain=domain,
@@ -37,14 +37,3 @@ class PaymentZoneImporter(GeoJsonImporter):
             payment_zone_ids.append(payment_zone.pk)
             count += 1
         return count
-
-    def _parse_member(self, member):
-        name = member['properties']['name']
-        number = member['properties']['number']
-        geom = self.get_polygons(member['geometry'])
-
-        return {
-            'name': name,
-            'number': number,
-            'geom': geom,
-        }

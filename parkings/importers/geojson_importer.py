@@ -17,9 +17,9 @@ class GeoJsonImporter(metaclass=abc.ABCMeta):
             for member in root['features']:
                 yield self._parse_member(member)
 
-    @abc.abstractmethod
     def _parse_member(self, member):
-        pass
+        props = member['properties']
+        return dict(props, geom=self.get_polygons(member['geometry']))
 
     def get_polygons(self, geom):
         result = GEOSGeometry(json.dumps(geom))
