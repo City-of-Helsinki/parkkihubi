@@ -37,7 +37,6 @@ class PaymentZoneImporter(GeoJsonImporter):
                 defaults=payment_dict)
             payment_zone_ids.append(payment_zone.pk)
             count += 1
-        PaymentZone.objects.exclude(pk__in=payment_zone_ids).delete()
         return count
 
     def _parse_member(self, member):

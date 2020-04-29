@@ -38,7 +38,6 @@ class PermitAreaImporter(GeoJsonImporter):
                 defaults=area_dict)
             permit_area_ids.append(permit_area.pk)
             count += 1
-        PermitArea.objects.exclude(pk__in=permit_area_ids).delete()
         return count
 
     def _parse_member(self, member):
