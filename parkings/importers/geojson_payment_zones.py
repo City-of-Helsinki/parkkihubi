@@ -3,8 +3,7 @@ import os
 
 from django.db import transaction
 
-from parkings.models import EnforcementDomain, PaymentZone
-
+from ..models import PaymentZone
 from .geojson_importer import GeoJsonImporter
 
 logger = logging.getLogger(__name__)
@@ -25,7 +24,7 @@ class PaymentZoneImporter(GeoJsonImporter):
     @transaction.atomic
     def _save_payment_zones(self, payment_zone_dicts):
         logger.info('Saving payment zones.')
-        default_domain = EnforcementDomain.get_default_domain()
+        default_domain = self.get_default_domain()
         count = 0
         payment_zone_ids = []
         for payment_dict in payment_zone_dicts:

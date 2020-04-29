@@ -3,10 +3,13 @@ import json
 
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 
+from ..models import EnforcementDomain
+
 
 class GeoJsonImporter(metaclass=abc.ABCMeta):
-    def __init__(self, srid=None):
+    def __init__(self, srid=None, default_domain_code=None):
         self.srid = srid
+        self.default_domain_code = default_domain_code
 
     def read_and_parse(self, geojson_file_path):
         with open(geojson_file_path, "rt") as file:
@@ -28,3 +31,8 @@ class GeoJsonImporter(metaclass=abc.ABCMeta):
             result.srid = self.srid
 
         return result
+
+    def get_default_domain(self):
+        if self.default_domain_code:
+            return EnforcementDomain.objects.get(code=self.default_domain_code)
+        return EnforcementDomain.get_default_domain()
