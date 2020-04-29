@@ -5,6 +5,8 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 
 
 class GeoJsonImporter(metaclass=abc.ABCMeta):
+    def __init__(self, srid=None):
+        self.srid = srid
 
     def read_and_parse(self, geojson_file_path):
         with open(geojson_file_path, "rt") as file:
@@ -21,5 +23,8 @@ class GeoJsonImporter(metaclass=abc.ABCMeta):
 
         if isinstance(result, Polygon):
             result = MultiPolygon(result)
+
+        if self.srid:
+            result.srid = self.srid
 
         return result

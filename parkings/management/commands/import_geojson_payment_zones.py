@@ -8,7 +8,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('geojson_file_path')
+        parser.add_argument('--srid', '-s', type=int, default=None)
 
-    def handle(self, *args, **options):
-        file_path = options.get('geojson_file_path', None)
-        PaymentZoneImporter().import_payment_zones(file_path)
+    def handle(self, *, geojson_file_path,
+               srid=None, **kwargs):
+        importer = PaymentZoneImporter(srid=srid)
+        importer.import_payment_zones(geojson_file_path)

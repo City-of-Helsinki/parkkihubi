@@ -8,9 +8,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('geojson_file_path')
-        parser.add_argument('permitted-user')
+        parser.add_argument('permitted_user')
+        parser.add_argument('--srid', '-s', type=int, default=None)
 
-    def handle(self, *args, **options):
-        file_path = options.get('geojson_file_path', None)
-        permitted_user = options.get('permitted-user', None)
-        PermitAreaImporter().import_permit_areas(file_path, permitted_user)
+    def handle(self, *, geojson_file_path, permitted_user,
+               srid=None, **kwargs):
+        importer = PermitAreaImporter(srid=srid)
+        importer.import_permit_areas(geojson_file_path, permitted_user)
