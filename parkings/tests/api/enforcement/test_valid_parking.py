@@ -132,10 +132,14 @@ def check_parking_data_matches_parking_object(parking_data, parking_obj):
 
 
 def iso8601(dt):
+    if not dt:
+        return None
     return dt.strftime('%Y-%m-%dT%H:%M:%SZ')
 
 
 def iso8601_us(dt):
+    if not dt:
+        return None
     return dt.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
 

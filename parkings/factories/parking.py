@@ -48,6 +48,7 @@ class ParkingFactory(factory.django.DjangoModelFactory):
 
 class DiscParkingFactory(ParkingFactory):
     is_disc_parking = True
+    time_end = None
     zone = None
 
 
