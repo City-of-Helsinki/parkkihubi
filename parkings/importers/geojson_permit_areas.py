@@ -38,14 +38,3 @@ class PermitAreaImporter(GeoJsonImporter):
             permit_area_ids.append(permit_area.pk)
             count += 1
         return count
-
-    def _parse_member(self, member):
-        identifier = member['properties']['identifier']
-        name = member['properties']['name']
-        geom = self.get_polygons(member['geometry'])
-
-        return {
-            'name': name,
-            'identifier': identifier,
-            'geom': geom,
-        }
