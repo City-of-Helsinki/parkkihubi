@@ -5,7 +5,7 @@ from .parking import OperatorAPIParkingViewSet
 from .permit import (
     OperatorActivePermitByExternalIdViewSet, OperatorPermitSeriesViewSet,
     OperatorPermittedPermitAreaViewSet, OperatorPermitViewSet)
-from .zone import OperatorPermittedPaymentZoneViewSet
+from .zone import PaymentZoneViewSet
 
 router = DefaultRouter()
 router.register(r'parking', OperatorAPIParkingViewSet, basename='parking')
@@ -13,7 +13,7 @@ router.register(r'permitseries', OperatorPermitSeriesViewSet, basename='permitse
 router.register(r'permit', OperatorPermitViewSet, basename='permit')
 router.register(r'activepermit', OperatorActivePermitByExternalIdViewSet, basename='activepermit')
 router.register(r'permit_area', OperatorPermittedPermitAreaViewSet, basename='permitarea')
-router.register(r'payment_zone', OperatorPermittedPaymentZoneViewSet, basename='paymentzone')
+router.register(r'payment_zone', PaymentZoneViewSet, basename='paymentzone')
 
 app_name = 'operator'
 urlpatterns = [

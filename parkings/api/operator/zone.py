@@ -15,9 +15,7 @@ class PaymentZoneSerializer(serializers.ModelSerializer):
         fields = ['domain', 'code', 'name']
 
 
-class OperatorPermittedPaymentZoneViewSet(mixins.ListModelMixin, GenericViewSet):
+class PaymentZoneViewSet(mixins.ListModelMixin, GenericViewSet):
     permission_classes = [IsOperator]
     serializer_class = PaymentZoneSerializer
-
-    def get_queryset(self):
-        return PaymentZone.objects.filter(domain=self.request.user.enforcer.enforced_domain)
+    queryset = PaymentZone.objects.all()
