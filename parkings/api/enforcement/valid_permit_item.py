@@ -43,16 +43,15 @@ class ValidPermitItemFilter(django_filters.rest_framework.FilterSet):
             return True
 
     def filter_reg_num(self, queryset, name, value):
-        return queryset.by_subject(value).active()
+        return queryset.by_subject(value)
 
     def filter_time(self, queryset, name, value):
-        valid_permits = queryset.by_time(value).active()
-        return valid_permits
+        return queryset.by_time(value)
 
 
 class ValidPermitItemViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsEnforcer]
-    queryset = PermitLookupItem.objects.order_by('end_time')
+    queryset = PermitLookupItem.objects.active().order_by('end_time')
     serializer_class = ValidPermitItemSerializer
     filterset_class = ValidPermitItemFilter
 
