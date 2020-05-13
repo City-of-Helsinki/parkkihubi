@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 import pytest
 from django.urls import reverse
 from rest_framework.status import (
@@ -6,6 +8,7 @@ from rest_framework.status import (
 from ....factories.permit import (
     create_permit, create_permit_area, create_permit_series, generate_areas,
     generate_external_ids, generate_subjects)
+from ....models import PermitSeries
 
 list_url = reverse('enforcement:v1:activepermit-list')
 
@@ -137,3 +140,31 @@ def test_active_permit_visibility_is_limited_to_permitseries_owner(enforcer_api_
     assert response.data == {
         'count': 0, 'next': None, 'previous': None, 'results': []}
     assert response.status_code == HTTP_200_OK
+
+
+@pytest.mark.django_db
+def test_permit_is_created_to_correct_series(
+        enforcer_api_client, enforcer, admin_user):
+    """
+    Test permit is created to a series owned by the request performer.
+
+    If there are several active permit series, only those which are
+    owned by the user who performs the request should be considered,
+    when picking the latest active permit series.
+    """
+    permit_series = create_permit_series(owner=enforcer.user, active=True)
+    other_series = create_permit_series(owner=admin_user, active=True)
+    other_series.modified_at = permit_series.modified_at + timedelta(seconds=1)
+    other_series.save(update_fields=['modified_at'])
+    assert other_series.modified_at > permit_series.modified_at
+    assert PermitSeries.objects.latest_active() == other_series
+    data = {
+        'external_id': 'Extern1234',
+        'subjects': [],
+        'areas': [],
+    }
+
+    response = enforcer_api_client.post(list_url, data=data)
+
+    assert response.data.get('series') == permit_series.id
+    assert response.status_code == HTTP_201_CREATED

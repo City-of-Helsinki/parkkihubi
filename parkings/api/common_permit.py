@@ -135,10 +135,14 @@ class ActivePermitByExternalIdViewSet(viewsets.ModelViewSet):
     lookup_field = 'external_id'
 
     def perform_create(self, serializer):
-        latest_active_permit_series = PermitSeries.objects.latest_active()
+        latest_active_permit_series = (
+            self.get_series_queryset().latest_active())
         if not latest_active_permit_series:
             raise NotFound(_("Active permit series doesn't exist"))
         serializer.save(series=latest_active_permit_series)
 
     def get_queryset(self):
         return super().get_queryset().filter(series__owner=self.request.user)
+
+    def get_series_queryset(self):
+        return PermitSeries.objects.filter(owner=self.request.user)
