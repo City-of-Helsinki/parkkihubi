@@ -28,3 +28,10 @@ django-cors-headers
 django-sanitized-dump
 python-memcached
 pytz
+
+# Parking Predictions
+catboost==0.23.1
+django-cron==0.5.1
+holidays==0.9.11
+pandas==0.25.1
+sklearn==0.0
