@@ -1081,7 +1081,7 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-  /active_permit_by_external_id/:
+  /activepermit/:
     get:
       tags: ['Active Permits by External Id']
       summary: Get list of permits in the active series
@@ -1131,7 +1131,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Permit'
-  /active_permit_by_external_id/{external_id}/:
+  /activepermit/{external_id}/:
     get:
       tags: ['Active Permits by External Id']
       summary: Get details of a permit in the active series
