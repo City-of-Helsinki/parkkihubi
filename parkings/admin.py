@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.gis.admin import OSMGeoAdmin
+from django.db import models
 
 from .admin_utils import ReadOnlyAdmin, WithAreaField
 from .models import (
@@ -94,9 +95,18 @@ class ParkingTerminalAdmin(OSMGeoAdmin):
 @admin.register(Permit)
 class PermitAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
-    list_display = ['id', 'domain', 'series', 'external_id', 'created_at', 'modified_at']
-    list_filter = ['series__active', 'domain']
+    list_display = [
+        'id', 'domain', 'series', 'external_id',
+        'item_count', 'created_at', 'modified_at']
+    list_filter = ['series__active', 'domain', 'series__owner']
     ordering = ('-series', '-id')
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(item_count=models.Count('lookup_items'))
+
+    def item_count(self, instance):
+        return instance.item_count
 
 
 @admin.register(PermitArea)
@@ -108,11 +118,15 @@ class PermitAreaAdmin(WithAreaField, OSMGeoAdmin):
 
 @admin.register(PermitLookupItem)
 class PermitLookupItemAdmin(ReadOnlyAdmin):
+    date_hierarchy = 'start_time'
     list_display = [
-        'id', 'series', 'permit',
+        'id', 'series', 'domain', 'permit',
         'registration_number', 'area',
         'start_time', 'end_time']
-    list_filter = ['permit__series__active']
+    list_filter = [
+        'permit__series__active',
+        'permit__domain',
+        'permit__series__owner']
     ordering = ('-permit__series', 'permit')
 
     def series(self, instance):
@@ -120,10 +134,22 @@ class PermitLookupItemAdmin(ReadOnlyAdmin):
         return '{id}{active}'.format(
             id=series.id, active='*' if series.active else '')
 
+    def domain(self, instance):
+        return instance.permit.domain
+
 
 @admin.register(PermitSeries)
 class PermitSeriesAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
-    list_display = ['id', 'active', 'created_at', 'modified_at']
-    list_filter = ['active']
+    list_display = [
+        'id', 'active', 'owner', 'permit_count',
+        'created_at', 'modified_at']
+    list_filter = ['active', 'owner']
     ordering = ('-created_at', '-id')
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(permit_count=models.Count('permit'))
+
+    def permit_count(self, instance):
+        return instance.permit_count

@@ -30,7 +30,7 @@ class PermitArea(TimestampedModelMixin):
         ordering = ('identifier',)
 
     def __str__(self):
-        return '{}: {}'.format(self.identifier, self.name)
+        return '{}/{}: {}'.format(self.domain.code, self.identifier, self.name)
 
 
 class PermitSeriesQuerySet(models.QuerySet):
@@ -122,8 +122,9 @@ class Permit(TimestampedModelMixin, models.Model):
         ordering = ('series', 'id')
 
     def __str__(self):
-        return 'Permit {id} ({series}{active} / {external_id})'.format(
+        return 'Permit {id} ({series}{active}/{external_id} {dom})'.format(
             id=self.id,
+            dom=self.domain.code,
             series=self.series,
             active='*' if self.series.active else '',
             external_id=self.external_id)
