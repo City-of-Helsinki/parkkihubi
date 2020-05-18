@@ -210,7 +210,7 @@ components:
           description: Start time of the validity period
           type: string
           format: date-time
-        end_date:
+        end_time:
           description: End time of the validity period
           type: string
           format: date-time
@@ -232,7 +232,7 @@ components:
           description: Start time of the parking
           type: string
           format: date-time
-        end_date:
+        end_time:
           description: End time of the parking
           type: string
           format: date-time
