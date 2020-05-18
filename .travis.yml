@@ -10,11 +10,18 @@ matrix:
     - python: "3.5"
     - python: "3.6"
     - python: "3.7"
-    - env: TOXENV=requirements
+    - name: Requirements
+      env: TOXENV=requirements
       python: "3.5"
       addons: null
       before_script: null
-    - env: TOXENV=style
+    - name: Coding Style
+      env: TOXENV=style
+      python: "3.5"
+      addons: null
+      before_script: null
+    - name: Sanitizer Configuration
+      env: TOXENV=sanitizer
       python: "3.5"
       addons: null
       before_script: null
