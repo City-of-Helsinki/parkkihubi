@@ -7,7 +7,7 @@
 attrs==19.3.0             # via pytest
 certifi==2019.11.28       # via requests
 chardet==3.0.4            # via requests
-coverage==5.0.4           # via pytest-cov
+coverage==5.1             # via pytest-cov
 factory-boy==2.12.0
 faker==4.0.2              # via factory-boy
 freezegun==0.3.15
