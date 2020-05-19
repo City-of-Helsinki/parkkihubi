@@ -9,7 +9,7 @@ info:
     **Note**: This is a review version of the API specification.  The
     specification contains some parts that are not yet frozen and their
     contents might change before the final non-review version.
-  version: "1.2.0.rc2.2020-04-24"  # remove above warning when releasing 1.2.0
+  version: "1.2.0.rc3.2020-05-18"  # remove above warning when releasing 1.2.0
 servers:
   - url: https://api.parkkiopas.fi/enforcement/v1/
     description: Production server
@@ -210,7 +210,7 @@ components:
           description: Start time of the validity period
           type: string
           format: date-time
-        end_date:
+        end_time:
           description: End time of the validity period
           type: string
           format: date-time
@@ -232,7 +232,7 @@ components:
           description: Start time of the parking
           type: string
           format: date-time
-        end_date:
+        end_time:
           description: End time of the parking
           type: string
           format: date-time
