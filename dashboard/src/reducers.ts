@@ -2,6 +2,7 @@ import * as _ from 'lodash';
 import { combineReducers } from 'redux';
 
 import { Action } from './actions';
+import { centerCoordinates } from './config';
 import * as conv from './converters';
 import {
     AuthenticationState, ParkingRegionMapState, ParkingsMap, RegionsMap,
@@ -85,7 +86,7 @@ function auth(
 
 const initialParkingRegionMapState: ParkingRegionMapState = {
     bounds: undefined,
-    center: [60.17, 24.94],
+    center: centerCoordinates,
     zoom: 12,
 };
 
