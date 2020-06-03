@@ -4,9 +4,9 @@ from django.db import models
 
 from .admin_utils import ReadOnlyAdmin, WithAreaField
 from .models import (
-    EnforcementDomain, Enforcer, Monitor, Operator, Parking, ParkingArea,
-    ParkingCheck, ParkingTerminal, PaymentZone, Permit, PermitArea,
-    PermitLookupItem, PermitSeries, Region)
+    ArchivedParking, EnforcementDomain, Enforcer, Monitor, Operator, Parking,
+    ParkingArea, ParkingCheck, ParkingTerminal, PaymentZone, Permit,
+    PermitArea, PermitLookupItem, PermitSeries, Region)
 
 
 @admin.register(Enforcer)
@@ -39,7 +39,7 @@ class PaymentZoneAdmin(WithAreaField, OSMGeoAdmin):
     ordering = ('number',)
 
 
-@admin.register(Parking)
+@admin.register(Parking, ArchivedParking)
 class ParkingAdmin(OSMGeoAdmin):
     date_hierarchy = 'time_start'
     list_display = [

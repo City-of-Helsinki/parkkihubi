@@ -1,7 +1,7 @@
 from .enforcement_domain import EnforcementDomain, Enforcer
 from .monitor import Monitor
 from .operator import Operator
-from .parking import Parking, ParkingQuerySet
+from .parking import ArchivedParking, Parking, ParkingQuerySet
 from .parking_area import ParkingArea
 from .parking_check import ParkingCheck
 from .parking_terminal import ParkingTerminal
@@ -10,6 +10,7 @@ from .region import Region
 from .zone import PaymentZone
 
 __all__ = [
+    'ArchivedParking',
     'EnforcementDomain',
     'Enforcer',
     'Monitor',

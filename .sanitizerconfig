@@ -62,6 +62,24 @@ strategy:
     f_table_schema: null
     srid: null
     type: null
+  parkings_archivedparking:
+    archived_at: null
+    created_at: null
+    domain_id: null
+    id: null
+    is_disc_parking: null
+    location: null
+    modified_at: null
+    normalized_reg_num: parkkihubi.registration_number
+    operator_id: null
+    parking_area_id: null
+    region_id: null
+    registration_number: parkkihubi.registration_number
+    terminal_id: null
+    terminal_number: null
+    time_end: null
+    time_start: null
+    zone_id: null
   parkings_enforcementdomain:
     code: null
     created_at: null
