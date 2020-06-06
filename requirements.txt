@@ -7,26 +7,26 @@
 certifi==2019.11.28       # via requests
 chardet==3.0.4            # via requests
 database-sanitizer==1.1.0  # via django-sanitized-dump
-django==2.2.12
-django-cors-headers==3.2.1
-django-environ==0.4.5
-django-filter==2.2.0
-django-sanitized-dump==1.2.0
-djangorestframework==3.11.0
-djangorestframework-gis==0.15
+django-cors-headers==3.2.1  # via -r requirements.in
+django-environ==0.4.5     # via -r requirements.in
+django-filter==2.2.0      # via -r requirements.in
+django-sanitized-dump==1.2.0  # via -r requirements.in
+django==2.2.13            # via -r requirements.in, django-cors-headers, django-filter, djangorestframework, drf-jwt-2fa
+djangorestframework-gis==0.15  # via -r requirements.in
 djangorestframework-jwt==1.11.0  # via drf-jwt-2fa
-drf-jwt-2fa==0.3.0
+djangorestframework==3.11.0  # via -r requirements.in, djangorestframework-gis, drf-jwt-2fa
+drf-jwt-2fa==0.3.0        # via -r requirements.in
 idna==2.9                 # via requests
-lxml==4.5.0
-owslib==0.19.1
-psycopg2==2.8.4
+lxml==4.5.0               # via -r requirements.in
+owslib==0.19.1            # via -r requirements.in
+psycopg2==2.8.4           # via -r requirements.in
 pyjwt==1.7.1              # via djangorestframework-jwt
 pyproj==2.6.0             # via owslib
 python-dateutil==2.8.1    # via owslib
-python-memcached==1.59
-pytz==2019.3
+python-memcached==1.59    # via -r requirements.in
+pytz==2019.3              # via -r requirements.in, django, owslib
 pyyaml==5.3.1             # via database-sanitizer, django-sanitized-dump
-raven==6.10.0
+raven==6.10.0             # via -r requirements.in
 requests==2.23.0          # via owslib
 six==1.14.0               # via database-sanitizer, django-sanitized-dump, python-dateutil, python-memcached
 sqlparse==0.3.1           # via django
