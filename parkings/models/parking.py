@@ -1,5 +1,6 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance
+from django.db import transaction
 from django.utils.timezone import localtime, now
 from django.utils.translation import ugettext_lazy as _
 
@@ -31,6 +32,13 @@ class ParkingQuerySet(models.QuerySet):
     def ends_after(self, time):
         return self.filter(Q(time_end__gte=time) | Q(time_end=None))
 
+    def ends_before(self, time):
+        return self.exclude(time_end=None).filter(time_end__lte=time)
+
+    def archive(self):
+        for parking in self:
+            parking.archive()
+
     def registration_number_like(self, registration_number):
         """
         Filter to parkings having registration number like the given value.
@@ -42,16 +50,16 @@ class ParkingQuerySet(models.QuerySet):
         return self.filter(normalized_reg_num=normalized_reg_num)
 
 
-class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
+class AbstractParking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     VALID = 'valid'
     NOT_VALID = 'not_valid'
 
     region = models.ForeignKey(
         Region, null=True, blank=True, on_delete=models.SET_NULL,
-        related_name='parkings', verbose_name=_("region"),
+        verbose_name=_("region"),
     )
     parking_area = models.ForeignKey(
-        ParkingArea, on_delete=models.SET_NULL, verbose_name=_("parking area"), related_name='parkings', null=True,
+        ParkingArea, on_delete=models.SET_NULL, verbose_name=_("parking area"), null=True,
         blank=True,
     )
     terminal_number = models.CharField(
@@ -65,7 +73,7 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     )
     location = models.PointField(verbose_name=_("location"), null=True, blank=True)
     operator = models.ForeignKey(
-        Operator, on_delete=models.PROTECT, verbose_name=_("operator"), related_name="parkings"
+        Operator, on_delete=models.PROTECT, verbose_name=_("operator")
     )
     registration_number = models.CharField(max_length=20, db_index=True, verbose_name=_("registration number"))
     normalized_reg_num = models.CharField(
@@ -80,17 +88,16 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
     )
     domain = models.ForeignKey(
         EnforcementDomain, on_delete=models.PROTECT,
-        related_name='parkings', null=True,)
+        null=True,)
     zone = models.ForeignKey(
-        PaymentZone, related_name='parkings', on_delete=models.PROTECT,
+        PaymentZone, on_delete=models.PROTECT,
         verbose_name=_("PaymentZone"), null=True, blank=True)
     is_disc_parking = models.BooleanField(verbose_name=_("disc parking"), default=False)
 
     objects = ParkingQuerySet.as_manager()
 
     class Meta:
-        verbose_name = _("parking")
-        verbose_name_plural = _("parkings")
+        abstract = True
 
     def __str__(self):
         start = localtime(self.time_start).replace(tzinfo=None)
@@ -104,6 +111,25 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
             end = localtime(self.time_end).replace(tzinfo=None)
 
         return "%s -> %s (%s)" % (start, end, self.registration_number)
+
+
+class Parking(AbstractParking):
+    class Meta:
+        verbose_name = _("parking")
+        verbose_name_plural = _("parkings")
+        default_related_name = "parkings"
+
+    def archive(self):
+        archived_parking = self.make_archived_parking()
+        with transaction.atomic():
+            archived_parking.save()
+            self.delete()
+            return archived_parking
+
+    def make_archived_parking(self):
+        fields = [field.name for field in self._meta.fields]
+        values = {field: getattr(self, field) for field in fields}
+        return ArchivedParking(**values)
 
     def get_state(self):
         current_timestamp = now()
@@ -152,13 +178,30 @@ class Parking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
             self.normalized_reg_num = (
                 self.normalize_reg_num(self.registration_number))
 
-        super(Parking, self).save(update_fields=update_fields, *args, **kwargs)
+        super().save(update_fields=update_fields, *args, **kwargs)
 
     @classmethod
     def normalize_reg_num(cls, registration_number):
         if not registration_number:
             return ''
         return registration_number.upper().replace('-', '').replace(' ', '')
+
+
+class ArchivedParking(AbstractParking):
+    created_at = models.DateTimeField(verbose_name=_("time created"))
+    modified_at = models.DateTimeField(verbose_name=_("time modified"))
+    archived_at = models.DateTimeField(auto_now_add=True, verbose_name=_("time archived"))
+
+    class Meta:
+        verbose_name = _("archived parking")
+        verbose_name_plural = _("archived parkings")
+        default_related_name = "archived_parkings"
+
+    def __str__(self):
+        return super().__str__() + " (archived)"
+
+    def archive(self):
+        return self
 
 
 def _try_cast_int(value):
