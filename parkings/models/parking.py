@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance
 from django.db import transaction
+from django.utils import timezone
 from django.utils.timezone import localtime, now
 from django.utils.translation import ugettext_lazy as _
 
@@ -8,6 +9,7 @@ from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from parkings.models.operator import Operator
 from parkings.models.parking_area import ParkingArea
 from parkings.models.zone import PaymentZone
+from parkings.utils.sanitizing import sanitize_registration_number
 
 from .enforcement_domain import EnforcementDomain
 from .parking_terminal import ParkingTerminal
@@ -191,6 +193,7 @@ class ArchivedParking(AbstractParking):
     created_at = models.DateTimeField(verbose_name=_("time created"))
     modified_at = models.DateTimeField(verbose_name=_("time modified"))
     archived_at = models.DateTimeField(auto_now_add=True, verbose_name=_("time archived"))
+    sanitized_at = models.DateTimeField(verbose_name=_("time sanitized"), null=True, blank=True)
 
     class Meta:
         verbose_name = _("archived parking")
@@ -202,6 +205,12 @@ class ArchivedParking(AbstractParking):
 
     def archive(self):
         return self
+
+    def sanitize(self):
+        self.registration_number = sanitize_registration_number(self.registration_number)
+        self.normalized_reg_num = sanitize_registration_number(self.normalized_reg_num)
+        self.sanitized_at = timezone.now()
+        self.save(update_fields=['registration_number', 'normalized_reg_num', 'sanitized_at'])
 
 
 def _try_cast_int(value):

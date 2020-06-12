@@ -75,6 +75,7 @@ strategy:
     parking_area_id: null
     region_id: null
     registration_number: parkkihubi.registration_number
+    sanitized_at: null
     terminal_id: null
     terminal_number: null
     time_end: null
