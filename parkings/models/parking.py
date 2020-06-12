@@ -166,7 +166,8 @@ class Parking(AbstractParking):
 
         if not self.terminal and self.terminal_number:
             self.terminal = ParkingTerminal.objects.filter(
-                number=_try_cast_int(self.terminal_number)).first()
+                domain=self.domain,
+                number=self.terminal_number).first()
 
         if self.terminal and not self.location:
             self.location = self.terminal.location
@@ -211,10 +212,3 @@ class ArchivedParking(AbstractParking):
         self.normalized_reg_num = sanitize_registration_number(self.normalized_reg_num)
         self.sanitized_at = timezone.now()
         self.save(update_fields=['registration_number', 'normalized_reg_num', 'sanitized_at'])
-
-
-def _try_cast_int(value):
-    try:
-        return int(value)
-    except ValueError:
-        return None
