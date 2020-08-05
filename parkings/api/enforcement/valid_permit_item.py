@@ -8,6 +8,7 @@ from .permissions import IsEnforcer
 
 
 class ValidPermitItemSerializer(serializers.ModelSerializer):
+    permit_id = serializers.IntegerField(source='permit.id')
     area = serializers.SlugRelatedField(slug_field='identifier', queryset=PermitArea.objects.all())
     operator = serializers.CharField(source='permit.series.owner.operator.id')
     operator_name = serializers.CharField(source='permit.series.owner.operator.name')
@@ -15,6 +16,8 @@ class ValidPermitItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = PermitLookupItem
         fields = [
+            'id',
+            'permit_id',
             'area',
             'registration_number',
             'start_time',

@@ -90,13 +90,21 @@ def test_list_endpoint_data(enforcer_api_client, enforcer, operator_factory):
 
 
 def check_permit_item_data_keys(permit_item_data):
-    permit_item_data_keys = {
-        'area', 'registration_number', 'start_time', 'end_time', 'operator', 'operator_name',
+    assert set(permit_item_data.keys()) == {
+        'id',
+        'permit_id',
+        'area',
+        'registration_number',
+        'start_time',
+        'end_time',
+        'operator',
+        'operator_name',
     }
-    assert set(permit_item_data.keys()) == permit_item_data_keys
 
 
 def check_permit_item_data_matches_permitlookuptem_object(permit_item_data, permit_item):
+    assert permit_item_data['id'] == permit_item.id
+    assert permit_item_data['permit_id'] == permit_item.permit.id
     assert permit_item_data['area'] == permit_item.area.identifier
     assert permit_item_data['registration_number'] == permit_item.registration_number
     assert permit_item_data['start_time'] == iso8601(permit_item.start_time)

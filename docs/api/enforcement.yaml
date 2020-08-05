@@ -162,6 +162,8 @@ components:
     ValidPermitItem:
       type: object
       example: &validPermitItemExample
+        id: 12432
+        permit_id: 4992
         area: "B"
         registration_number: "ABC-123"
         start_time: "2019-12-31T21:00:00Z"
@@ -169,6 +171,12 @@ components:
         operator: "63f8374e-1eed-44fa-9224-4cd0c64ddf35"
         operator_name: "Foobar Parkings"
       properties:
+        id:
+          description: Id of the permit item
+          type: integer
+        permit_id:
+          description: Id of the permit containing this item
+          type: integer
         area:
           description: Code of the permit area that this item permits parking to
           type: string
