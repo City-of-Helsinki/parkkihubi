@@ -467,8 +467,7 @@ paths:
         - name: time
           in: query
           description: >-
-            Time when returned permit items should be valid. Required if no
-            registration number is set.
+            Time when returned permit items should be valid.
           schema:
             type: string
             format: date-time
@@ -476,7 +475,6 @@ paths:
           in: query
           description: >-
             Registration number of permit items. Dashes are ignored.
-            Required if no time is set.
           schema:
             type: string
       responses:

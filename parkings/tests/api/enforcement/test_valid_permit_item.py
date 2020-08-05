@@ -4,7 +4,7 @@ import pytest
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.status import (
-    HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN)
+    HTTP_200_OK, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN)
 
 from parkings.factories.permit import create_permit, create_permits
 from parkings.models import PermitLookupItem
@@ -64,11 +64,10 @@ def test_disallowed_methods(enforcer_api_client, enforcer, url_kind):
         enforcer_api_client, [url], disallowed_methods, 405)
 
 
-def test_reg_num_or_time_is_required(enforcer_api_client):
+def test_reg_num_and_time_are_optional(enforcer_api_client):
     response = enforcer_api_client.get(list_url)
-    error_message = 'Either time or registration number required.'
-    assert response.status_code == HTTP_400_BAD_REQUEST
-    assert error_message in response.data
+    assert response.status_code == HTTP_200_OK
+    assert response.data == {'next': None, 'previous': None, 'results': []}
 
 
 def test_list_endpoint_base_fields(enforcer_api_client):

@@ -34,13 +34,6 @@ class ValidPermitItemFilter(django_filters.rest_framework.FilterSet):
         model = PermitLookupItem
         fields = []
 
-    def is_valid(self):
-        super(ValidPermitItemFilter, self).is_valid()
-        if not self.request.query_params.get("reg_num") and not self.request.query_params.get("time"):
-            raise serializers.ValidationError(_("Either time or registration number required."))
-        else:
-            return True
-
     def filter_reg_num(self, queryset, name, value):
         return queryset.by_subject(value)
 
