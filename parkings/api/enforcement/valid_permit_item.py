@@ -52,4 +52,5 @@ class ValidPermitItemViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = CursorPagination
 
     def get_queryset(self):
-        return super().get_queryset().filter(permit__domain=self.request.user.enforcer.enforced_domain)
+        domain = self.request.user.enforcer.enforced_domain
+        return super().get_queryset().filter(permit__domain=domain)
