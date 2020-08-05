@@ -64,6 +64,10 @@ def check_list_endpoint_base_fields(data):
     assert set(data.keys()) == {'next', 'previous', 'count', 'results'}
 
 
+def check_cursor_list_endpoint_base_fields(data):
+    assert set(data.keys()) == {'next', 'previous', 'results'}
+
+
 def check_required_fields(api_client, url, expected_required_fields, detail_endpoint=False):
     method = put if detail_endpoint else post
 

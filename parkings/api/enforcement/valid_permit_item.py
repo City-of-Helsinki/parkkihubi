@@ -2,9 +2,8 @@ import django_filters
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, viewsets
 
-from parkings.models import PermitArea
-
-from ...models import PermitLookupItem
+from ...models import PermitArea, PermitLookupItem
+from ...pagination import CursorPagination
 from .permissions import IsEnforcer
 
 
@@ -51,9 +50,10 @@ class ValidPermitItemFilter(django_filters.rest_framework.FilterSet):
 
 class ValidPermitItemViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsEnforcer]
-    queryset = PermitLookupItem.objects.active().order_by('end_time')
+    queryset = PermitLookupItem.objects.active()
     serializer_class = ValidPermitItemSerializer
     filterset_class = ValidPermitItemFilter
+    pagination_class = CursorPagination
 
     def get_queryset(self):
         return super().get_queryset().filter(permit__domain=self.request.user.enforcer.enforced_domain)

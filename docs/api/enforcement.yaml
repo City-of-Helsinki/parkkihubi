@@ -503,8 +503,15 @@ paths:
                     - << : *validPermitItemExample
                       area: "B"
                       registration_number: "XYZ-456"
-                properties:
-                  << : *paginatedResult
+                properties: &cursorPaginatedResult
+                  next:
+                    description: Link to the next result page
+                    type: string
+                    format: uri
+                  previous:
+                    description: Link to the previous result page
+                    type: string
+                    format: uri
                   results:
                     type: array
                     items:

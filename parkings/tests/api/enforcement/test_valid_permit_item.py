@@ -11,8 +11,8 @@ from parkings.models import PermitLookupItem
 from parkings.tests.api.enforcement.test_valid_parking import iso8601
 
 from ..utils import (
-    ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes,
-    get)
+    ALL_METHODS, check_cursor_list_endpoint_base_fields,
+    check_method_status_codes, get)
 
 list_url = reverse('enforcement:v1:valid_permit_item-list')
 
@@ -73,7 +73,7 @@ def test_reg_num_or_time_is_required(enforcer_api_client):
 
 def test_list_endpoint_base_fields(enforcer_api_client):
     permit_item_data = get(enforcer_api_client, list_url_for(reg_num='ABC-123'))
-    check_list_endpoint_base_fields(permit_item_data)
+    check_cursor_list_endpoint_base_fields(permit_item_data)
 
 
 def test_list_endpoint_data(enforcer_api_client, enforcer, operator_factory):
@@ -120,13 +120,13 @@ def test_time_filter(enforcer_api_client, enforcer):
     permit_2 = PermitLookupItem.objects.all()[1]
 
     response = get(enforcer_api_client, list_url_for(time=timezone.now()))
-    assert response['count'] == 2
+    assert len(response['results']) == 2
 
     permit_2.end_time = timezone.now() - datetime.timedelta(seconds=900)
     permit_2.save()
 
     response = get(enforcer_api_client, list_url_for(time=timezone.now()))
-    assert response['count'] == 1
+    assert len(response['results']) == 1
     assert response['results'][0]['registration_number'] == permit_1.registration_number
 
 
@@ -136,7 +136,7 @@ def test_registration_number_and_time_filter(enforcer_api_client, enforcer):
 
     response = get(enforcer_api_client, list_url_for(reg_num=permit_1.registration_number, time=timezone.now()))
 
-    assert response['count'] == 1
+    assert len(response['results']) == 1
     assert response['results'][0]['registration_number'] == permit_1.registration_number
 
 
@@ -151,6 +151,6 @@ def test_enforcer_can_view_only_permit_items_from_domain_they_enforce(enforcer_a
 
     response = get(enforcer_api_client, list_url_for(time=timezone.now()))
 
-    assert response['count'] == 6
+    assert len(response['results']) == 6
     for results in response['results']:
         assert results['registration_number'] in enforcer_permits.values_list('registration_number', flat=True)
