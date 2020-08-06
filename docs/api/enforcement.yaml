@@ -9,7 +9,7 @@ info:
     **Note**: This is a review version of the API specification.  The
     specification contains some parts that are not yet frozen and their
     contents might change before the final non-review version.
-  version: "1.2.0.rc3.2020-05-18"  # remove above warning when releasing 1.2.0
+  version: "1.2.0.rc4.2020-08-06"  # remove above warning when releasing 1.2.0
 servers:
   - url: https://api.parkkiopas.fi/enforcement/v1/
     description: Production server
@@ -162,6 +162,8 @@ components:
     ValidPermitItem:
       type: object
       example: &validPermitItemExample
+        id: 12432
+        permit_id: 4992
         area: "B"
         registration_number: "ABC-123"
         start_time: "2019-12-31T21:00:00Z"
@@ -169,6 +171,12 @@ components:
         operator: "63f8374e-1eed-44fa-9224-4cd0c64ddf35"
         operator_name: "Foobar Parkings"
       properties:
+        id:
+          description: Id of the permit item
+          type: integer
+        permit_id:
+          description: Id of the permit containing this item
+          type: integer
         area:
           description: Code of the permit area that this item permits parking to
           type: string
@@ -467,8 +475,7 @@ paths:
         - name: time
           in: query
           description: >-
-            Time when returned permit items should be valid. Required if no
-            registration number is set.
+            Time when returned permit items should be valid.
           schema:
             type: string
             format: date-time
@@ -476,7 +483,6 @@ paths:
           in: query
           description: >-
             Registration number of permit items. Dashes are ignored.
-            Required if no time is set.
           schema:
             type: string
       responses:
@@ -503,8 +509,15 @@ paths:
                     - << : *validPermitItemExample
                       area: "B"
                       registration_number: "XYZ-456"
-                properties:
-                  << : *paginatedResult
+                properties: &cursorPaginatedResult
+                  next:
+                    description: Link to the next result page
+                    type: string
+                    format: uri
+                  previous:
+                    description: Link to the previous result page
+                    type: string
+                    format: uri
                   results:
                     type: array
                     items:
