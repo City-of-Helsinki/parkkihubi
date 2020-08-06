@@ -1,0 +1,47 @@
+@startuml
+/'
+Parkkihubi Class Diagram.
+
+This is a PlantUML file.  Use "plantuml" command to render.
+'/
+
+' ======= Some general settings
+
+hide empty members
+hide circle
+
+' ======= Layout guiding directions
+
+top to bottom direction
+
+Operator -[hidden]r- Enforcer
+PaymentZone -[hidden]r- ParkingArea
+ParkingArea  -[hidden]r- ParkingTerminal
+
+' ======= Actual relations
+
+User "1" -r- "*" "API Token"
+
+User "1" -d- "0..1" Enforcer
+User "1" -d- "0..1" Operator
+
+Enforcer "*" -- "1" EnforcementDomain
+
+EnforcementDomain "1" -d- "*" Parking
+EnforcementDomain "1" -d- "*" Permit
+EnforcementDomain "1" -d- "*" PaymentZone
+EnforcementDomain "1" -d- "*" PermitArea
+EnforcementDomain "1" -d- "*" ParkingArea
+EnforcementDomain "1" -d- "*" ParkingTerminal
+
+Parking "*" -u- "1" Operator
+Parking "*" -d- "0..1" PaymentZone
+Parking "*" -d- "0..1" ParkingTerminal
+Parking "*" -d- "0..1" ParkingArea
+
+Permit "*" -d-* "1" PermitSeries
+PermitSeries "*" -u- "1" User : owner >
+Permit "1" *-d- "*" PermitLookupItem
+PermitLookupItem "*" -l- "1" PermitArea
+
+@enduml
