@@ -197,6 +197,8 @@ INVALID_LOCATION_TEST_CASES = {
         "longitude",
         "Ensure this value is greater than or equal to -180."),
 }
+
+
 @pytest.mark.parametrize("case", INVALID_LOCATION_TEST_CASES.keys())
 def test_invalid_location_returns_bad_request(enforcer_api_client, case):
     (location, error_field, error_text) = INVALID_LOCATION_TEST_CASES[case]
@@ -247,6 +249,8 @@ INVALID_REGNUM_TEST_CASES = {
         {"ABC-123": "ABC-123"},
         "Not a valid string."),
 }
+
+
 @pytest.mark.parametrize("case", INVALID_REGNUM_TEST_CASES.keys())
 def test_invalid_regnum_returns_bad_request(enforcer_api_client, case):
     (regnum, error_text) = INVALID_REGNUM_TEST_CASES[case]
