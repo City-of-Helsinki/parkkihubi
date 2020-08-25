@@ -31,7 +31,7 @@ pydocstyle==5.0.2
 pyflakes==2.1.1           # via autoflake
 pygments==2.6.1           # via ipython
 pyparsing==2.4.6          # via packaging
-six==1.14.0               # via django-extensions, packaging, prompt-toolkit, tox, traitlets, virtualenv
+six==1.15.0               # via django-extensions, packaging, prompt-toolkit, tox, traitlets, virtualenv
 snowballstemmer==2.0.0    # via pydocstyle
 toml==0.10.0              # via tox
 tox==3.14.6
