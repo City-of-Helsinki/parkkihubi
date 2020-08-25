@@ -4,7 +4,7 @@
 #
 --no-binary psycopg2
 
-click==7.1.1              # via prequ
+click==7.1.2              # via prequ
 prequ==1.4.7
 
 # The following packages are considered to be unsafe in a requirements file:
