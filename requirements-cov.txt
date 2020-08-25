@@ -4,10 +4,10 @@
 #
 --no-binary psycopg2
 
-certifi==2019.11.28       # via requests
+certifi==2020.6.20        # via requests
 chardet==3.0.4            # via requests
-codecov==2.1.0
-coverage==5.1
-idna==2.9                 # via requests
-requests==2.23.0          # via codecov
-urllib3==1.25.8           # via requests
+codecov==2.1.9
+coverage==5.2.1
+idna==2.10                # via requests
+requests==2.24.0          # via codecov
+urllib3==1.25.10          # via requests

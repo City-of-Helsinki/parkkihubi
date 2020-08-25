@@ -148,6 +148,8 @@ INVALID_DATA_TEST_CASES = {
           'registration_number': 'X-14'}],
         'Invalid "end_time" value \'2019-12-31T00:00:00\': Missing timezone'),
 }
+
+
 @pytest.mark.parametrize('kind', ['single', 'bulk'])
 @pytest.mark.parametrize('test_case', INVALID_DATA_TEST_CASES.keys())
 @pytest.mark.django_db
