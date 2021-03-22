@@ -1,10 +1,9 @@
-import * as React from 'react';
 import Select from 'react-select';
 
 import './RegionSelector.css';
 
 type RegionId = string;
-type RegionTuple = [RegionId, string];  // id, name
+type RegionTuple = [RegionId, string]; // id, name
 
 interface Item {
     value: RegionId;
@@ -12,36 +11,29 @@ interface Item {
 }
 
 export interface Props {
-    regions: RegionTuple[];
+    regions?: RegionTuple[];
     selectedRegion?: RegionId;
-    onRegionChanged?: (regionId: RegionId|null, name: string|null) => void;
+    onRegionChanged?: (regionId: RegionId, name: string) => void;
 }
 
-class RegionSelect extends Select<RegionId> {
-}
-
-export default class RegionSelector extends React.Component<Props> {
-    render() {
-        const options = this.props.regions.map(([id, name]) => {
-            return {value: id, label: name};
-        });
-        return (
-            <RegionSelect
-                className="region-selector"
-                value={this.props.selectedRegion}
-                options={options}
-                onChange={this.handleItemChange}
-                placeholder="Valitse alue..."
-            />);
-    }
-
-    private handleItemChange = (item: Item) => {
-        if (this.props.onRegionChanged) {
+const RegionSelector = (props: Props) => {
+    const handleItemChange = (item: Item) => {
+        if (props.onRegionChanged) {
             if (item) {
-                this.props.onRegionChanged(item.value, item.label);
+                props.onRegionChanged(item.value, item.label);
             } else {
-                this.props.onRegionChanged(null, null);
+                props.onRegionChanged(null, null);
             }
         }
     }
+    const options = props.regions.map(([id, name]) => ({ value: id, label: name }));
+    const defaultValue = options[0];
+    return (<Select
+        className="region-selector"
+        defaultValue={defaultValue}
+        options={options}
+        onChange={handleItemChange}
+        placeholder="Valitse alue..."
+      />);
 }
+export default RegionSelector;
