@@ -6,7 +6,7 @@ import { centerCoordinates } from './config';
 import * as conv from './converters';
 import {
     AuthenticationState, ParkingRegionMapState, ParkingsMap, RegionsMap,
-    RegionUsageHistory, RootState, ValidParkingsHistory,
+    RegionUsageHistory, ValidParkingsHistory,
     ViewState } from './types';
 
 // Auth state reducer ////////////////////////////////////////////////
@@ -111,7 +111,7 @@ function makeReducer<T>(
     valueKey: string,
     defaultValue: T,
 ): ((state: T, action: Action) => T) {
-    function reducer(state: T = defaultValue, action: Action): T {
+    function reducer(state: T = defaultValue, action: any): T {
         if (action.type === actionType) {
             return action[valueKey];
         }
@@ -136,8 +136,8 @@ const selectedRegion = makeReducer<string|null>(
 function regions(state: RegionsMap = {}, action: Action): RegionsMap {
     if (action.type === 'RECEIVE_REGION_INFO') {
         const newRegions = mapByIdAndApply(
-            action.data.features, conv.convertRegion);
-        return {...state, ...newRegions};
+            action.data.features, conv.convertRegion as any);
+        return {...state, ...newRegions} as RegionsMap;
     }
     return state;
 }
@@ -145,8 +145,8 @@ function regions(state: RegionsMap = {}, action: Action): RegionsMap {
 function parkings(state: ParkingsMap = {}, action: Action): ParkingsMap {
     if (action.type === 'RECEIVE_VALID_PARKINGS') {
         const newParkings = mapByIdAndApply(
-            action.data.features, conv.convertParking);
-        return {...state, ...newParkings};
+            action.data.features, conv.convertParking as any);
+        return {...state, ...newParkings} as ParkingsMap;
     }
     return state;
 }
@@ -159,8 +159,8 @@ function regionUsageHistory(
         const timestamp = action.time.valueOf();
         const oldStats = state[timestamp] || {};
         const newStats = mapByIdAndApply(
-            action.data.results, conv.convertRegionStats);
-        return {...state, ...{[timestamp]: {...oldStats, ...newStats}}};
+            action.data.results, conv.convertRegionStats as any);
+        return {...state, ...{[timestamp]: {...oldStats, ...newStats}}} as RegionUsageHistory;
     }
     return state;
 }
@@ -192,8 +192,7 @@ function mapByIdAndApply<T>(
 
 // Root reducer //////////////////////////////////////////////////////
 
-const rootReducer: ((state: RootState, action: Action) => RootState) =
-    combineReducers({
+const rootReducer  = () => combineReducers({
         auth,
         views,
         dataTime,
