@@ -1,26 +1,30 @@
-.time-select .rdt .form-control {
-    min-width: 10em;
-    max-width: 10em;
+.update-button {
+    margin-left: 4px;
+    color: #515455 !important;
+    box-shadow: none !important;
+    background: #e1cfbb !important;
+    border-color: #e1cfbb !important;
 }
-
-.time-select .rdt .input-group {
-    justify-content: center;
+.btn-group .btn {
+    margin: 0 !important;
+    color: #515455 !important;
+    background: #f0e5dd !important;
+    border-color: #f0e5dd !important;
+    box-shadow: none !important;
 }
-
-.time-select .rdt .rdtPicker {
-    top: 2rem;
+.update-button:hover {
+    background: #f0e5dd !important;
+    border-color: #f0e5dd !important;
 }
-
+.btn-group .btn:hover {
+    background: #e1cfbb !important;
+    border-color: #e1cfbb !important;
+}
+.btn-group > .btn:not(:last-child) {
+    border-right: 1px solid #515455 !important;
+}
 @media screen and (max-width: 28rem) {
-    .time-select .update-button .text {
+    .update-button .text {
         display: none;
     }
-}
-
-.time-select .shift-buttons .btn {
-    min-width: 3.6em;
-}
-
-.time-select .shift-buttons .btn-group {
-    margin: 0.5rem 0.2rem;
 }

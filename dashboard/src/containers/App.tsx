@@ -4,8 +4,8 @@ import { Container, Row, Col } from 'reactstrap';
 
 import { RootState } from '../types';
 
-import Dashboard from './Dashboard';
 import LoginForm from './LoginForm';
+import Dashboard from './Dashboard';
 
 interface Props {
     isLoading?: boolean;
@@ -13,40 +13,39 @@ interface Props {
 }
 
 class App extends React.Component<Props> {
-    render() {
-        if (this.props.isLoading) {
-            return null;
-        } else if (this.props.showLoginForm) {
-            return (
-                <Container fluid={true}>
-                    <Row>
-                        <Col
-                            xs={{size: 10, offset: 1}}
-                            sm={{size: 8, offset: 2}}
-                            md={{size: 6, offset: 3}}
-                            lg={{size: 4, offset: 4}}
-                        >
-                            <LoginForm/>
-                        </Col>
-                    </Row>
-                </Container>
-            );
-        } else {
-            return (<Dashboard/>);
-        }
+  render() {
+    if (this.props.isLoading) {
+      return null;
+    } if (this.props.showLoginForm) {
+      return (
+        <Container fluid>
+          <Row>
+            <Col className="login-form"
+              xs={{ size: 10, offset: 1 }}
+              sm={{ size: 8, offset: 2 }}
+              md={{ size: 6, offset: 3 }}
+              lg={{ size: 4, offset: 4 }}
+            >
+                <div className="title-section d-flex align-items-center justify-content-center">
+                    <img className="logo" src="parkkihubi.svg" alt=""/>
+                    <h1>Parkkihubi</h1>
+                </div>
+              <LoginForm />
+            </Col>
+          </Row>
+        </Container>
+      );
     }
+    return (<Dashboard />);
+  }
 }
 
-function mapStateToProps(state: RootState): Partial<Props> {
-    return {
-        isLoading: !state.auth.existingLoginChecked,
-        showLoginForm: !state.auth.loggedIn,
-    };
-}
-
-const mapDispatchToProps = null;
+const mapStateToProps = (state: RootState): Partial<Props> => ({
+  isLoading: !state.auth.existingLoginChecked,
+  showLoginForm: !state.auth.loggedIn,
+});
 
 const ConnectedApp = connect(
-    mapStateToProps, mapDispatchToProps)(App);
+  mapStateToProps, null)(App);
 
 export default ConnectedApp;

@@ -1,5 +1,37 @@
 body {
-  margin: 0;
-  padding: 0;
   font-family: sans-serif;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+#root{
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+.login-form{
+  margin-top: 15%;
+}
+.logo{
+  width: 80px;
+  margin-right: 24px;
+}
+.logo.mini {
+  width: 40px;
+}
+.login-form .title-section {
+  margin-bottom: 24px;
+}
+.submit-button {
+  color: #515455 !important;
+  background: #d0e8ed !important;
+  border-color: #d0e8ed !important;
+}
+.submit-button i {
+  margin-left: 4px;
+}
+.margin-bottom-8 {
+  margin-bottom: 8px;
 }
