@@ -1,5 +1,4 @@
 import { Region } from './types';
 
-export function getRegionName(region: Region) {
-    return (region.properties) ? region.properties.name : '';
-}
+const getRegionName = (region: Region) => ((region.properties) ? region.properties.name : '');
+export default getRegionName;

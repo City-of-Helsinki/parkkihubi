@@ -1,0 +1,29 @@
+table {
+    font-size: 90%;
+    color: #515455 !important;
+}
+.table th, .table td {
+    border: 0 !important;
+}
+.table th {
+    background: #d0e7ed;
+}
+tbody tr:nth-child(even) {
+    background: #e8f3f7
+}
+.pagination {
+    justify-content: flex-end;
+}
+.react-bootstrap-table-pagination {
+    align-items: center;
+}
+.page-item .page-link {
+    color: #515455 !important;
+}
+.page-item.active .page-link {
+    background: #f0e5dd !important;
+    border-color: #f0e5dd !important;
+}
+.page-link:focus {
+    box-shadow: none !important;
+}

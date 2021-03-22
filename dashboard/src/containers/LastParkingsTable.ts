@@ -1,30 +1,27 @@
-import * as moment from 'moment';
+import moment from 'moment';
 import { connect } from 'react-redux';
-import ReactTable, { TableProps } from 'react-table';
+import BootstrapTable from 'react-bootstrap-table-next';
+import paginationFactory from 'react-bootstrap-table2-paginator';
 
-import 'react-table/react-table.css';
 
 import { Parking, ParkingProperties, RootState } from '../types';
+import './LastParkingsTable.css'
 
 interface ParkingData extends ParkingProperties {
     id: string;
 }
 
-function getDataOfParking(parking?: Parking): ParkingData|undefined {
+const getDataOfParking = (parking?: Parking): ParkingData|undefined => {
     return (parking) ? {
         id: parking.id,
         ...parking.properties,
     } : undefined;
 }
 
-function formatTime(timestamp?: number|null): string|undefined {
-    if (!timestamp) {
-        return undefined;
-    }
-    return moment(timestamp).format('L LTS');
-}
+const formatTime  = (timeStamp) =>
+    !timeStamp ? '' : moment(timeStamp).format('DD.MM.YYYY HH:mm');
 
-function mapStateToProps(state: RootState): Partial<TableProps> {
+const mapStateToProps = (state: RootState) => {
     const {dataTime, parkings, selectedRegion, validParkingsHistory} = state;
     const validParkings = validParkingsHistory[dataTime || 0] || [];
 
@@ -32,48 +29,59 @@ function mapStateToProps(state: RootState): Partial<TableProps> {
         (parkingId: string) => getDataOfParking(parkings[parkingId])).filter(
             (d?: ParkingData) =>
                 (d && (!selectedRegion || d.region === selectedRegion)));
-
     const columns = [
         {
-            Header: 'Tunniste',
-            accessor: 'id',
+            attrs:  { 'data-title': 'Rekisterinumero' },
+            text: 'Rekisterinumero',
+            dataField: 'registrationNumber',
         }, {
-            Header: 'Rekisterinumero',
-            accessor: 'registrationNumber',
+            attrs:  { 'data-title': 'Operaattori' },
+            text: 'Operaattori',
+            dataField: 'operatorName',
         }, {
-            Header: 'Operaattori',
-            accessor: 'operatorName',
+            attrs:  { 'data-title': 'Maksuvyöhyke' },
+            text: 'Maksuvyöhyke',
+            dataField: 'zone',
         }, {
-            Header: 'Maksuvyöhyke',
-            accessor: 'zone',
+            attrs:  { 'data-title': 'Lippuautomaatin numero' },
+            text: 'Lippuautomaatin numero',
+            dataField: 'terminalNumber',
+            headerStyle: { width: '200px' },
         }, {
-            Header: 'Lippuautomaatin numero',
-            accessor: 'terminalNumber',
+            attrs:  { 'data-title': 'Aloitusaika' },
+            text: 'Aloitusaika',
+            dataField: 'timeStart',
+            formatter: formatTime,
         }, {
-            Header: 'Aloitusaika',
-            id: 'timeStart',
-            accessor: (d: ParkingData) => formatTime(d.timeStart),
+            attrs:  { 'data-title': 'Loppumisaika' },
+            text: 'Loppumisaika',
+            dataField: 'timeEnd',
+            formatter: formatTime,
         }, {
-            Header: 'Loppumisaika',
-            id: 'timeEnd',
-            accessor: (d: ParkingData) => formatTime(d.timeEnd),
+            attrs:  { 'data-title': 'Luotu' },
+            text: 'Luotu',
+            dataField: 'createdAt',
+            formatter: formatTime,
         }, {
-            Header: 'Luotu',
-            id: 'createdAt',
-            accessor: (d: ParkingData) => formatTime(d.createdAt),
-        }, {
-            Header: 'Päivitetty',
-            id: 'modifiedAt',
-            accessor: (d: ParkingData) => formatTime(d.modifiedAt),
+            attrs:  { 'data-title': 'Päivitetty' },
+            text: 'Päivitetty',
+            dataField: 'modifiedAt',
+            formatter: formatTime,
         },
     ];
 
-    return {data, columns};
+    const pagination = paginationFactory({
+        expandRowBgColor: '#D9D9D9',
+        sizePerPageList: [],
+        sizePerPage: 17,
+        page: 1,
+        showTotal: true,
+    });
+
+    return {data, columns, keyField: 'id', bordered: false, pagination};
 }
 
 const mapDispatchToProps = null;
 
-const LastParkingsTable = connect(
-    mapStateToProps, mapDispatchToProps)(ReactTable);
+export default connect(mapStateToProps, mapDispatchToProps)(BootstrapTable);
 
-export default LastParkingsTable;

@@ -1,23 +1,15 @@
 import * as chroma from 'chroma-js';
 import * as geojson from 'geojson';
 import * as Leaflet from 'leaflet';
-import * as React from 'react';
-import * as ReactLeaflet from 'react-leaflet';
-
 import { MapViewport, Point, Region, RegionProperties } from './types';
 
 import './ParkingRegionsMap.css';
-
-// Add viewport props to the allowed props for Map component, since
-// they are missing from the latest libdefs available.
-// See https://github.com/DefinitelyTyped/DefinitelyTyped/issues/22125
-interface Viewport { center: Point; zoom: number; }
-interface MapProps extends ReactLeaflet.MapProps {
-    onViewportChange?: (viewport: Viewport) => void;
-    onViewportChanged?: (viewport: Viewport) => void;
-    viewport?: Viewport;
-}
-class Map extends ReactLeaflet.Map<MapProps> {}
+import {
+    TileLayer,
+    MapContainer,
+    GeoJSON,
+    ScaleControl,
+} from 'react-leaflet';
 
 export interface Props {
     center: Point;
@@ -27,96 +19,75 @@ export interface Props {
     onViewportChanged?: (viewport: MapViewport) => void;
 }
 
-export default class ParkingRegionsMap extends React.Component<Props> {
-    private map?: ReactLeaflet.Map;
-
-    render() {
-        const geoJsonElement = this.props.regions ? (
-            <ReactLeaflet.GeoJSON
-                key={getKeyForRegions(this.props.regions)}
-                data={getFeatureCollection(this.props.regions)}
-                style={getStyleForRegion}
-                onEachFeature={this.bindPopupToRegion}
+export default function ParkingRegionsMap(props: Props) {
+    const geoJsonElement = props.regions ? (
+        <GeoJSON
+            key={getKeyForRegions(props.regions)}
+            data={getFeatureCollection(props.regions)}
+            style={getStyleForRegion}
+            onEachFeature={(
+                region: Region,
+                layer: Leaflet.Layer
+            ) => bindPopupToRegion(region, layer, props)}
+        />
+    ) : null;
+    const osmAttribution = (
+        '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
+        + ' contributors');
+    return (
+        <MapContainer center={props.center}
+                      zoom={props.zoom}>
+            <TileLayer
+                attribution={osmAttribution}
+                url="//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-        ) : null;
-        const osmAttribution = (
-            '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a>'
-            + ' contributors');
-        return (
-            <Map
-                center={this.props.center}
-                zoom={this.props.zoom}
-                onViewportChanged={this.handleViewportChange}
-                ref={(component: ReactLeaflet.Map) => {
-                        this.map = component; }}
-            >
-                <ReactLeaflet.TileLayer
-                    url="//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution={osmAttribution}
-                />
-                <ReactLeaflet.ScaleControl
-                    metric={true}
-                    imperial={false}
-                    maxWidth={150}
-                />
-                {geoJsonElement}
-            </Map>);
-    }
+            <ScaleControl metric={true}
+                          imperial={false}
+                          maxWidth={150}/>
+            {geoJsonElement}
+        </MapContainer>
+    );
+}
 
-    private bindPopupToRegion = (
-        region: Region,
-        layer: Leaflet.Layer
-    ): void => {
-        const props = region.properties;
-        if (!props) {
-            return;
+const bindPopupToRegion = (
+    region: Region,
+    layer: Leaflet.Layer,
+    componentProps: Props
+): void => {
+    const props = region.properties;
+    if (!props) {
+        return;
+    }
+    const capacityEstimateFromArea = Math.round(props.areaKm2 * 1000);
+    const capacity = props.capacityEstimate || capacityEstimateFromArea;
+    const count = props.parkingCount || 0;
+    const parkingsPerKm2 = count / props.areaKm2;
+    const usagePercentage = 100 * count / capacity;
+    layer.on('click', () => {
+        if (componentProps.onRegionClicked) {
+            componentProps.onRegionClicked(region);
         }
-        const capacityEstimateFromArea = Math.round(props.areaKm2 * 1000);
-        const capacity = props.capacityEstimate || capacityEstimateFromArea;
-        const count = props.parkingCount || 0;
-        const parkingsPerKm2 = count / props.areaKm2;
-        const usagePercentage = 100 * count / capacity;
-        layer.on('click', (event) => {
-            if (this.props.onRegionClicked) {
-                this.props.onRegionClicked(region);
-            }
-        });
-        layer.bindTooltip(props.name);
-        const text = `
-            <h3>${props.name}</h3>
-            <b>Pinta-ala</b>:
-              ${props.areaKm2.toFixed(2)} km<sup>2</sup><br>
-            <b>Arvioitu kapasiteetti</b>:
-              ${props.capacityEstimate}<br>
-            <b>Arvioitu kapasiteetti (pinta-ala)</b>:
-              ${capacityEstimateFromArea}<br>
-            <b>Paikkoja per km<sup>2</sup></b>:
-              ${props.spotsPerKm2.toFixed(2)}<br>
-            <hr>
-            <b>Pysäköintejä</b>:
-              ${props.parkingCount || 0}<br>
-            <b>Pysäköintejä per km<sup>2</sup></b>:
-              ${parkingsPerKm2.toFixed(2)}<br>
-            <b>Käyttöaste</b>:
-              ${usagePercentage.toFixed(2)}&nbsp;%<br>
-            `;
-        layer.bindPopup(text);
-    }
-
-    private handleViewportChange = (viewport: Viewport) => {
-        if (!this.map || !this.props.onViewportChanged) {
-            return;
-        }
-
-        const boundsObj = this.map.leafletElement.getBounds();
-        const ne = boundsObj.getNorthEast();
-        const sw = boundsObj.getSouthWest();
-        const bounds = {
-            neLat: ne.lat, neLng: ne.lng,
-            swLat: sw.lat, swLng: sw.lng};
-        const {center, zoom} = viewport;
-        this.props.onViewportChanged({bounds, center, zoom});
-    }
+    });
+    layer.bindTooltip(props.name);
+    const text = `
+        <h3>${props.name}</h3>
+        <b>Pinta-ala</b>:
+          ${props.areaKm2.toFixed(2)} km<sup>2</sup><br>
+        <b>Arvioitu kapasiteetti</b>:
+          ${props.capacityEstimate}<br>
+        <b>Arvioitu kapasiteetti (pinta-ala)</b>:
+          ${capacityEstimateFromArea}<br>
+        <b>Paikkoja per km<sup>2</sup></b>:
+          ${props.spotsPerKm2.toFixed(2)}<br>
+        <hr>
+        <b>Pysäköintejä</b>:
+          ${props.parkingCount || 0}<br>
+        <b>Pysäköintejä per km<sup>2</sup></b>:
+          ${parkingsPerKm2.toFixed(2)}<br>
+        <b>Käyttöaste</b>:
+          ${usagePercentage.toFixed(2)}&nbsp;%<br>
+        `;
+    layer.bindPopup(text);
 }
 
 function getKeyForRegions(regions: Region[]): string {
@@ -150,7 +121,7 @@ function getFeatureCollection(regions: Region[]): RegionCollection {
     return {type: 'FeatureCollection', features: regions};
 }
 
-function getStyleForRegion(region: Region) {
+function getStyleForRegion(region: any) {
     const props = region.properties;
     const isSelected = (props && props.isSelected);
     const borderWeight = (isSelected) ? 3 : 1;

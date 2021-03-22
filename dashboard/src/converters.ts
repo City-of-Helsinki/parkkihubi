@@ -1,13 +1,13 @@
 /** Functions for converting API data to UI types. */
 
-import * as moment from 'moment';
+import moment from 'moment';
 
 import * as api from './api/types';
-import * as uic from './components/types';
 import * as ui from './types';
 
-export function convertRegion(region: api.Region): uic.Region {
+export function convertRegion(region: api.Region): any {
     const p = region.properties;
+    const geometry = region.geometry;
     const properties = (p) ? {
         name: p.name,
         capacityEstimate: p.capacity_estimate,
@@ -18,7 +18,7 @@ export function convertRegion(region: api.Region): uic.Region {
     return {
         id: region.id,
         type: region.type,
-        geometry: region.geometry,
+        geometry: convertEastNorthToNorthEast(geometry),
         properties
     };
 }
@@ -35,7 +35,7 @@ export function convertParking(parking: api.Parking): ui.Parking {
     const props = parking.properties;
     return {
         id: parking.id,
-        geometry: parking.geometry,
+        geometry: convertEastNorthToNorthEast(parking.geometry),
         type: parking.type,
         properties: {
             registrationNumber: props.registration_number,
@@ -57,4 +57,15 @@ function parseTime(value: string): number {
 
 function parseNullableTime(value?: string|null): number|undefined {
     return (value) ? parseTime(value) : undefined;
+}
+
+function convertEastNorthToNorthEast(geometry) {
+    const coordinates = geometry.coordinates;
+    if (geometry.type === 'Point') {
+        geometry.coordinates = [coordinates[1], coordinates[0]];
+    } else {
+        geometry.coordinates = coordinates
+            .map(coords => coords.map(coord => coord.map(co => ([co[1], co[0]]))));
+    }
+    return geometry;
 }

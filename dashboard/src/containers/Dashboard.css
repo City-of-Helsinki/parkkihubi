@@ -1,19 +1,29 @@
-.dashboard .card-body {
-    padding: 0.5rem;
+.main{
+    margin: 24px;
 }
-
-.dashboard .map-card .card-body {
-    padding: 0;
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
-
-.map-card .leaflet-container {
-    height: 60vh;
+.toolbar .submit-button {
+    background: white !important;
+    border-color: white !important;
 }
-
-.dashboard .card {
-    margin: 0.5rem 0;
+.map-card, .table-card{
+    height: calc(100vh - 140px);
 }
-
-.dashboard .parking-histogram {
-    height: 40vh;
+.map-card {
+    width: 40%;
+    overflow: hidden;
+}
+.table-card {
+    width: 60%;
+    overflow: scroll;
+}
+h4 {
+    margin: 16px 0 !important;
+}
+.leaflet-container {
+    min-height: calc(80vh - 16px) !important;
 }
