@@ -111,6 +111,16 @@ To import Helsinki parking areas run:
 
     python manage.py import_parking_areas
 
+### Geojson importers
+
+To import payment zones from geojson run:
+
+    python manage.py import_geojson_payment_zones --domain=HKI  <GEOJSON_FILE_PATH>
+
+To import permit areas from geojson run:
+
+    python manage.py import_geojson_permit_areas --domain=HKI <GEOJSON_FILE_PATH>
+
 ### Starting a development server
 
     python manage.py runserver
