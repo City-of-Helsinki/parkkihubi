@@ -9,6 +9,8 @@ services:
       POSTGRES_USER: parkkihubi
     volumes:
       - db_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
   api:
     build:
       context: "."
