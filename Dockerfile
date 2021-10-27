@@ -1,4 +1,4 @@
-FROM python:3.7-slim as appbase
+FROM python:3.7-slim-buster as appbase
 
 ENV PYTHONBUFFERED 1
 
