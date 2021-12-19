@@ -114,7 +114,7 @@ export function setAutoUpdate(value: boolean) {
   };
 }
 
-export function setSelectedRegion(regionId: string) {
+export function setSelectedRegion(regionId: string|null) {
   return (dispatch: Dispatch<Action>) => {
     dispatch(actions.setSelectedRegion(regionId));
   };

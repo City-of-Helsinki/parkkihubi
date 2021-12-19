@@ -17,13 +17,13 @@ const getRegions = (state: RootState): Region[] => {
                 ...currentRegionUsageMap[id],
                 isSelected: (id === state.selectedRegion),
             } : null;
-            return {...region, properties};
+            return properties ? {...region, properties} : {...region};
         });
     return enrichedRegions;
 }
 
 
-const mapStateToProps = (state: RootState): Partial<Props> => {
+const mapStateToProps = (state: RootState): Props => {
     const viewState = state.views.parkingRegionMap;
     return {
         center: viewState.center,

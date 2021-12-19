@@ -17,7 +17,7 @@ const mapStateToProps = (state: RootState): Props => ({
 });
 
 const mapDispatchToProps = (dispatch: any): Props => ({
-  onRegionChanged: (id: string) => dispatch(dispatchers.setSelectedRegion(id)),
+  onRegionChanged: (id: string|null) => dispatch(dispatchers.setSelectedRegion(id)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RegionSelector);

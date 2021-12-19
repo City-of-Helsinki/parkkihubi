@@ -18,7 +18,7 @@ const getDataOfParking = (parking?: Parking): ParkingData|undefined => {
     } : undefined;
 }
 
-const formatTime  = (timeStamp) =>
+const formatTime  = (timeStamp?: number|null): string =>
     !timeStamp ? '' : moment(timeStamp).format('DD.MM.YYYY HH:mm');
 
 const mapStateToProps = (state: RootState) => {
