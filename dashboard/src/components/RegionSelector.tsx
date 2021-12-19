@@ -33,6 +33,7 @@ const RegionSelector = (props: Props) => {
         defaultValue={defaultValue}
         options={options}
         onChange={handleItemChange}
+        isClearable={true}
         placeholder="Valitse alue..."
       />);
 }
