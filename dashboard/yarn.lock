@@ -1918,12 +1918,19 @@
   resolved "https://registry.yarnpkg.com/@types/q/-/q-1.5.4.tgz#15925414e0ad2cd765bfef58842f7e26a7accb24"
   integrity sha512-1HcDas8SEj4z1Wc696tH56G8OlRaH/sqZOynNNB+HF0WOeXPaxTtbYzJY2oEfiUxjSKjhCKr+MvR7dCHcEelug==
 
-"@types/react-bootstrap-table-next@^4.0.16":
+"@types/react-bootstrap-table-next@*", "@types/react-bootstrap-table-next@^4.0.16":
   version "4.0.16"
   resolved "https://registry.yarnpkg.com/@types/react-bootstrap-table-next/-/react-bootstrap-table-next-4.0.16.tgz#323904d1b78cf64bdd1fbe131cf3aee96755c8cb"
   integrity sha512-qMl6OmnQwE0vzg0PIE0EzrqWLIgx6v1vaqBdT/NQTZbVOHng55Kb6CalsOrrKMQJrebFTp2Kc4Djc0DrSHr8lw==
   dependencies:
     "@types/react" "*"
+
+"@types/react-bootstrap-table2-paginator@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/@types/react-bootstrap-table2-paginator/-/react-bootstrap-table2-paginator-2.1.2.tgz#bf40a045579c6b7ffce8a5b1120d892feb50c362"
+  integrity sha512-qAeUhtQ+wXKUC72emRBh1CQw+usGE/sXa1Xp0nEby7xZotpoJJ3iL3yAstRvYGn7TKlKuSTRRNtDEd6zP+XuqA==
+  dependencies:
+    "@types/react-bootstrap-table-next" "*"
 
 "@types/react-dom@*", "@types/react-dom@^17.0.0":
   version "17.0.2"
