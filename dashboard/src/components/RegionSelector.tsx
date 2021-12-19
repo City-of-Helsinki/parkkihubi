@@ -13,11 +13,11 @@ interface Item {
 export interface Props {
     regions?: RegionTuple[];
     selectedRegion?: RegionId;
-    onRegionChanged?: (regionId: RegionId, name: string) => void;
+    onRegionChanged?: (regionId: RegionId|null, name: string|null) => void;
 }
 
 const RegionSelector = (props: Props) => {
-    const handleItemChange = (item: Item) => {
+    const handleItemChange = (item: Item|null) => {
         if (props.onRegionChanged) {
             if (item) {
                 props.onRegionChanged(item.value, item.label);
@@ -26,7 +26,9 @@ const RegionSelector = (props: Props) => {
             }
         }
     }
-    const options = props.regions.map(([id, name]) => ({ value: id, label: name }));
+    const options = props.regions ?
+        props.regions.map(([id, name]) => ({ value: id, label: name })) :
+        [];
     const defaultValue = options[0];
     return (<Select
         className="region-selector"

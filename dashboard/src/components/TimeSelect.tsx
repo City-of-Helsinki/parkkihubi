@@ -61,7 +61,9 @@ export default class TimeSelect extends React.Component<Props> {
             const currentTime = this.datetime.props.value;
             if (currentTime != null && moment.isMoment(currentTime)) {
                 const newTime = currentTime.clone().add(minutes, 'minutes');
-                this.props.onChange(newTime);
+                if (this.props.onChange) {
+                    this.props.onChange(newTime);
+                }
             }
         }
     }
