@@ -7,7 +7,6 @@ import * as ui from './types';
 
 export function convertRegion(region: api.Region): any {
     const p = region.properties;
-    const geometry = region.geometry;
     const properties = (p) ? {
         name: p.name,
         capacityEstimate: p.capacity_estimate,
@@ -18,7 +17,7 @@ export function convertRegion(region: api.Region): any {
     return {
         id: region.id,
         type: region.type,
-        geometry: convertEastNorthToNorthEast(geometry),
+        geometry: region.geometry,
         properties
     };
 }
@@ -35,7 +34,7 @@ export function convertParking(parking: api.Parking): ui.Parking {
     const props = parking.properties;
     return {
         id: parking.id,
-        geometry: convertEastNorthToNorthEast(parking.geometry),
+        geometry: parking.geometry,
         type: parking.type,
         properties: {
             registrationNumber: props.registration_number,
@@ -57,15 +56,4 @@ function parseTime(value: string): number {
 
 function parseNullableTime(value?: string|null): number|undefined {
     return (value) ? parseTime(value) : undefined;
-}
-
-function convertEastNorthToNorthEast(geometry) {
-    const coordinates = geometry.coordinates;
-    if (geometry.type === 'Point') {
-        geometry.coordinates = [coordinates[1], coordinates[0]];
-    } else {
-        geometry.coordinates = coordinates
-            .map(coords => coords.map(coord => coord.map(co => ([co[1], co[0]]))));
-    }
-    return geometry;
 }
