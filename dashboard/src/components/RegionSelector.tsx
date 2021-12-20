@@ -29,10 +29,9 @@ const RegionSelector = (props: Props) => {
     const options = props.regions ?
         props.regions.map(([id, name]) => ({ value: id, label: name })) :
         [];
-    const defaultValue = options[0];
     return (<Select
         className="region-selector"
-        defaultValue={defaultValue}
+        value={options.filter(item => item.value === props.selectedRegion)}
         options={options}
         onChange={handleItemChange}
         isClearable={true}
