@@ -45,7 +45,5 @@ def anonymize_permit_registration_numbers():
 
 
 def get_past_time():
-    time = timezone.now()
-    grace_duration = getattr(settings, "PARKKIHUBI_ANONYMIZE_REG_NUM_BEFORE", None)
-    past_time = time - grace_duration
-    return past_time
+    grace_duration = getattr(settings, "PARKKIHUBI_ANONYMIZE_REG_NUM_BEFORE")
+    return timezone.now() - grace_duration
