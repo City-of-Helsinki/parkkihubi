@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.db import transaction
 from django.utils import timezone
 
 from ..models import Parking, ParkingCheck, PermitLookupItem
@@ -13,10 +12,9 @@ def anonymize_parking_registration_numbers():
     )
 
     for parking in parkings:
-        with transaction.atomic():
-            parking.registration_number = ""
-            parking.normalized_reg_num = ""
-            parking.save(update_fields=["registration_number", "normalized_reg_num"])
+        parking.registration_number = ""
+        parking.normalized_reg_num = ""
+        parking.save(update_fields=["registration_number", "normalized_reg_num"])
 
 
 def anonymize_parking_check_registration_numbers():
@@ -27,9 +25,8 @@ def anonymize_parking_check_registration_numbers():
     )
 
     for parking_check in parking_checks:
-        with transaction.atomic():
-            parking_check.registration_number = ""
-            parking_check.save(update_fields=["registration_number"])
+        parking_check.registration_number = ""
+        parking_check.save(update_fields=["registration_number"])
 
 
 def anonymize_permit_registration_numbers():
@@ -40,12 +37,11 @@ def anonymize_permit_registration_numbers():
     )
 
     for permits_lookup in parking_lookups:
-        with transaction.atomic():
-            permit = permits_lookup.permit
-            subjects = permit.subjects
-            for sub in subjects:
-                sub["registration_number"] = ""
-            permit.save(update_fields=["subjects"])
+        permit = permits_lookup.permit
+        subjects = permit.subjects
+        for sub in subjects:
+            sub["registration_number"] = ""
+        permit.save(update_fields=["subjects"])
 
 
 def get_past_time():
