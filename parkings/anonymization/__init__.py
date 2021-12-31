@@ -5,45 +5,17 @@ from ..models import Parking, ParkingCheck, PermitLookupItem
 
 
 def anonymize_parking_registration_numbers():
-    parkings = (
-        Parking.objects.filter(time_end__lt=get_past_time())
-        .exclude(registration_number="")
-        .order_by("time_end")
-    )
-
-    for parking in parkings:
-        parking.registration_number = ""
-        parking.normalized_reg_num = ""
-        parking.save(update_fields=["registration_number", "normalized_reg_num"])
+    Parking.objects.unanonymized().ends_before(anonymization_instant()).anonymize()
 
 
 def anonymize_parking_check_registration_numbers():
-    parking_checks = (
-        ParkingCheck.objects.filter(created_at__lt=get_past_time())
-        .exclude(registration_number="")
-        .order_by("created_at")
-    )
-
-    for parking_check in parking_checks:
-        parking_check.registration_number = ""
-        parking_check.save(update_fields=["registration_number"])
+    ParkingCheck.objects.unanonymized().created_before(anonymization_instant()).anonymize()
 
 
 def anonymize_permit_registration_numbers():
-    parking_lookups = (
-        PermitLookupItem.objects.filter(end_time__lt=get_past_time())
-        .exclude(registration_number="")
-        .order_by("end_time")
-    )
-
-    for permits_lookup in parking_lookups:
-        permit = permits_lookup.permit
-        subjects = permit.subjects
-        for sub in subjects:
-            sub["registration_number"] = ""
-        permit.save(update_fields=["subjects"])
+    PermitLookupItem.objects.unanonymized().ends_before(anonymization_instant()).anonymize()
 
 
-def get_past_time():
-    grace_duration = getattr(settings, "PARKKIHUBI_ANONYMIZE_REG_NUM_BEFORE")
+def anonymization_instant():
+    grace_duration = getattr(settings, "PARKKIHUBI_REGISTRATION_NUMBERS_REMOVABLE_AFTER")
     return timezone.now() - grace_duration
