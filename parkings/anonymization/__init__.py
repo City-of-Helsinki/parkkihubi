@@ -1,7 +1,11 @@
 from django.conf import settings
 from django.utils import timezone
 
-from ..models import Parking, ParkingCheck, PermitLookupItem
+from ..models import ArchivedParking, Parking, ParkingCheck, PermitLookupItem
+
+
+def anonymize_archived_parking_registration_numbers():
+    ArchivedParking.objects.unanonymized().ends_before(anonymization_instant()).anonymize()
 
 
 def anonymize_parking_registration_numbers():

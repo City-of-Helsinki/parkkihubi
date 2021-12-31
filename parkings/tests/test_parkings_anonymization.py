@@ -5,13 +5,25 @@ from django.core.management import call_command
 from django.utils import timezone
 
 from parkings.anonymization import (
+    anonymize_archived_parking_registration_numbers,
     anonymize_parking_check_registration_numbers,
     anonymize_parking_registration_numbers,
     anonymize_permit_registration_numbers)
-from parkings.factories import ParkingCheckFactory, ParkingFactory
+from parkings.factories import ArchivedParkingFactory, ParkingCheckFactory, ParkingFactory
 from parkings.factories.permit import create_permits
 from parkings.management.commands import clean_reg_nums
-from parkings.models import Parking, ParkingCheck, PermitLookupItem
+from parkings.models import ArchivedParking, Parking, ParkingCheck, PermitLookupItem
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize('batch, hours, result', [(10, 2, 0), (20, 25, 20)])
+def test_anonymization_of_archived_parkings_registration_number(batch, hours, result):
+    end_time = timezone.now() - datetime.timedelta(hours=hours)
+    ArchivedParkingFactory.create_batch(batch, time_end=end_time)
+
+    anonymize_archived_parking_registration_numbers()
+
+    assert ArchivedParking.objects.filter(registration_number="").count() == result
 
 
 @pytest.mark.django_db
@@ -72,6 +84,7 @@ def test_anonymization_of_permit_registration_number_should_not_happen_for_valid
 def test_parkings_anonymization_mgmt_cmd(batch, hours, result, permit_batch, permit_result, user_factory):
     user = user_factory()
     end_time = timezone.now() - datetime.timedelta(hours=hours)
+    ArchivedParkingFactory.create_batch(batch, time_end=end_time)
     ParkingFactory.create_batch(batch, time_end=end_time)
     parking_checks = ParkingCheckFactory.create_batch(batch)
 
@@ -89,5 +102,6 @@ def test_parkings_anonymization_mgmt_cmd(batch, hours, result, permit_batch, per
     call_command(clean_reg_nums.Command())
 
     assert ParkingCheck.objects.filter(registration_number="").count() == result
+    assert ArchivedParking.objects.filter(registration_number="").count() == result
     assert Parking.objects.filter(registration_number="").count() == result
     assert PermitLookupItem.objects.exclude(registration_number="").count() == permit_result
