@@ -64,7 +64,7 @@ export class Api {
 
     private _fetchAllPages(
         url: string,
-        callback: SuccessCallback<{}>,
+        callback: SuccessCallback<RegionList> | SuccessCallback<ParkingList> | SuccessCallback<RegionStatsList>,
         errorHandler: ErrorHandler
     ) {
         this.axios.get(url)
