@@ -5,6 +5,7 @@ from .parking import (  # noqa
     ArchivedParkingFactory, DiscParkingFactory, HistoryParkingFactory,
     ParkingFactory)
 from .parking_area import ParkingAreaFactory  # noqa
+from .parking_check import ParkingCheckFactory
 from .region import RegionFactory
 from .user import AdminUserFactory, StaffUserFactory, UserFactory  # noqa
 
@@ -15,6 +16,7 @@ __all__ = [
     'HistoryParkingFactory',
     'OperatorFactory',
     'ParkingAreaFactory',
+    'ParkingCheckFactory',
     'ParkingFactory',
     'RegionFactory',
     'StaffUserFactory',

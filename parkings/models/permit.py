@@ -10,7 +10,7 @@ from ..fields import CleaningJsonField
 from ..validators import DictListValidator, TextField, TimestampField
 from .constants import GK25FIN_SRID
 from .enforcement_domain import EnforcementDomain
-from .mixins import TimestampedModelMixin
+from .mixins import AnonymizeQuerySetMixin, TimestampedModelMixin, UnanonymizedQuerySetMixin
 from .parking import Parking
 
 
@@ -156,7 +156,7 @@ class Permit(TimestampedModelMixin, models.Model):
                 )
 
 
-class PermitLookupItemQuerySet(models.QuerySet):
+class PermitLookupItemQuerySet(AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin, models.QuerySet):
     def active(self):
         return self.filter(permit__series__active=True)
 
@@ -169,6 +169,9 @@ class PermitLookupItemQuerySet(models.QuerySet):
 
     def by_area(self, area):
         return self.filter(area=area)
+
+    def ends_before(self, time):
+        return self.filter(end_time__lte=time)
 
 
 class PermitLookupItem(models.Model):
@@ -197,3 +200,8 @@ class PermitLookupItem(models.Model):
             start_time=self.start_time, end_time=self.end_time,
             registration_number=self.registration_number,
             area=self.area.identifier)
+
+    def anonymize(self):
+        for permit_subject in self.permit.subjects:
+            permit_subject["registration_number"] = ""
+        self.permit.save(update_fields=["subjects"])

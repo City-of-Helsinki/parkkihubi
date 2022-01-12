@@ -12,13 +12,14 @@ from parkings.models.zone import PaymentZone
 from parkings.utils.sanitizing import sanitize_registration_number
 
 from .enforcement_domain import EnforcementDomain
+from .mixins import AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin
 from .parking_terminal import ParkingTerminal
 from .region import Region
 
 Q = models.Q
 
 
-class ParkingQuerySet(models.QuerySet):
+class ParkingQuerySet(AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin, models.QuerySet):
     def valid_at(self, time):
         """
         Filter to parkings which are valid at given time.
@@ -113,6 +114,11 @@ class AbstractParking(TimestampedModelMixin, UUIDPrimaryKeyMixin):
             end = localtime(self.time_end).replace(tzinfo=None)
 
         return "%s -> %s (%s)" % (start, end, self.registration_number)
+
+    def anonymize(self):
+        self.registration_number = ""
+        self.normalized_reg_num = ""
+        self.save(update_fields=['registration_number', 'normalized_reg_num'])
 
 
 class Parking(AbstractParking):
