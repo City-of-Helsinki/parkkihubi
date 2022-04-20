@@ -132,6 +132,7 @@ strategy:
     geom: null
     id: null
     modified_at: null
+    name: null
     origin_id: null
   parkings_parkingcheck:
     allowed: null
