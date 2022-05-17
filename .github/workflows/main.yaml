@@ -1,0 +1,81 @@
+name: "Tests and Checks"
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        platform: [ubuntu-18.04]
+        python: ["3.5", "3.6", "3.8"]
+    runs-on: ${{matrix.platform}}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python ${{matrix.python}}
+        uses: actions/setup-python@v3.1.2
+        with:
+          python-version: ${{matrix.python}}
+
+      - name: Install PostgreSQL, PostGIS and GDAL
+        run: >
+          sudo apt-get install -y
+          gdal-bin
+          postgresql-10
+          postgresql-client-10
+          postgresql-10-postgis-2.4
+
+      - name: Change PostgreSQL port to 5432
+        run: >
+          sudo sed -i 's/^port = .*/port = 5432/'
+          /etc/postgresql/10/main/postgresql.conf
+
+      - name: Start PostgreSQL server
+        run: sudo systemctl start postgresql@10-main
+
+      - name: Allow runner user to create PostgreSQL databases
+        run: sudo -u postgres createuser --createdb runner
+
+      - name: Create PostGIS extension
+        run: >
+          sudo -u postgres
+          psql -U postgres template1
+          -c "create extension postgis"
+
+      - name: Install Tox and tox-gh-actions
+        run: pip install tox tox-gh-actions
+
+      - name: Test with Tox
+        run: tox
+
+      - name: Upload coverage data to codecov.io
+        uses: codecov/codecov-action@v3
+
+  checks:
+    strategy:
+      matrix:
+        toxenv: [style, requirements, sanitizer]
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v3.1.2
+        with:
+          python-version: "3.5"
+
+      - name: Install GDAL
+        run: sudo apt-get install -y gdal-bin
+        if: ${{ matrix.toxenv == 'sanitizer' }}
+
+      - name: Install Tox and tox-gh-actions
+        run: pip install tox tox-gh-actions
+
+      - name: Run the check with Tox
+        run: tox
+        env:
+          TOXENV: ${{matrix.toxenv}}

@@ -10,7 +10,8 @@ from ..fields import CleaningJsonField
 from ..validators import DictListValidator, TextField, TimestampField
 from .constants import GK25FIN_SRID
 from .enforcement_domain import EnforcementDomain
-from .mixins import AnonymizeQuerySetMixin, TimestampedModelMixin, UnanonymizedQuerySetMixin
+from .mixins import (
+    AnonymizeQuerySetMixin, TimestampedModelMixin, UnanonymizedQuerySetMixin)
 from .parking import Parking
 
 
