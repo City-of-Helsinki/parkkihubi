@@ -44,15 +44,8 @@ STATIC_URL = '/static/'
 ############
 # Database #
 ############
-if os.environ.get('CI'):
-    default_database_url = 'postgis://postgres:@localhost/parkkihubi'
-else:
-    default_database_url = 'postgis://parkkihubi:parkkihubi@localhost/parkkihubi'
-
 DATABASES = {
-    'default': env.db_url(
-        default=default_database_url
-    )
+    'default': env.db_url(default='postgis:///parkkihubi'),
 }
 
 ##########
