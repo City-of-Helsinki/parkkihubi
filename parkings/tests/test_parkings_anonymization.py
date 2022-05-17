@@ -9,10 +9,12 @@ from parkings.anonymization import (
     anonymize_parking_check_registration_numbers,
     anonymize_parking_registration_numbers,
     anonymize_permit_registration_numbers)
-from parkings.factories import ArchivedParkingFactory, ParkingCheckFactory, ParkingFactory
+from parkings.factories import (
+    ArchivedParkingFactory, ParkingCheckFactory, ParkingFactory)
 from parkings.factories.permit import create_permits
 from parkings.management.commands import clean_reg_nums
-from parkings.models import ArchivedParking, Parking, ParkingCheck, PermitLookupItem
+from parkings.models import (
+    ArchivedParking, Parking, ParkingCheck, PermitLookupItem)
 
 
 @pytest.mark.django_db
