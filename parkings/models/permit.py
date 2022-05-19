@@ -2,6 +2,8 @@ from itertools import chain
 
 from django.conf import settings
 from django.contrib.gis.db import models as gis_models
+from django.contrib.postgres.fields import JSONField
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models, router, transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -112,6 +114,7 @@ class Permit(TimestampedModelMixin, models.Model):
         'end_time': TimestampField(),
         'area': TextField(max_length=10),
     })])
+    properties = JSONField(blank=True, null=True, encoder=DjangoJSONEncoder, verbose_name=_("properties"))
 
     objects = PermitQuerySet.as_manager()
 

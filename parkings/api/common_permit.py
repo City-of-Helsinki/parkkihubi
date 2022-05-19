@@ -78,6 +78,7 @@ class PermitSerializer(serializers.ModelSerializer):
             'external_id',
             'subjects',
             'areas',
+            'properties',
         ]
         read_only_fields = ['id']
 

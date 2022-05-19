@@ -44,7 +44,7 @@ def test_post_active_permit_by_external_id(enforcer_api_client, enforcer):
     response = enforcer_api_client.post(list_url, data=data)
 
     returned_id = response.data.pop('id', None)
-    assert response.data == dict(data, series=permit_series.id)
+    assert response.data == dict(data, series=permit_series.id, properties=None)
     assert isinstance(returned_id, int)
     assert response.status_code == HTTP_201_CREATED
 

@@ -245,7 +245,7 @@ def test_api_endpoint_returns_correct_data(enforcer_api_client, enforcer):
 
 
 def check_permit_object_keys(data):
-    assert set(data.keys()) == {'id', 'series', 'subjects', 'areas', 'external_id'}
+    assert set(data.keys()) == {'id', 'series', 'subjects', 'areas', 'external_id', 'properties'}
 
 
 def check_permit_subject_keys(data):

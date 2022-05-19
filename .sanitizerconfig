@@ -170,6 +170,7 @@ strategy:
     modified_at: null
     series_id: null
     subjects: parkkihubi.permit_subjects
+    properties: null
   parkings_permitarea:
     created_at: null
     domain_id: null

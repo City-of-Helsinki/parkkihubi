@@ -13,7 +13,7 @@ list_url = reverse('operator:v1:activepermit-list')
 def check_response_keys(response_data):
     expected_keys = {
         'id', 'domain', 'external_id',
-        'series', 'subjects', 'areas'
+        'series', 'subjects', 'areas', 'properties'
     }
 
     assert expected_keys == set(response_data.keys())
