@@ -197,6 +197,10 @@ components:
           description: Name of the operator
           type: string
           nullable: true
+        properties:
+          description: Permit properties
+          type: object
+          nullable: true
     PermitSubjects:
       description: >-
         List of subjects of a permit with validity time ranges.  Each
