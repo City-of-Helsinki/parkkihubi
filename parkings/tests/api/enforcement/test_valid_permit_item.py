@@ -99,6 +99,7 @@ def check_permit_item_data_keys(permit_item_data):
         'end_time',
         'operator',
         'operator_name',
+        'properties',
     }
 
 
