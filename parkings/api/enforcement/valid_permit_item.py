@@ -12,6 +12,7 @@ class ValidPermitItemSerializer(serializers.ModelSerializer):
     area = serializers.SlugRelatedField(slug_field='identifier', queryset=PermitArea.objects.all())
     operator = serializers.CharField(source='permit.series.owner.operator.id')
     operator_name = serializers.CharField(source='permit.series.owner.operator.name')
+    properties = serializers.JSONField(source='permit.properties')
 
     class Meta:
         model = PermitLookupItem
@@ -24,6 +25,7 @@ class ValidPermitItemSerializer(serializers.ModelSerializer):
             'end_time',
             'operator',
             'operator_name',
+            'properties',
         ]
 
 
