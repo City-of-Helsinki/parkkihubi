@@ -167,6 +167,8 @@ components:
         end_time: "2020-12-31T20:59:59Z"
         operator: "63f8374e-1eed-44fa-9224-4cd0c64ddf35"
         operator_name: "Foobar Parkings"
+        properties:
+          permit_type: "Asukaspysäköintitunnus"
       properties:
         id:
           description: Id of the permit item
