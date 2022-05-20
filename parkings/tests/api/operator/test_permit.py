@@ -26,6 +26,7 @@ def _check_response(data, obj):
         'id',
         'subjects',
         'areas',
+        'properties',
     }
 
     assert set(data.keys()) == permit_response_keys
@@ -204,6 +205,7 @@ def test_area_restriction(
         'subjects': generate_subjects(),
         'areas': [area],
         'domain': 'HKI',
+        'properties': {'permit_type': 'Asukaspysäköintitunnus'},
     }
 
     PermitArea.objects.create(

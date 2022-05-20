@@ -149,6 +149,13 @@ components:
         series: &permitSeries
           description: Permit series id
           type: integer
+        properties: &permitMetaProperties
+          description: Permit properties
+          type: object
+          properties:
+            permit_type:
+              description: Type of the permit
+              type: string
         subjects: &permitSubjects
           $ref: '#/components/schemas/PermitSubjects'
         areas: &permitAreas
@@ -708,6 +715,8 @@ paths:
             schema:
               type: object
               properties: &permitProperties
+                properties:
+                  << : *permitMetaProperties
                 series:
                   << : *permitSeries
                 external_id:
@@ -860,6 +869,8 @@ paths:
                 external_id:
                   description: External id of the permit
                   type: string
+                properties:
+                  << : *permitMetaProperties
                 subjects:
                   $ref: '#/components/schemas/PermitSubjects'
                 areas:
@@ -915,6 +926,8 @@ paths:
             schema:
               type: object
               properties:
+                properties:
+                  << : *permitMetaProperties
                 subjects:
                   << : *permitSubjects
                 areas:
