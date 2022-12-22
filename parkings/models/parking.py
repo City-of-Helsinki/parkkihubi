@@ -43,6 +43,8 @@ class ParkingQuerySet(AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin, models.
         self,
         batch_size=1000,
         limit=None,
+        pre_archive_callback=(lambda batch, total: None),
+        post_archive_callback=(lambda batch, total: None),
         dry_run=False,
     ):
         if issubclass(self.model, ArchivedParking):
@@ -54,11 +56,13 @@ class ParkingQuerySet(AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin, models.
             if limit and total_archived + batch_size > limit:
                 remaining = limit - total_archived
                 batch = batch[:remaining]
+            pre_archive_callback(batch, total_archived)
             if not dry_run:
                 (_archived, count) = ArchivedParking.archive_in_bulk(batch)
             else:
                 count = batch.count()
             total_archived += count
+            post_archive_callback(batch, total_archived)
             if limit and total_archived >= limit:
                 break
         return total_archived
