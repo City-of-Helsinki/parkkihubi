@@ -78,18 +78,21 @@ class Command(BaseCommand):
         self.batch_num = 0
         self.batch_count = (count - 1) // batch_size + 1
 
-        archived = to_archive.archive(
-            batch_size=batch_size,
-            limit=limit,
-            pre_archive_callback=self._show_batch_info,
-            post_archive_callback=self._show_batch_time,
-            dry_run=dry_run,
-        )
-
-        self.stdout.write(
-            ("Would have archived" if dry_run else "Archived")
-            + " {} parkings".format(archived)
-        )
+        try:
+            archived = to_archive.archive(
+                batch_size=batch_size,
+                limit=limit,
+                pre_archive_callback=self._show_batch_info,
+                post_archive_callback=self._show_batch_time,
+                dry_run=dry_run,
+            )
+        except KeyboardInterrupt:
+            self._info("\n  -> Interrupted!\n")
+        else:
+            self.stdout.write(
+                ("Would have archived" if dry_run else "Archived")
+                + " {} parkings".format(archived)
+            )
         self._show_stats()
 
     def _init_timezone(self):
