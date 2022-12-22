@@ -222,8 +222,6 @@ class Parking(AbstractParking):
 
 
 class ArchivedParking(AbstractParking):
-    created_at = models.DateTimeField(verbose_name=_("time created"))
-    modified_at = models.DateTimeField(verbose_name=_("time modified"))
     archived_at = models.DateTimeField(auto_now_add=True, verbose_name=_("time archived"))
     sanitized_at = models.DateTimeField(verbose_name=_("time sanitized"), null=True, blank=True)
 
@@ -309,3 +307,7 @@ class ArchivedParking(AbstractParking):
         self.normalized_reg_num = sanitize_registration_number(self.normalized_reg_num)
         self.sanitized_at = timezone.now()
         self.save(update_fields=['registration_number', 'normalized_reg_num', 'sanitized_at'])
+
+
+ArchivedParking._meta.get_field("created_at").auto_now_add = False
+ArchivedParking._meta.get_field("modified_at").auto_now = False
