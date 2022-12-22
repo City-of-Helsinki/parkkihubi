@@ -1,15 +1,24 @@
-import builtins
 import datetime
-from unittest import mock
 
 import pytest
 from django.core.management import call_command
+from django.test import override_settings
 from django.utils import timezone
 
 from parkings.factories import HistoryParkingFactory, ParkingFactory
 from parkings.management.commands import archive_parkings
 from parkings.models import ArchivedParking, Parking
 from parkings.tests.utils import call_mgmt_cmd_with_output
+
+admin_timezone_override = override_settings(ADMIN_TIME_ZONE=None)
+
+
+def setup_module():
+    admin_timezone_override.enable()
+
+
+def teardown_module():
+    admin_timezone_override.disable()
 
 
 @pytest.mark.django_db
@@ -61,15 +70,22 @@ def test_archive_parkings_mgmt_cmd(months, result):
         HistoryParkingFactory.create_batch(10, time_end=time_end)
 
     assert ArchivedParking.objects.all().count() == 0
-    call_command(archive_parkings.Command(), months)
+    call_command(archive_parkings.Command(), "--keep-months", months)
     assert ArchivedParking.objects.all().count() == result
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize('choice, stdout_result', [('yes', 'Archived 10 parkings.'), ('no', '')])
-def test_archive_parkings_mgmt_cmd_confirm(choice, stdout_result):
+@pytest.mark.parametrize('dry_run_enabled, expected_line', [
+    (True, "Would have archived 10 parkings"),
+    (False, "Archived 10 parkings"),
+])
+def test_archive_parkings_mgmt_cmd_dry_run(dry_run_enabled, expected_line):
     end_time = timezone.now() - datetime.timedelta(days=60)
     HistoryParkingFactory.create_batch(10, time_end=end_time)
-    with mock.patch.object(builtins, 'input', lambda _: choice):
-        (result, stdout, stderr) = call_mgmt_cmd_with_output(archive_parkings.Command, 1, '--confirm')
-        assert stdout.rstrip() == stdout_result
+    dry_run_opts = ["--dry-run"] if dry_run_enabled else []
+
+    (result, stdout, stderr) = call_mgmt_cmd_with_output(
+        archive_parkings.Command, '-m1', '-v0', *dry_run_opts
+    )
+
+    assert expected_line in stdout
