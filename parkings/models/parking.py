@@ -1,6 +1,6 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Distance
-from django.db import transaction
+from django.db import connections, router, transaction
 from django.utils import timezone
 from django.utils.timezone import localtime, now
 from django.utils.translation import ugettext_lazy as _
@@ -11,6 +11,7 @@ from parkings.models.parking_area import ParkingArea
 from parkings.models.zone import PaymentZone
 from parkings.utils.sanitizing import sanitize_registration_number
 
+from ..utils.querysets import make_batches
 from .enforcement_domain import EnforcementDomain
 from .mixins import AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin
 from .parking_terminal import ParkingTerminal
@@ -38,9 +39,29 @@ class ParkingQuerySet(AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin, models.
     def ends_before(self, time):
         return self.exclude(time_end=None).filter(time_end__lte=time)
 
-    def archive(self):
-        for parking in self:
-            parking.archive()
+    def archive(
+        self,
+        batch_size=1000,
+        limit=None,
+        dry_run=False,
+    ):
+        if issubclass(self.model, ArchivedParking):
+            return 0  # Nothing archived, since was already archived
+        if limit and batch_size > limit:
+            batch_size = limit
+        total_archived = 0
+        for batch in make_batches(self, batch_size, "time_end"):
+            if limit and total_archived + batch_size > limit:
+                remaining = limit - total_archived
+                batch = batch[:remaining]
+            if not dry_run:
+                (_archived, count) = ArchivedParking.archive_in_bulk(batch)
+            else:
+                count = batch.count()
+            total_archived += count
+            if limit and total_archived >= limit:
+                break
+        return total_archived
 
     def registration_number_like(self, registration_number):
         """
@@ -212,6 +233,72 @@ class ArchivedParking(AbstractParking):
 
     def archive(self):
         return self
+
+    @classmethod
+    def archive_in_bulk(cls, parkings):
+        """
+        Archive given parkings in bulk.
+
+        The data from the parkings will be moved to the ArchivedParking
+        table with the archived_at value filled with a fresh timestamp.
+
+        :param parkings: QuerySet of Parking objects to archive.
+        :returns: A tuple (qs, n) where qs is the queryset of the
+                  created ArchivedParking objects and n is the number of
+                  deleted Parking objects.
+        """
+        if issubclass(parkings.model, cls):
+            return 0  # Nothing to do, since already archived
+        with transaction.atomic():
+            archive_copies = cls._create_copies_to_archive(parkings)
+            to_delete = parkings.filter(pk__in=archive_copies)
+            (deleted_count, _counts_by_type) = to_delete.delete()
+        return (archive_copies, deleted_count)
+
+    @classmethod
+    def _create_copies_to_archive(cls, parkings):
+        """
+        Create copies of objects in current queryset to the archive table.
+
+        Generates and executes a SQL query of the form
+
+            INSERT INTO <archive_table> ... SELECT ... FROM <table> ...
+
+        for copying data to the archive table from the current table.
+
+        Effectively this is doing the same as the following Python code,
+        but without pulling the data from the DBMS to Python side:
+
+            archived_parkings = [x.make_archived_parking() for x in parkings]
+            created = cls.objects.bulk_create(archived_parkings)
+            return cls.objects.filter(pk__in=[x.pk for x in created])
+        """
+        db = router.db_for_write(cls)
+        connection = connections[db]
+        quote = connection.ops.quote_name
+        pk_field = parkings.model._meta.pk
+        ids_queryset = parkings.values(pk_field.name)
+        (ids_sql, ids_params) = ids_queryset.query.sql_with_params()
+        common_columns = [quote(x.column) for x in parkings.model._meta.fields]
+        dest_columns = common_columns + [quote("archived_at")]
+        src_columns = common_columns + ["%s"]
+        copy_values_with_insert_select_sql = (
+            "INSERT INTO {dest_table} ({dest_columns})"
+            " SELECT {src_columns} FROM {src_table}"
+            " WHERE {pk_column} IN ({subquery})"
+        ).format(
+            dest_table=quote(cls._meta.db_table),
+            dest_columns=",".join(dest_columns),
+            src_columns=",".join(src_columns),
+            src_table=quote(parkings.model._meta.db_table),
+            pk_column=quote(pk_field.column),
+            subquery=ids_sql,
+        )
+        archived_at = timezone.now()
+        params = (archived_at,) + ids_params
+        with connection.cursor() as cursor:
+            cursor.execute(copy_values_with_insert_select_sql, params)
+        return cls.objects.filter(archived_at=archived_at)
 
     def sanitize(self):
         self.registration_number = sanitize_registration_number(self.registration_number)
