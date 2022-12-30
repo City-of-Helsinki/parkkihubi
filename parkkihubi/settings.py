@@ -48,6 +48,10 @@ DATABASES = {
     'default': env.db_url(default='postgis:///parkkihubi'),
 }
 
+TEST_DATABASE_TEMPLATE = env.str("TEST_DATABASE_TEMPLATE", default="")
+if TEST_DATABASE_TEMPLATE:
+    DATABASES['default']['TEST'] = {'TEMPLATE': TEST_DATABASE_TEMPLATE}
+
 ##########
 # Caches #
 ##########
