@@ -11,6 +11,7 @@ from parkings.models.parking_area import ParkingArea
 from parkings.models.zone import PaymentZone
 from parkings.utils.sanitizing import sanitize_registration_number
 
+from ..utils.model_fields import with_model_field_modifications
 from ..utils.querysets import make_batches
 from .enforcement_domain import EnforcementDomain
 from .mixins import AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin
@@ -221,8 +222,25 @@ class Parking(AbstractParking):
         return registration_number.upper().replace('-', '').replace(' ', '')
 
 
+@with_model_field_modifications(
+    created_at={"auto_now_add": False},
+    modified_at={"auto_now": False},
+    registration_number={"db_index": False},
+    time_start={"db_index": False},
+    # time_end={"db_index": False},
+    normalized_reg_num={"db_index": False},
+    domain={"db_index": False},
+    location={"db_index": False},
+    operator={"db_index": False},
+    parking_area={"db_index": False},
+    region={"db_index": False},
+    terminal={"db_index": False},
+    zone={"db_index": False},
+)
 class ArchivedParking(AbstractParking):
-    archived_at = models.DateTimeField(auto_now_add=True, verbose_name=_("time archived"))
+    archived_at = models.DateTimeField(
+        auto_now_add=True, db_index=True, verbose_name=_("time archived")
+    )
     sanitized_at = models.DateTimeField(verbose_name=_("time sanitized"), null=True, blank=True)
 
     class Meta:
@@ -307,7 +325,3 @@ class ArchivedParking(AbstractParking):
         self.normalized_reg_num = sanitize_registration_number(self.normalized_reg_num)
         self.sanitized_at = timezone.now()
         self.save(update_fields=['registration_number', 'normalized_reg_num', 'sanitized_at'])
-
-
-ArchivedParking._meta.get_field("created_at").auto_now_add = False
-ArchivedParking._meta.get_field("modified_at").auto_now = False
