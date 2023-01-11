@@ -70,8 +70,12 @@ def test_archive_parkings_mgmt_cmd(months, result):
         HistoryParkingFactory.create_batch(10, time_end=time_end)
 
     assert ArchivedParking.objects.all().count() == 0
+    pre_parking_count = Parking.objects.count()
+
     call_command(archive_parkings.Command(), "--keep-months", months)
+
     assert ArchivedParking.objects.all().count() == result
+    assert Parking.objects.count() == pre_parking_count - result
 
 
 @pytest.mark.django_db
@@ -81,7 +85,8 @@ def test_archive_parkings_mgmt_cmd(months, result):
 ])
 def test_archive_parkings_mgmt_cmd_dry_run(dry_run_enabled, expected_line):
     end_time = timezone.now() - datetime.timedelta(days=60)
-    HistoryParkingFactory.create_batch(10, time_end=end_time)
+    parkings = HistoryParkingFactory.create_batch(10, time_end=end_time)
+    parking_ids = [x.id for x in parkings]
     dry_run_opts = ["--dry-run"] if dry_run_enabled else []
 
     (result, stdout, stderr) = call_mgmt_cmd_with_output(
@@ -89,3 +94,10 @@ def test_archive_parkings_mgmt_cmd_dry_run(dry_run_enabled, expected_line):
     )
 
     assert expected_line in stdout
+    still_alive_parkings = Parking.objects.filter(id__in=parking_ids)
+    if dry_run_enabled:
+        assert still_alive_parkings.count() == 10
+        assert ArchivedParking.objects.count() == 0
+    else:
+        assert still_alive_parkings.count() == 0
+        assert ArchivedParking.objects.count() == 10
