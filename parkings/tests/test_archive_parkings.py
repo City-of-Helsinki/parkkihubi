@@ -55,8 +55,18 @@ def test_archived_parking_data():
     assert archived_parking.created_at == parking.created_at
     assert archived_parking.modified_at == parking.modified_at
     assert archived_parking.registration_number == parking.registration_number
+    assert archived_parking.time_start == parking.time_start
     assert archived_parking.time_end == parking.time_end
     assert archived_parking.location == parking.location
+    assert archived_parking.region == parking.region
+    assert archived_parking.parking_area == parking.parking_area
+    assert archived_parking.terminal_number == parking.terminal_number
+    assert archived_parking.terminal == parking.terminal
+    assert archived_parking.operator == parking.operator
+    assert archived_parking.normalized_reg_num == parking.normalized_reg_num
+    assert archived_parking.domain == parking.domain
+    assert archived_parking.zone == parking.zone
+    assert archived_parking.is_disc_parking == parking.is_disc_parking
 
 
 @pytest.mark.django_db
