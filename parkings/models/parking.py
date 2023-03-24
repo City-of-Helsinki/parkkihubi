@@ -38,7 +38,7 @@ class ParkingQuerySet(AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin, models.
         return self.filter(Q(time_end__gte=time) | Q(time_end=None))
 
     def ends_before(self, time):
-        return self.exclude(time_end=None).filter(time_end__lte=time)
+        return self.exclude(time_end=None).filter(time_end__lt=time)
 
     def archive(
         self,

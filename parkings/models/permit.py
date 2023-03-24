@@ -175,7 +175,7 @@ class PermitLookupItemQuerySet(AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin
         return self.filter(area=area)
 
     def ends_before(self, time):
-        return self.filter(end_time__lte=time)
+        return self.filter(end_time__lt=time)
 
 
 class PermitLookupItem(models.Model):

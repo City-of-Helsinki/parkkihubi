@@ -12,7 +12,7 @@ from .parking import Parking
 
 class ParkingCheckQuerySet(AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin, models.QuerySet):
     def created_before(self, time):
-        return self.filter(created_at__lte=time)
+        return self.filter(created_at__lt=time)
 
 
 class ParkingCheck(models.Model):
