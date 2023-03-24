@@ -147,7 +147,7 @@ class Permit(TimestampedModelMixin, models.Model):
                 max_start_time = max(subject['start_time'], area['start_time'])
                 min_end_time = min(subject['end_time'], area['end_time'])
 
-                if max_start_time >= min_end_time:
+                if max_start_time > min_end_time:  # Distinct ranges
                     continue
                 yield PermitLookupItem(
                     permit=self,
