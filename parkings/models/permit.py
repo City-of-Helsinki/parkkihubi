@@ -144,6 +144,26 @@ class Permit(TimestampedModelMixin, models.Model):
     def _make_lookup_items(self):
         for area in self.areas:
             for subject in self.subjects:
+                # Calculate intersection of the area and subject ranges.
+                #
+                # An illustration of the area range [A_start,A_end],
+                # subject range [S_start,S_end], and their intersection
+                # [I_start,I_end].
+                #
+                # The formulas for intersection endpoints are:
+                #   I_start = max(S_start, A_start)
+                #   I_end = min(S_end, A_end)
+                #
+                #          S_start      S_end
+                #          |------------|
+                #              &
+                #  A_start          A_end
+                #  |----------------|
+                #              |
+                #              V
+                #          I_start  I_end
+                #          |--------|
+                #
                 max_start_time = max(subject['start_time'], area['start_time'])
                 min_end_time = min(subject['end_time'], area['end_time'])
 
