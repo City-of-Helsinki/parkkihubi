@@ -5,7 +5,9 @@ from .parking import ArchivedParking, Parking, ParkingQuerySet
 from .parking_area import ParkingArea
 from .parking_check import ParkingCheck
 from .parking_terminal import ParkingTerminal
-from .permit import Permit, PermitArea, PermitLookupItem, PermitSeries
+from .permit import (
+    Permit, PermitArea, PermitAreaItem, PermitLookupItem, PermitSeries,
+    PermitSubjectItem)
 from .region import Region
 from .zone import PaymentZone
 
@@ -23,7 +25,9 @@ __all__ = [
     'PaymentZone',
     'Permit',
     'PermitArea',
+    'PermitAreaItem',
     'PermitLookupItem',
     'PermitSeries',
+    'PermitSubjectItem',
     'Region',
 ]
