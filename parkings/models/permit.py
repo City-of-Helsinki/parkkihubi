@@ -1,8 +1,11 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.contrib.gis.db import models as gis_models
 from django.contrib.postgres.fields import JSONField
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db import models, router, transaction
+from django.db import connections, models, router, transaction
+from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -88,6 +91,75 @@ class PermitQuerySet(models.QuerySet):
         lookup_items = PermitLookupItem.objects.by_area(area)
         return self.filter(lookup_items__in=lookup_items).distinct()
 
+    def all_items_end_before(self, time: datetime) -> "PermitQuerySet":
+        """
+        Filter to permits whose all lookup items end before given time.
+
+        The returned queryset can be used to find permits that are no
+        longer valid at the given time and therefore can be anonymized.
+
+        The returned queryset is a subset of the queryset from which it
+        was called.
+
+        Note: The returned queryset can have permits that don't have any
+        lookup items at all. (By definition "all" lookup items of those
+        permits end before the given time, since they have none.)
+
+        Note 2: The returned queryset can have permits that have subject
+        items that are still valid at the given time, but their
+        effective validity is limited by the end time of the area items,
+        and therefore they still can be anonymized.
+        """
+        # Use a subquery to find the permits which have any lookup item
+        # that is still valid at the given time.  The subquery is then
+        # used to exclude those permits from the queryset.  This way the
+        # returned queryset contains only permits that have no valid
+        # lookup items at the given time.
+        quote = connections[self.db].ops.quote_name
+        excluded_permit_ids_sql = RawSQL(
+            """
+            SELECT DISTINCT(permit_id)
+            FROM {item_table} AS pli
+            WHERE pli.end_time >= %s
+            """.format(
+                item_table=quote(PermitLookupItem._meta.db_table),
+            ),
+            (time,)
+        )
+        return self.exclude(pk__in=excluded_permit_ids_sql)
+
+    def unanonymized(self) -> "PermitQuerySet":
+        """
+        Filter to permits that have not been fully anonymized.
+        """
+        subjects = PermitSubjectItem.objects.unanonymized()
+        permits_which_have_data = subjects.values("permit")
+        return self.filter(id__in=permits_which_have_data)
+
+    @transaction.atomic
+    def anonymize(self, batch_size=1000):
+        """
+        Anonymize registration numbers of the permits in this queryset.
+        """
+        count = 0
+        all_ids = self.order_by("id").values_list("id", flat=True)
+        for start_idx in range(0, len(all_ids), batch_size):
+            ids = all_ids[start_idx:start_idx + batch_size]
+            batch = self.model.objects.filter(id__in=ids).order_by()
+            updated_permits = []
+            for permit in batch.only("id", "subjects"):
+                permit.anonymize_subjects()
+                updated_permits.append(permit)
+            batch.bulk_update(updated_permits, ["subjects"], batch_size)
+            count += len(updated_permits)
+            lookup_items = PermitLookupItem.objects.filter(permit_id__in=ids)
+            assert isinstance(lookup_items, PermitLookupItemQuerySet)
+            lookup_items.anonymize()
+            subjects = PermitSubjectItem.objects.filter(permit_id__in=ids)
+            assert isinstance(subjects, PermitSubjectItemQuerySet)
+            subjects.anonymize()
+        return count
+
     def bulk_create(self, permits, *args, **kwargs):
         for permit in permits:
             assert isinstance(permit, Permit)
@@ -140,6 +212,15 @@ class Permit(TimestampedModelMixin, models.Model):
             series=self.series,
             active='*' if self.series.active else '',
             external_id=self.external_id)
+
+    def anonymize_subjects(self):
+        """
+        Anonymize registration numbers of the subjects of this permit.
+
+        This method does not save the permit.
+        """
+        empty_reg_num = {"registration_number": ""}
+        self.subjects = [{**x, **empty_reg_num} for x in self.subjects]
 
     def save(self, using=None, *args, **kwargs):
         self.full_clean()
@@ -227,12 +308,18 @@ class Permit(TimestampedModelMixin, models.Model):
                 )
 
 
+class PermitSubjectItemQuerySet(AnonymizableRegNumQuerySet):
+    pass
+
+
 class PermitSubjectItem(models.Model):
     permit = models.ForeignKey(
         Permit, on_delete=models.CASCADE, related_name='subject_items')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     registration_number = models.CharField(max_length=20)
+
+    objects = PermitSubjectItemQuerySet.as_manager()
 
     def __str__(self):
         return 'Permit {p} Subject {reg_num} ({start_time}-{end_time})'.format(
@@ -273,12 +360,6 @@ class PermitLookupItemQuerySet(AnonymizableRegNumQuerySet, models.QuerySet):
 
     def ends_before(self, time):
         return self.filter(end_time__lt=time)
-
-    def anonymize(self):
-        for permit in Permit.objects.filter(lookup_items__in=self).distinct():
-            for subject in permit.subjects:
-                subject["registration_number"] = ""
-            permit.save(update_fields=["subjects"])
 
 
 class PermitLookupItem(models.Model):
