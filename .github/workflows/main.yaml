@@ -10,7 +10,7 @@ jobs:
   tests:
     strategy:
       matrix:
-        platform: [ubuntu-18.04]
+        platform: [ubuntu-20.04]
         python: ["3.5", "3.6", "3.8"]
     runs-on: ${{matrix.platform}}
     steps:
@@ -25,17 +25,17 @@ jobs:
         run: >
           sudo apt-get install -y
           gdal-bin
-          postgresql-10
-          postgresql-client-10
-          postgresql-10-postgis-2.4
+          postgresql-12
+          postgresql-client-12
+          postgresql-12-postgis-3
 
       - name: Change PostgreSQL port to 5432
         run: >
           sudo sed -i 's/^port = .*/port = 5432/'
-          /etc/postgresql/10/main/postgresql.conf
+          /etc/postgresql/12/main/postgresql.conf
 
       - name: Start PostgreSQL server
-        run: sudo systemctl start postgresql@10-main
+        run: sudo systemctl start postgresql@12-main
 
       - name: Allow runner user to create PostgreSQL databases
         run: sudo -u postgres createuser --createdb runner
@@ -59,7 +59,7 @@ jobs:
     strategy:
       matrix:
         toxenv: [style, requirements, sanitizer]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
 
