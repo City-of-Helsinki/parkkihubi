@@ -12,7 +12,9 @@ assert os.path.isfile(os.path.join(BASE_DIR, 'manage.py'))
 # Local environment #
 #####################
 env = Env()
-env.read_env(os.path.join(BASE_DIR, '.env'))
+env_file = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_file):
+    env.read_env(env_file)
 
 ########################
 # Django core settings #
