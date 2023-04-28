@@ -31,12 +31,13 @@ def test_sanitize_parking():
 @pytest.mark.django_db
 @pytest.mark.parametrize('months, result', [(None, 30), (1, 20), (2, 10)])
 def test_sanitize_parkings_mgmt_cmd(months, result):
-    end_time_1 = timezone.now() - datetime.timedelta(days=60)
-    end_time_2 = timezone.now() - datetime.timedelta(days=90)
-
-    ArchivedParkingFactory.create_batch(10, time_end=timezone.now())
-    ArchivedParkingFactory.create_batch(10, time_end=end_time_1)
-    ArchivedParkingFactory.create_batch(10, time_end=end_time_2)
+    # Create 30 parkings where:
+    #  - first ten are ending just now
+    #  - second ten are older than 1 month, but not over 2 months old
+    #  - third ten are older than 2 months
+    for age_in_days in [0, 50, 80]:
+        time_end = timezone.now() - datetime.timedelta(days=age_in_days)
+        ArchivedParkingFactory.create_batch(10, time_end=time_end)
 
     assert ArchivedParking.objects.filter(sanitized_at__isnull=True).count() == 30
 
