@@ -1,7 +1,14 @@
-FROM python:3.7-slim-buster as appbase
+FROM python:3.7-slim-buster AS base
 
-ENV PYTHONBUFFERED 1
+EXPOSE 8000
 
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
+
+# Install system dependencies
 RUN apt-get update  \
     && \
     apt-get install --no-install-recommends -y \
@@ -11,38 +18,40 @@ RUN apt-get update  \
       libpq-dev \
       build-essential
 
+# Install pip requirements
+COPY requirements.txt .
+RUN python -m pip install -r requirements.txt
+
 WORKDIR /app
 
-COPY requirements.txt ./requirements.txt
+RUN adduser -u 5678 --disabled-password --gecos "" appuser
 
-RUN pip install --no-cache-dir -r requirements.txt \
-    && \
-    apt-get remove -y build-essential libpq-dev \
-    && \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-    && \
-    rm -rf /var/lib/apt/lists/* \
-    && \
-    rm -rf /var/cache/apt/archives
+ENTRYPOINT ["./docker-entrypoint"]
 
+# ---------------------------------------------------------------------
+# Development image
 
-COPY . .
+FROM base AS development
+COPY requirements-dev.txt .
+RUN pip install -r requirements-dev.txt
+COPY requirements-test.txt .
+RUN pip install -r requirements-test.txt
+COPY requirements-style.txt .
+RUN pip install -r requirements-style.txt
+COPY . /app
+RUN chown -R appuser /app
 
-ENTRYPOINT ["/app/django-entrypoint.sh"]
+ENV DEBUG=1
+USER appuser
 
-# TODO: Production environment
-# Production environment
-# CMD ["production"]
+# ---------------------------------------------------------------------
+# Production image
 
+FROM base AS production
+RUN pip install uwsgi==2.0.21
+COPY . /app
+RUN python -m compileall .
 
-# Development environment
-FROM appbase as development
-
-COPY requirements-*.txt ./
-
-RUN pip install --no-cache-dir \
-    -r requirements-dev.txt \
-    -r requirements-style.txt \
-    -r requirements-test.txt
-
-CMD ["development"]
+ENV RUN_MODE=production
+ENV DEBUG=0
+USER appuser
