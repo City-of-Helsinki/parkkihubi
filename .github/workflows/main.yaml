@@ -10,41 +10,37 @@ jobs:
   tests:
     strategy:
       matrix:
-        platform: [ubuntu-18.04]
         python: ["3.5", "3.6", "3.8"]
-    runs-on: ${{matrix.platform}}
+    runs-on: ubuntu-20.04
+    container: "python:${{matrix.python}}-slim-buster"
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup Python ${{matrix.python}}
-        uses: actions/setup-python@v3.1.2
-        with:
-          python-version: ${{matrix.python}}
+      - name: Update apt-get sources
+        run: apt-get update
 
       - name: Install PostgreSQL, PostGIS and GDAL
         run: >
-          sudo apt-get install -y
+          apt-get install -y
           gdal-bin
-          postgresql-10
-          postgresql-client-10
-          postgresql-10-postgis-2.4
-
-      - name: Change PostgreSQL port to 5432
-        run: >
-          sudo sed -i 's/^port = .*/port = 5432/'
-          /etc/postgresql/10/main/postgresql.conf
+          python3-gdal
+          postgis
+          postgresql
+          postgresql-client
+          postgresql-postgis
+          libpq-dev
+          build-essential
 
       - name: Start PostgreSQL server
-        run: sudo systemctl start postgresql@10-main
+        run: /etc/init.d/postgresql start
 
-      - name: Allow runner user to create PostgreSQL databases
-        run: sudo -u postgres createuser --createdb runner
+      - name: Allow root to create PostgreSQL databases
+        run: su - postgres -c "createuser --createdb root"
 
       - name: Create PostGIS extension
         run: >
-          sudo -u postgres
-          psql -U postgres template1
-          -c "create extension postgis"
+          su - postgres
+          -c "psql template1 -c 'create extension postgis'"
 
       - name: Install Tox and tox-gh-actions
         run: pip install tox tox-gh-actions
@@ -59,7 +55,7 @@ jobs:
     strategy:
       matrix:
         toxenv: [style, requirements, sanitizer]
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
 

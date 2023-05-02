@@ -12,7 +12,9 @@ assert os.path.isfile(os.path.join(BASE_DIR, 'manage.py'))
 # Local environment #
 #####################
 env = Env()
-env.read_env(os.path.join(BASE_DIR, '.env'))
+env_file = os.path.join(BASE_DIR, '.env')
+if os.path.exists(env_file):
+    env.read_env(env_file)
 
 ########################
 # Django core settings #
@@ -47,6 +49,10 @@ STATIC_URL = '/static/'
 DATABASES = {
     'default': env.db_url(default='postgis:///parkkihubi'),
 }
+
+TEST_DATABASE_TEMPLATE = env.str("TEST_DATABASE_TEMPLATE", default="")
+if TEST_DATABASE_TEMPLATE:
+    DATABASES['default']['TEST'] = {'TEMPLATE': TEST_DATABASE_TEMPLATE}
 
 ##########
 # Caches #
