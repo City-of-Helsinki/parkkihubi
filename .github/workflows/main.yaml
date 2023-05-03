@@ -51,6 +51,23 @@ jobs:
       - name: Upload coverage data to codecov.io
         uses: codecov/codecov-action@v3
 
+  test-dockerization:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Docker
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build Docker image of the app
+        run: docker-compose build
+
+      - name: Start the services with docker-compose up
+        run: docker-compose up -d
+
+      - name: Run pytest in the app container
+        run: USE_DOCKER=1 ./run-pytest -vvv
+
   checks:
     strategy:
       matrix:

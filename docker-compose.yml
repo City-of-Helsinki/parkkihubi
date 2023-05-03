@@ -22,6 +22,7 @@ services:
       RUN_MIGRATIONS: 1
       DEBUG: 1
       SECRET_KEY: not-empty
+      VAR_ROOT: /tmp/var
     depends_on:
       - db
     ports:
