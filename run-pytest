@@ -1,0 +1,52 @@
+#!/bin/bash
+# Run pytest locally or on docker-compose app service
+#
+# When using docker-compose app service, the options passed by VSCodium
+# will be handled specially to make its pytest integration smoother.
+#
+# To run pytest within docker, set USE_DOCKER environment variable to 1
+# or add USE_DOCKER=1 to the .env file.
+
+set -e
+
+USE_DOCKER=${USE_DOCKER}
+if [[ -z "$USE_DOCKER" ]] && [[ -e .env ]]; then
+    USE_DOCKER=$(sed -n '/^USE_DOCKER=/s/^[^=]*=//p' .env)
+fi
+
+if [[ "$USE_DOCKER" == "1" ]] || [[ "$USE_DOCKER" == "yes" ]]; then
+    docker-compose up -d
+else
+    exec pytest "$@"
+    exit $?
+fi
+
+unset xml_file
+opts=()
+while [[ $# -gt 0 ]]; do
+    opt="$1"
+    shift
+    if [[ "$opt" == "--rootdir" ]]; then  # Ignore rootdir option
+        shift  # Ignore also the argument to --rootdir
+        continue
+    elif [[ "$opt" == --junit-xml=* ]]; then  # Parse junit-xml option
+        xml_file=${opt#--junit-xml=}
+        opt="--junit-xml=/tmp/pytest_junit.xml"
+    fi
+    opts+=("$opt")
+done
+
+misc_opts=(
+    "-o" "cache_dir=/tmp/pytest_cache"
+)
+
+set +e
+docker-compose exec -T app pytest "${misc_opts[@]}" "${opts[@]}"
+exit_code=$?
+set -e
+
+if [[ -n "$xml_file" ]]; then
+    docker-compose exec -T app cat /tmp/pytest_junit.xml > "$xml_file"
+fi
+
+exit $exit_code
