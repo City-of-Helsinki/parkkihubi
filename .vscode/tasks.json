@@ -1,0 +1,40 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "type": "docker-build",
+            "label": "docker-build",
+            "platform": "python",
+            "dockerBuild": {
+                "tag": "parkkihubi:latest",
+                "dockerfile": "${workspaceFolder}/Dockerfile",
+                "context": "${workspaceFolder}",
+                "target": "development",
+                "pull": true
+            }
+        },
+        {
+            "type": "docker-run",
+            "label": "docker-run: debug",
+            "dependsOn": [
+                "docker-build"
+            ],
+            "python": {
+                "args": [
+                    "runserver",
+                    "0.0.0.0:8000",
+                    "--nothreading",
+                    "--noreload"
+                ],
+                "file": "manage.py"
+            },
+            "dockerRun": {
+                "env": {
+                    "DEBUG": "1",
+                    "SECRET_KEY": "not-empty",
+                    "DATABASE_URL": "postgis://parkkihubi:parkkihubi@db/parkkihubi"
+                }
+            }
+        }
+    ]
+}
