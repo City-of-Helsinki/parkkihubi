@@ -1,4 +1,4 @@
-FROM python:3.7-slim-buster AS base
+FROM python:3.8-slim-buster AS base
 
 EXPOSE 8000
 
@@ -13,7 +13,6 @@ RUN apt-get update  \
     && \
     apt-get install --no-install-recommends -y \
       gdal-bin \
-      python3-gdal \
       netcat \
       libpq-dev \
       build-essential
