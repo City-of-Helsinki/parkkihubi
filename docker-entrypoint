@@ -1,0 +1,43 @@
+#!/bin/bash
+set -e
+
+PORT=${DJANGO_PORT:-8000}
+DEBUG_PORT=${DEBUGPY_PORT:-5678}
+
+RUN_MODE=${RUN_MODE:-development}
+RUN_MIGRATIONS=${RUN_MIGRATIONS}
+
+# Wait for database availability on host & port parsed from $DATABASE_URL
+if [[ -n "$DATABASE_URL" ]]; then
+    host_port_sed_cmd='s%^[a-z]+://([^@]*@)?(([^/:]*)(:([0-9]+))?)/.*%\3:\5%'
+    db_host_port=$(sed -E "${host_port_sed_cmd}" <<< "$DATABASE_URL")
+    db_host=${db_host_port/:*}
+    db_port=${db_host_port/*:}
+    until nc -z -w3 ${db_host} ${db_port:-5432}; do
+        echo "Trying to connect to database ${db_host}:${db_port:-5432}..."
+        sleep 1
+    done
+fi
+
+if [[ "$RUN_MIGRATIONS" == "1" ]] || [[ "$RUN_MIGRATIONS" == "yes" ]]; then
+    ./manage.py migrate --noinput
+fi
+
+if [[ "$RUN_MODE" == "debug" ]]; then
+    if ! [ -d /tmp/debugpy ]; then
+        pip --disable-pip-version-check install debugpy -t /tmp
+    fi
+    echo "Starting Django to port $PORT with debugpy on port $DEBUG_PORT..."
+    python /tmp/debugpy --wait-for-client --listen 0.0.0.0:$DEBUG_PORT \
+        manage.py runserver 0.0.0.0:$PORT --nothreading --noreload
+elif [[ -n "$1" ]]; then
+    ./manage.py "$@"
+elif [[ "$RUN_MODE" == "production" ]]; then
+    uwsgi \
+        --wsgi parkkihubi.wsgi \
+        --http 0.0.0.0:$PORT \
+        --enable-threads \
+        --workers 4
+else
+    ./manage.py runserver 0.0.0.0:$PORT
+fi
