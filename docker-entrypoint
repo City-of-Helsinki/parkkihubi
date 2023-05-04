@@ -30,6 +30,8 @@ if [[ "$RUN_MODE" == "debug" ]]; then
     echo "Starting Django to port $PORT with debugpy on port $DEBUG_PORT..."
     python /tmp/debugpy --wait-for-client --listen 0.0.0.0:$DEBUG_PORT \
         manage.py runserver 0.0.0.0:$PORT --nothreading --noreload
+elif [[ "${1:0:1}" = "/" ]]; then
+    exec "$@"
 elif [[ -n "$1" ]]; then
     ./manage.py "$@"
 elif [[ "$RUN_MODE" == "production" ]]; then
