@@ -23,6 +23,12 @@ ENV PYTHONUNBUFFERED=1
 # Disable pip version check to speed up and avoid warnings
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
+# Disable pip complaining about being run as root without virtualenv
+ENV PIP_ROOT_USER_ACTION=ignore
+
+# Upgrade pip (sending the warning about running as root to /dev/null)
+RUN pip install -U pip 2>/dev/null
+
 # Install pip requirements
 COPY requirements.txt .
 RUN pip install -r requirements.txt
