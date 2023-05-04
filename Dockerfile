@@ -2,12 +2,6 @@ FROM python:3.8-slim-buster AS base
 
 EXPOSE 8000
 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
-
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
-
 # Install system dependencies
 RUN apt-get update  \
     && \
@@ -16,6 +10,12 @@ RUN apt-get update  \
       netcat \
       libpq-dev \
       build-essential
+
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED=1
 
 # Install pip requirements
 COPY requirements.txt .
