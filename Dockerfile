@@ -17,9 +17,12 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
+# Disable pip version check to speed up and avoid warnings
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+
 # Install pip requirements
 COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 WORKDIR /app
 
