@@ -11,8 +11,11 @@ RUN apt-get update  \
       libpq-dev \
       build-essential
 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
+# Set cache path to /tmp/pycache so that pyc files are not read from or
+# written to the __pycache__ directories in their normal locations next
+# to py files, since those could be used outside of the container and
+# may not be compatible with the container's Python.
+ENV PYTHONPYCACHEPREFIX=/tmp/pycache
 
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
@@ -34,12 +37,21 @@ ENTRYPOINT ["./docker-entrypoint"]
 # Development image
 
 FROM base AS development
+
+# Install dev, test and style dependencies
 COPY requirements-dev.txt .
 RUN pip install -r requirements-dev.txt
 COPY requirements-test.txt .
 RUN pip install -r requirements-test.txt
 COPY requirements-style.txt .
 RUN pip install -r requirements-style.txt
+
+# Allow appuser to write pyc files to /tmp/pycache
+RUN mkdir -p /tmp/pycache && \
+    chgrp appuser /tmp/pycache && \
+    chmod g+w /tmp/pycache && \
+    chown appuser /tmp/pycache
+
 COPY . /app
 RUN chown -R appuser /app
 
