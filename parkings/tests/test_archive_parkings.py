@@ -5,7 +5,8 @@ from django.core.management import call_command
 from django.test import override_settings
 from django.utils import timezone
 
-from parkings.factories import HistoryParkingFactory, ParkingFactory
+from parkings.factories import (
+    CompleteHistoryParkingFactory, CompleteParkingFactory)
 from parkings.management.commands import archive_parkings
 from parkings.models import ArchivedParking, Parking
 from parkings.tests.utils import call_mgmt_cmd_with_output
@@ -22,13 +23,13 @@ def teardown_module():
 
 
 def create_ongoing_parkings(count, **kwargs):
-    result = ParkingFactory.create_batch(count, **kwargs)
+    result = CompleteParkingFactory.create_batch(count, **kwargs)
     check_parkings_have_all_fields(result)
     return result
 
 
 def create_ended_parkings(count, **kwargs):
-    result = HistoryParkingFactory.create_batch(count, **kwargs)
+    result = CompleteHistoryParkingFactory.create_batch(count, **kwargs)
     check_parkings_have_all_fields(result)
     return result
 
@@ -42,11 +43,10 @@ def check_parking_has_all_fields(parking):
     assert parking.id
     assert parking.created_at
     assert parking.modified_at
-    # TODO: Uncomment these when the fields are properly filled in factories
-    # assert parking.region
-    # assert parking.parking_area
-    # assert parking.terminal_number
-    # assert parking.terminal
+    assert parking.region
+    assert parking.parking_area
+    assert parking.terminal_number
+    assert parking.terminal
     assert parking.location
     assert parking.operator
     assert parking.registration_number
