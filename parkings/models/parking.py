@@ -179,17 +179,21 @@ class Parking(AbstractParking):
     def get_region(self):
         if not self.location:
             return None
-        return Region.objects.filter(geom__intersects=self.location, domain=self.domain).first()
+        region_srid = Region._meta.get_field('geom').srid
+        location = self.location.transform(region_srid, clone=True)
+        regions = Region.objects.filter(domain=self.domain)
+        intersecting = regions.filter(geom__intersects=location)
+        return intersecting.first()
 
     def get_closest_area(self, max_distance=50):
-        if self.location:
-            location = self.location
-        else:
+        if not self.location:
             return None
-
-        closest_area = ParkingArea.objects.annotate(
-            distance=Distance('geom', location),
-        ).filter(distance__lte=max_distance).order_by('distance').first()
+        area_srid = ParkingArea._meta.get_field('geom').srid
+        location = self.location.transform(area_srid, clone=True)
+        areas = ParkingArea.objects.filter(domain=self.domain)
+        with_distance = areas.annotate(distance=Distance('geom', location))
+        within_range = with_distance.filter(distance__lte=max_distance)
+        closest_area = within_range.order_by('distance').first()
         return closest_area
 
     def save(self, update_fields=None, *args, **kwargs):
