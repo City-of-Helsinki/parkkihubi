@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from parkings.models import EnforcementDomain, Permit, PermitArea, PermitSeries
 
 from .faker import fake
-from .parking_area import generate_multi_polygon
+from .gis import generate_multi_polygon
 from .user import UserFactory
 
 CAPITAL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'

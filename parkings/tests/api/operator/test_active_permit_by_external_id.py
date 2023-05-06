@@ -20,12 +20,13 @@ def check_response_keys(response_data):
 
 
 def test_operator_can_post_active_permit_by_external_id(operator_api_client):
+    user = operator_api_client.auth_user
     active_permit = create_permit(
-        active=True, owner=operator_api_client.auth_user, external_id='eID-42')
+        active=True, owner=user, external_id='eID-42')
     data = {
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(active_permit.domain),
+        'areas': generate_areas(active_permit.domain, permitted_user=user),
         'domain': active_permit.domain.code,
     }
 

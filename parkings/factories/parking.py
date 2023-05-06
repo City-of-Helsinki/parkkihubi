@@ -4,14 +4,17 @@ from datetime import timedelta
 
 import factory
 import pytz
-from django.contrib.gis.geos import Point
 
-from parkings.factories import EnforcementDomainFactory
 from parkings.models import Parking, PaymentZone
 from parkings.models.parking import AbstractParking, ArchivedParking
 
+from .enforcement_domain import EnforcementDomainFactory
 from .faker import fake
+from .gis import generate_location
 from .operator import OperatorFactory
+from .parking_area import ParkingAreaFactory
+from .region import RegionFactory
+from .terminal import TerminalFactory
 
 CAPITAL_LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ'
 
@@ -37,9 +40,8 @@ class AbstractParkingFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = AbstractParking
 
-    location = factory.LazyFunction(
-        lambda: Point(24.915 + fake.random.uniform(0, 0.040), 60.154 + fake.random.uniform(0, 0.022))
-    )
+    location = factory.LazyFunction(generate_location)
+
     operator = factory.SubFactory(OperatorFactory)
     registration_number = factory.LazyFunction(generate_registration_number)
     time_start = factory.LazyFunction(lambda: fake.date_time_between(start_date='-2h', end_date='-1h', tzinfo=pytz.utc))
@@ -50,6 +52,18 @@ class AbstractParkingFactory(factory.django.DjangoModelFactory):
 class ParkingFactory(AbstractParkingFactory):
     class Meta:
         model = Parking
+
+
+class CompleteParkingFactory(ParkingFactory):
+    domain = factory.SubFactory(EnforcementDomainFactory)
+
+    parking_area = factory.SubFactory(
+        ParkingAreaFactory, domain=factory.SelfAttribute('..domain'))
+    terminal = factory.SubFactory(
+        TerminalFactory, location=factory.SelfAttribute('..location'))
+    terminal_number = factory.LazyAttribute(lambda x: x.terminal.number)
+    region = factory.SubFactory(
+        RegionFactory, domain=factory.SelfAttribute('..domain'))
 
 
 class ArchivedParkingFactory(AbstractParkingFactory):
@@ -78,3 +92,7 @@ class HistoryParkingFactory(ParkingFactory):
         if o.time_end is not None
         else get_time_far_enough_in_past()
     )
+
+
+class CompleteHistoryParkingFactory(HistoryParkingFactory, CompleteParkingFactory):
+    pass
