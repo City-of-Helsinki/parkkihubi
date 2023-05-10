@@ -99,6 +99,14 @@ class ParkingArea(TimestampedModelMixin, UUIDPrimaryKeyMixin):
         blank=True,
     )
 
+    # General purpose name field. Most likely will have the street name.
+    name = models.CharField(
+        verbose_name=_("name"),
+        max_length=200,
+        blank=True,
+        default="",
+    )
+
     objects = ParkingAreaQuerySet.as_manager()
 
     class Meta:
