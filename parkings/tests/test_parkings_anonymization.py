@@ -10,8 +10,7 @@ from parkings.factories import (
 from parkings.factories.permit import create_permits
 from parkings.management.commands import clean_reg_nums
 from parkings.models import (
-    ArchivedParking, Parking, ParkingCheck, Permit, PermitLookupItem,
-    PermitSubjectItem)
+    ArchivedParking, Parking, ParkingCheck, Permit, PermitLookupItem)
 
 
 @pytest.mark.django_db
@@ -51,32 +50,102 @@ def test_anonymization_of_parking_check_registration_number(batch, hours, result
     assert ParkingCheck.objects.filter(registration_number="").count() == result
 
 
-@pytest.fixture
+def change_subjects_validity_time_to_past(permit, max_count=None):
+    end_time = timezone.now() - datetime.timedelta(hours=25)
+    start_time = end_time - datetime.timedelta(days=30)
+    subjects = permit.subjects
+    for subject in (subjects if max_count is None else subjects[:max_count]):
+        subject["start_time"] = start_time.isoformat()
+        subject["end_time"] = end_time.isoformat()
+    permit.save(update_fields=["subjects"])
+
+
+@pytest.mark.django_db
 def test_anonymization_of_permit_registration_number_for_expired_permits(user_factory):
     user = user_factory()
     expired_permit_list = create_permits(owner=user, count=5)
-    past_time = timezone.now() - datetime.timedelta(hours=25)
     for permit in expired_permit_list:
-        subjects = permit.subjects
-        for sub in subjects:
-            sub["end_time"] = past_time
-            permit.subjects = subjects
-            permit.save(update_fields=["subjects"])
+        change_subjects_validity_time_to_past(permit)
 
     anonymize_model(Permit)
 
-    assert PermitLookupItem.objects.filter(registration_number="").count() == 5
-    assert PermitSubjectItem.objects.filter(registration_number="").count() == 5
+    for permit in Permit.objects.all():
+        check_permit_is_anonymized(permit)
 
 
-@pytest.fixture
-def test_anonymization_of_permit_registration_number_should_not_happen_for_valid_permits(user_factory):
+def check_permit_is_anonymized(permit):
+    check_permit_reg_nums(permit, is_anonymized)
+
+
+def is_anonymized(reg_num):
+    return reg_num == ""
+
+
+def check_permit_reg_nums(permit, check_function):
+    reg_nums = [x["registration_number"] for x in permit.subjects]
+    assert all(check_function(x) for x in reg_nums), (
+        "Some reg nums don't pass the check ({}). Reg nums: {}".format(
+            check_function.__name__, reg_nums))
+    for subject_item in permit.subject_items.all():
+        assert check_function(subject_item.registration_number)
+    for lookup_item in permit.lookup_items.all():
+        assert check_function(lookup_item.registration_number)
+
+
+@pytest.mark.django_db
+def test_not_ended_permits_are_not_anonymized(user_factory):
     user = user_factory()
     create_permits(owner=user, count=3)
+    assert Permit.objects.unanonymized().count() == 3
 
     anonymize_model(Permit)
 
-    assert PermitLookupItem.objects.exclude(registration_number="").count() == 3
+    assert Permit.objects.unanonymized().count() == 3
+    for permit in Permit.objects.all():
+        permit.refresh_from_db()
+        check_permit_is_unanonymized(permit)
+
+
+def check_permit_is_unanonymized(permit):
+    check_permit_reg_nums(permit, is_unanonymized)
+
+
+def is_unanonymized(reg_num):
+    return isinstance(reg_num, str) and reg_num.strip() != ""
+
+
+@pytest.mark.django_db
+def test_partly_ended_permits_are_not_anonymized(user_factory):
+    """
+    Test that permits that are only partly ended are not anonymized.
+
+    This is because the permit is still valid for the other registration
+    numbers even if it has ended for one of them.
+
+    Test data will contain:
+     * 3 permits which have ended for all registration numbers,
+     * 3 permits which have ended for only one registration number, and
+     * 3 permits which have not ended for any registration numbers.
+    """
+    user = user_factory()
+    permits = create_permits(owner=user, count=9)
+    for permit in permits[:3]:
+        change_subjects_validity_time_to_past(permit)
+    for permit in permits[3:6]:
+        assert len(permit.subjects) > 1
+        change_subjects_validity_time_to_past(permit, max_count=1)
+
+    anonymize_model(Permit)
+
+    for permit in permits[:3]:
+        permit.refresh_from_db()
+        check_permit_is_anonymized(permit)
+
+    for permit in permits[3:]:
+        permit.refresh_from_db()
+        check_permit_is_unanonymized(permit)
+
+    assert Permit.objects.unanonymized().count() == 6
 
 
 @pytest.mark.django_db
