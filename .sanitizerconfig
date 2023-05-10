@@ -180,19 +180,33 @@ strategy:
     modified_at: null
     name: null
     permitted_user_id: null
+  parkings_permitareaitem:
+    area_id: null
+    end_time: null
+    id: null
+    permit_id: null
+    start_time: null
   parkings_permitlookupitem:
     area_id: null
+    area_item_id: null
     end_time: null
     id: null
     permit_id: null
     registration_number: parkkihubi.registration_number
     start_time: null
+    subject_item_id: null
   parkings_permitseries:
     active: null
     created_at: null
     id: null
     modified_at: null
     owner_id: null
+  parkings_permitsubjectitem:
+    end_time: null
+    id: null
+    permit_id: null
+    registration_number: parkkihubi.registration_number
+    start_time: null
   parkings_region:
     capacity_estimate: null
     created_at: null

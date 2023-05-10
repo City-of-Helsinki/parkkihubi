@@ -216,3 +216,34 @@ PARKKIHUBI_ENFORCEMENT_API_ENABLED = (
 PARKKIHUBI_PERMITS_PRUNABLE_AFTER = timedelta(days=3)
 DEFAULT_ENFORCEMENT_DOMAIN = ('Helsinki', 'HKI')
 PARKKIHUBI_REGISTRATION_NUMBERS_REMOVABLE_AFTER = timedelta(hours=24)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '%(asctime)s %(levelname)-8s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'sentry': {
+            'level': 'ERROR',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
+        },
+    },
+    'loggers': {
+        'root': {
+            'handlers': ['sentry'],
+            'level': 'WARNING',
+        },
+        'parkings': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}

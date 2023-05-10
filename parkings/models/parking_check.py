@@ -6,13 +6,13 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from .constants import WGS84_SRID
-from .mixins import AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin
+from .mixins import AnonymizableRegNumQuerySet
 from .parking import Parking
 
 
-class ParkingCheckQuerySet(AnonymizeQuerySetMixin, UnanonymizedQuerySetMixin, models.QuerySet):
+class ParkingCheckQuerySet(AnonymizableRegNumQuerySet, models.QuerySet):
     def created_before(self, time):
-        return self.filter(created_at__lte=time)
+        return self.filter(created_at__lt=time)
 
 
 class ParkingCheck(models.Model):
@@ -67,10 +67,6 @@ class ParkingCheck(models.Model):
             area=location_data.get("permit_area") or "-",
             regnum=self.registration_number,
             ok="OK" if self.allowed else "x")
-
-    def anonymize(self):
-        self.registration_number = ""
-        self.save(update_fields=["registration_number"])
 
 
 def _format_coordinates(location, prec=5):

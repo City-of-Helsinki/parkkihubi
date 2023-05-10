@@ -4,13 +4,10 @@ from django.contrib.gis.db import models
 from django.utils.translation import ugettext_lazy as _
 
 
-class AnonymizeQuerySetMixin(models.QuerySet):
+class AnonymizableRegNumQuerySet(models.QuerySet):
     def anonymize(self):
-        for item in self:
-            item.anonymize()
+        return self.update(registration_number="")
 
-
-class UnanonymizedQuerySetMixin(models.QuerySet):
     def unanonymized(self):
         return self.exclude(registration_number="")
 
