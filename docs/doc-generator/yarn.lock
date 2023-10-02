@@ -480,10 +480,10 @@ css-to-react-native@^2.2.2:
     postcss-value-parser "^3.3.0"
 
 debug@^4.1.0:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/debug/-/debug-4.1.1.tgz#3b72260255109c6b589cee050f1d516139664791"
+  version "4.3.4"
+  resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
   dependencies:
-    ms "^2.1.1"
+    ms "2.1.2"
 
 decamelize@^1.2.0:
   version "1.2.0"
@@ -980,7 +980,7 @@ mobx@^4.2.0:
   version "4.15.0"
   resolved "https://registry.yarnpkg.com/mobx/-/mobx-4.15.0.tgz#039d07af132220ca776889f7adc429817b60a69b"
 
-ms@^2.1.1:
+ms@2.1.2:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
 
