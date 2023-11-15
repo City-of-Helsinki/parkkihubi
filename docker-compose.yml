@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   db:
-    image: postgis/postgis:10-3.0
+    image: postgis/postgis:15-3.4
     environment:
       POSTGRES_DB: parkkihubi
       POSTGRES_USER: parkkihubi
