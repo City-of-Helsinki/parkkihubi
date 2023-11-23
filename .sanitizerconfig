@@ -181,6 +181,10 @@ strategy:
     modified_at: null
     name: null
     permitted_user_id: null
+  parkings_permitarea_allowed_users:
+    id: null
+    permitarea_id: null
+    user_id: null
   parkings_permitareaitem:
     area_id: null
     end_time: null
