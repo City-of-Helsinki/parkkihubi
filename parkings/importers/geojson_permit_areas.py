@@ -30,11 +30,11 @@ class PermitAreaImporter(GeoJsonImporter):
         permit_area_ids = []
         for area_dict in permit_areas_dict:
             domain = area_dict.pop('domain', default_domain)
-            area_dict.setdefault('permitted_user', user)
             permit_area, _ = PermitArea.objects.update_or_create(
                 identifier=area_dict['identifier'],
                 domain=domain,
                 defaults=area_dict)
+            permit_area.allowed_users.add(user)
             permit_area_ids.append(permit_area.pk)
             count += 1
         return count

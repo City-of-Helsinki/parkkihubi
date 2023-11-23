@@ -26,12 +26,13 @@ class PermitAreaImporter(WfsImporter):
         logger.info('Saving permit areas.')
         count = 0
         permit_area_ids = []
+        user = get_user_model().objects.filter(username=permitted_user).get()
         for area_dict in permit_areas_dict:
             permit_area, _ = PermitArea.objects.update_or_create(
                 domain=EnforcementDomain.get_default_domain(),
                 identifier=area_dict['identifier'],
-                permitted_user=get_user_model().objects.filter(username=permitted_user).get(),
                 defaults=area_dict)
+            permit_area.allowed_users.add(user)
             permit_area_ids.append(permit_area.pk)
             count += 1
         PermitArea.objects.exclude(pk__in=permit_area_ids).delete()

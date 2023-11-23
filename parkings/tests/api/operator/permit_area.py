@@ -10,12 +10,12 @@ list_url = reverse('operator:v1:permitarea-list')
 
 def test_endpoint_returns_list_of_permitareas(operator_api_client, operator):
     domain = EnforcementDomain.objects.create(code='ESP', name='Espoo')
-    PermitArea.objects.create(
+    area = PermitArea.objects.create(
         name='AreaOne', geom=create_area_geom(),
         identifier='A',
-        permitted_user=operator.user,
         domain=domain
     )
+    area.allowed_users.add(operator.user)
 
     response = operator_api_client.get(list_url)
     json_response = response.json()
@@ -33,18 +33,18 @@ def test_endpoint_returns_only_the_list_of_permitted_permitareas(
     operator_api_client, operator, staff_user
 ):
     domain = EnforcementDomain.objects.create(code='ESP', name='Espoo')
-    PermitArea.objects.create(
+    area_a = PermitArea.objects.create(
         name='AreaOne', geom=create_area_geom(),
         identifier='A',
-        permitted_user=operator.user,
         domain=domain
     )
-    PermitArea.objects.create(
+    area_a.allowed_users.add(operator.user)
+    area_b = PermitArea.objects.create(
         name='AreaTwo', geom=create_area_geom(),
         identifier='B',
-        permitted_user=staff_user,
         domain=domain
     )
+    area_b.allowed_users.add(staff_user)
 
     response = operator_api_client.get(list_url)
     json_response = response.json()

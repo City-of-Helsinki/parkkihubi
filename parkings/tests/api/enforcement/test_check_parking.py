@@ -49,12 +49,13 @@ GEOM_2 = [
 
 def create_permit_area(client=None, domain=None, permitted_user=None):
     assert client or (domain and permitted_user)
-    return PermitArea.objects.create(
+    area = PermitArea.objects.create(
         domain=(domain or client.enforcer.enforced_domain),
         identifier="A",
         name="Kamppi",
-        permitted_user=(permitted_user or client.auth_user),
         geom=create_area_geom())
+    area.allowed_users.add(permitted_user or client.auth_user)
+    return area
 
 
 def create_area_geom(geom=GEOM_1):

@@ -180,7 +180,6 @@ strategy:
     identifier: null
     modified_at: null
     name: null
-    permitted_user_id: null
   parkings_permitarea_allowed_users:
     id: null
     permitarea_id: null

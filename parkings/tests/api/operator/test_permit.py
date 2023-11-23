@@ -208,13 +208,16 @@ def test_area_restriction(
         'properties': {'permit_type': 'Asukaspysäköintitunnus'},
     }
 
-    PermitArea.objects.create(
+    permit_area = PermitArea.objects.create(
         name='Kamppi',
         identifier='AR3A',
         geom=create_area_geom(),
-        permitted_user=(operator.user if allowed == 'allowed' else staff_user),
         domain=domain,
     )
+    if allowed == "allowed":
+        permit_area.allowed_users.add(operator.user)
+    else:
+        permit_area.allowed_users.add(staff_user)
 
     data = permit_data if mode == 'single' else [permit_data]
 

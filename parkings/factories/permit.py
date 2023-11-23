@@ -44,15 +44,16 @@ def create_permit_area(identifier, domain=None, permitted_user=None):
         )[0]
     if domain is None:
         domain = EnforcementDomain.get_default_domain()
-    PermitArea.objects.get_or_create(
+    (area, created) = PermitArea.objects.get_or_create(
         identifier=identifier,
         domain=domain,
         defaults={
             'name': "Kamppi",
             'geom': geom,
-            'permitted_user': permitted_user,
         }
     )
+    if created:
+       area.allowed_users.add(permitted_user)
 
 
 def generate_areas(domain=None, count=1, permitted_user=None):

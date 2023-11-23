@@ -19,7 +19,7 @@ from .parking import Parking
 
 class PermitAreaQuerySet(models.QuerySet):
     def for_user(self, user):
-        return self.filter(models.Q(permitted_user=user) | models.Q(allowed_users=user))
+        return self.filter(allowed_users=user)
 
 
 class PermitArea(TimestampedModelMixin):
@@ -30,9 +30,6 @@ class PermitArea(TimestampedModelMixin):
     identifier = models.CharField(max_length=10, verbose_name=_('identifier'))
     geom = gis_models.MultiPolygonField(
         srid=GK25FIN_SRID, verbose_name=_('geometry'))
-    permitted_user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True,
-        verbose_name=_("permitted_user"))
     allowed_users = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
         verbose_name=_("allowed users"),
