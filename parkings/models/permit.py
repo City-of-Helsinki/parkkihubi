@@ -17,6 +17,11 @@ from .mixins import AnonymizableRegNumQuerySet, TimestampedModelMixin
 from .parking import Parking
 
 
+class PermitAreaQuerySet(models.QuerySet):
+    def for_user(self, user):
+        return self.filter(permitted_user=user)
+
+
 class PermitArea(TimestampedModelMixin):
     name = models.CharField(max_length=40, verbose_name=_('name'))
     domain = models.ForeignKey(
@@ -27,6 +32,8 @@ class PermitArea(TimestampedModelMixin):
         srid=GK25FIN_SRID, verbose_name=_('geometry'))
     permitted_user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, verbose_name=_("permitted_user"))
+
+    objects = PermitAreaQuerySet.as_manager()
 
     class Meta:
         unique_together = [('domain', 'identifier')]
