@@ -35,7 +35,7 @@ RUN pip install -r requirements.txt
 
 WORKDIR /app
 
-RUN adduser -u 5678 --disabled-password --gecos "" appuser
+RUN adduser -u 1000 --disabled-password --gecos "" appuser
 
 ENTRYPOINT ["./docker-entrypoint"]
 
