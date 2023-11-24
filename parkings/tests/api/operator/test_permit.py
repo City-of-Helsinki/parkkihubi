@@ -48,7 +48,7 @@ def test_operator_can_create_permit_with_valid_post_data(
         'external_id': generate_external_ids(),
         'domain': 'TSTDOM',
         'subjects': generate_subjects(),
-        'areas': generate_areas(domain, permitted_user=operator.user),
+        'areas': generate_areas(domain, allowed_user=operator.user),
     }
 
     response = operator_api_client.post(list_url, data=permit_data)
@@ -186,9 +186,16 @@ def test_operator_and_enforcers_cannot_see_each_others_permit(
 
 
 @pytest.mark.parametrize('allowed', ['allowed', 'denied'])
+@pytest.mark.parametrize('number_of_allowed_users', [1, 2])
 @pytest.mark.parametrize('mode', ['single', 'bulk'])
 def test_area_restriction(
-    allowed, mode, operator_api_client, operator, staff_user
+    allowed,
+    number_of_allowed_users,
+    mode,
+    operator_api_client,
+    operator,
+    staff_user,
+    enforcer,
 ):
     area = {
         'start_time': '2020-01-01T00:00:00+00:00',
@@ -208,13 +215,18 @@ def test_area_restriction(
         'properties': {'permit_type': 'Asukaspysäköintitunnus'},
     }
 
-    PermitArea.objects.create(
+    permit_area = PermitArea.objects.create(
         name='Kamppi',
         identifier='AR3A',
         geom=create_area_geom(),
-        permitted_user=(operator.user if allowed == 'allowed' else staff_user),
         domain=domain,
     )
+    if number_of_allowed_users == 2:
+        permit_area.allowed_users.add(enforcer.user)
+    if allowed == "allowed":
+        permit_area.allowed_users.add(operator.user)
+    else:
+        permit_area.allowed_users.add(staff_user)
 
     data = permit_data if mode == 'single' else [permit_data]
 

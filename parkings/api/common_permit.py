@@ -98,7 +98,7 @@ class PermitSerializer(serializers.ModelSerializer):
     def _validate_areas(self, attrs):
         user = self.context['request'].user
         domain = self.instance.domain if self.instance else attrs['domain']
-        areas = PermitArea.objects.filter(permitted_user=user, domain=domain)
+        areas = PermitArea.objects.for_user(user).filter(domain=domain)
         area_identifiers = set(x['area'] for x in attrs.get('areas', []))
         found = areas.filter(identifier__in=area_identifiers)
         if found.count() != len(area_identifiers):

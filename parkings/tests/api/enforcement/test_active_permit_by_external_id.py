@@ -25,8 +25,8 @@ def create_active_permit(client):
 def generate_areas_data(client):
     user = client.auth_user
     domain = client.enforcer.enforced_domain
-    areas = generate_areas(domain=domain, permitted_user=user, count=2)
-    create_permit_area('X1', domain=domain, permitted_user=user)
+    areas = generate_areas(domain=domain, allowed_user=user, count=2)
+    create_permit_area('X1', domain=domain, allowed_user=user)
     areas[0]['area'] = 'X1'
     return areas
 
@@ -38,7 +38,7 @@ def test_post_active_permit_by_external_id(enforcer_api_client, enforcer):
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
         'areas': generate_areas(
-            domain=enforcer.enforced_domain, permitted_user=enforcer.user),
+            domain=enforcer.enforced_domain, allowed_user=enforcer.user),
     }
 
     response = enforcer_api_client.post(list_url, data=data)

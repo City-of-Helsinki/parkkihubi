@@ -73,4 +73,4 @@ class OperatorPermittedPermitAreaViewSet(mixins.ListModelMixin, GenericViewSet):
     serializer_class = OperatorPermitAreaSerializer
 
     def get_queryset(self):
-        return PermitArea.objects.filter(permitted_user=self.request.user)
+        return PermitArea.objects.for_user(self.request.user)

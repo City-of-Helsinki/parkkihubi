@@ -26,7 +26,7 @@ def test_operator_can_post_active_permit_by_external_id(operator_api_client):
     data = {
         'external_id': generate_external_ids(),
         'subjects': generate_subjects(),
-        'areas': generate_areas(active_permit.domain, permitted_user=user),
+        'areas': generate_areas(active_permit.domain, allowed_user=user),
         'domain': active_permit.domain.code,
     }
 

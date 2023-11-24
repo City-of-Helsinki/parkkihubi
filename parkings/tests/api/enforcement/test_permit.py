@@ -15,7 +15,7 @@ list_url = reverse('enforcement:v1:permit-list')
 def generate_areas_data(client):
     return generate_areas(
         domain=client.enforcer.enforced_domain,
-        permitted_user=client.auth_user)
+        allowed_user=client.auth_user)
 
 
 @pytest.mark.parametrize(
@@ -190,7 +190,7 @@ def test_permit_creation_normalizes_timestamps(
     domain = enforcer_api_client.enforcer.enforced_domain
     user = enforcer_api_client.auth_user
     area_identifier = 'area name'
-    create_permit_area(area_identifier, domain=domain, permitted_user=user)
+    create_permit_area(area_identifier, domain=domain, allowed_user=user)
     permit_data = {
         'series': create_permit_series(owner=enforcer_api_client.auth_user).id,
         'external_id': 'E123',
@@ -281,13 +281,13 @@ def test_permit_bulk_create_creates_lookup_items(enforcer_api_client):
             "series": permit_series.id,
             "external_id": "E1",
             "subjects": generate_subjects(),
-            "areas": generate_areas(domain=domain, permitted_user=user),
+            "areas": generate_areas(domain=domain, allowed_user=user),
         },
         {
             "series": permit_series.id,
             "external_id": "E2",
             "subjects": generate_subjects(),
-            "areas": generate_areas(domain=domain, permitted_user=user),
+            "areas": generate_areas(domain=domain, allowed_user=user),
         },
     ]
 

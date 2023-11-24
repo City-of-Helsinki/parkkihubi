@@ -47,14 +47,15 @@ GEOM_2 = [
 ]
 
 
-def create_permit_area(client=None, domain=None, permitted_user=None):
-    assert client or (domain and permitted_user)
-    return PermitArea.objects.create(
+def create_permit_area(client=None, domain=None, allowed_user=None):
+    assert client or (domain and allowed_user)
+    area = PermitArea.objects.create(
         domain=(domain or client.enforcer.enforced_domain),
         identifier="A",
         name="Kamppi",
-        permitted_user=(permitted_user or client.auth_user),
         geom=create_area_geom())
+    area.allowed_users.add(allowed_user or client.auth_user)
+    return area
 
 
 def create_area_geom(geom=GEOM_1):
@@ -326,7 +327,7 @@ def test_enforcer_can_view_only_own_permit(enforcer_api_client, staff_user, enfo
 
     EnforcerFactory(user=staff_user)
     domain = staff_user.enforcer.enforced_domain
-    create_permit_area(domain=domain, permitted_user=staff_user)
+    create_permit_area(domain=domain, allowed_user=staff_user)
     create_permit(domain=domain)
 
     response = enforcer_api_client.post(list_url, data=PARKING_DATA)
