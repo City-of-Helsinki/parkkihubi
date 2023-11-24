@@ -186,9 +186,16 @@ def test_operator_and_enforcers_cannot_see_each_others_permit(
 
 
 @pytest.mark.parametrize('allowed', ['allowed', 'denied'])
+@pytest.mark.parametrize('number_of_allowed_users', [1, 2])
 @pytest.mark.parametrize('mode', ['single', 'bulk'])
 def test_area_restriction(
-    allowed, mode, operator_api_client, operator, staff_user
+    allowed,
+    number_of_allowed_users,
+    mode,
+    operator_api_client,
+    operator,
+    staff_user,
+    enforcer,
 ):
     area = {
         'start_time': '2020-01-01T00:00:00+00:00',
@@ -214,6 +221,8 @@ def test_area_restriction(
         geom=create_area_geom(),
         domain=domain,
     )
+    if number_of_allowed_users == 2:
+        permit_area.allowed_users.add(enforcer.user)
     if allowed == "allowed":
         permit_area.allowed_users.add(operator.user)
     else:
