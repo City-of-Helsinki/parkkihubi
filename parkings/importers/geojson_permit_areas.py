@@ -16,15 +16,15 @@ class PermitAreaImporter(GeoJsonImporter):
     Imports permit area data
     """
 
-    def import_permit_areas(self, geojson_file_path, permitted_user):
+    def import_permit_areas(self, geojson_file_path, allowed_user):
         permit_area_dicts = self.read_and_parse(geojson_file_path)
-        count = self._save_permit_areas(permit_area_dicts, permitted_user)
+        count = self._save_permit_areas(permit_area_dicts, allowed_user)
         logger.info('Created or updated {} permit areas'.format(count))
 
     @transaction.atomic
-    def _save_permit_areas(self, permit_areas_dict, permitted_user):
+    def _save_permit_areas(self, permit_areas_dict, allowed_user):
         logger.info('Saving permit areas.')
-        user = get_user_model().objects.filter(username=permitted_user).get()
+        user = get_user_model().objects.filter(username=allowed_user).get()
         default_domain = self.get_default_domain()
         count = 0
         permit_area_ids = []

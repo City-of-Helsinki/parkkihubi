@@ -48,7 +48,7 @@ def test_operator_can_create_permit_with_valid_post_data(
         'external_id': generate_external_ids(),
         'domain': 'TSTDOM',
         'subjects': generate_subjects(),
-        'areas': generate_areas(domain, permitted_user=operator.user),
+        'areas': generate_areas(domain, allowed_user=operator.user),
     }
 
     response = operator_api_client.post(list_url, data=permit_data)
