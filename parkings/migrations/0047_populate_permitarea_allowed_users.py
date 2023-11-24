@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(
-            populate_permitted_user_from_allowed_users,
+            populate_allowed_users_from_permitted_user,
             populate_permitted_user_from_allowed_users,
         ),
     ]
