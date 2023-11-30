@@ -25,21 +25,39 @@ def post(api_client, url, data=None, status_code=201):
     return json.loads(response.content.decode('utf-8'))
 
 
-def put(api_client, url, data=None, status_code=200):
-    response = api_client.put(url, data)
+def put(api_client, url, data=None, status_code=200,
+        use_method_override=False):
+    if use_method_override:
+        modified_url = _get_method_override_url(url, 'PUT')
+        response = api_client.post(modified_url, data)
+    else:
+        response = api_client.put(url, data)
     assert response.status_code == status_code, '%s %s' % (response.status_code, response.data)
     return json.loads(response.content.decode('utf-8'))
 
 
-def patch(api_client, url, data=None, status_code=200):
-    response = api_client.patch(url, data)
+def patch(api_client, url, data=None, status_code=200,
+          use_method_override=False):
+    if use_method_override:
+        modified_url = _get_method_override_url(url, 'PATCH')
+        response = api_client.post(modified_url, data)
+    else:
+        response = api_client.patch(url, data)
     assert response.status_code == status_code, '%s %s' % (response.status_code, response.data)
     return json.loads(response.content.decode('utf-8'))
 
 
-def delete(api_client, url, status_code=204):
-    response = api_client.delete(url)
+def delete(api_client, url, status_code=204, use_method_override=False):
+    if use_method_override:
+        modified_url = _get_method_override_url(url, 'DELETE')
+        response = api_client.post(modified_url)
+    else:
+        response = api_client.delete(url)
     assert response.status_code == status_code, '%s %s' % (response.status_code, response.data)
+
+
+def _get_method_override_url(url, method):
+    return url + ('&' if '?' in url else '?') + 'method=' + method
 
 
 def check_method_status_codes(api_client, urls, methods, status_code, **kwargs):
