@@ -2,11 +2,8 @@ swagger: '2.0'
 
 info:
   title: Parkkihubi Public API
-  description: |
-    Parkkihubi public REST API Documentation
-
-    **NOTE!** The public API is on very initial state. Backward
-    incompatible changes are possible.
+  description:
+    $ref: ./description.md
   version: "1.0.0"
 
 host: pubapi.parkkiopas.fi

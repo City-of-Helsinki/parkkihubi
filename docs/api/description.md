@@ -1,27 +1,27 @@
----
-title: Method Override in Parkkihubi
-subtitle: 'DRAFT -- Version 1'
-date: 2023-10-20
-fontsize: 11pt
-documentclass: extarticle
-papersize: a4
-geometry: "left=3cm,right=3cm,top=2cm,bottom=2cm"
----
-# What Is Method Override?
+# Parkkihubi REST APIs
+
+  **NOTE!** The public API is on very initial state. Backward
+  incompatible changes are possible.
+
+## Method Override
+
+Parkkihubi REST APIs support using the Method Override.
+
+### What Is Method Override?
 
 Method Override is a way to override the HTTP method of a request. This
 is useful when you want to perform an action of a different HTTP method
 than the one the client is using, e.g. when you want to perform a
 `PATCH` request but the client only supports `GET` and `POST`.
 
-# How To Use the Method Override in Parkkihubi
+### How To Use the Method Override in Parkkihubi
 
 Parkkihubi supports using a `method` query parameter for overriding the
 HTTP method of a request.  For example, if you want to perform a `PATCH`
 request, you can send a `POST` request with a `method=PATCH` query
 parameter.
 
-## Example
+#### Example
 
 Here is an example of how to use the Method Override to update a parking
 end time, which would normally be done with a `PATCH` request, but is
@@ -46,7 +46,7 @@ curl -X PATCH \
   "https://testapi.parkkiopas.fi/operator/v1/parking/$ID/"
 ```
 
-# Limitations
+### Limitations
 
 The Method Override is only supported when the carrying request is using
 `POST` method and `application/json` content type.  It can only be used
