@@ -157,10 +157,15 @@ def test_post_parking_optional_fields_null(operator_api_client, new_parking_data
     check_parking_data_matches_parking_object(new_parking_data, new_parking)
 
 
-def test_put_parking(operator_api_client, parking, updated_parking_data):
+@pytest.mark.parametrize('mode', ['normal', 'method-override'])
+def test_put_parking(mode, operator_api_client, parking, updated_parking_data):
     detail_url = get_detail_url(parking)
     create_payment_zone(code='2', number=2, domain=EnforcementDomain.get_default_domain())
-    response_parking_data = put(operator_api_client, detail_url, updated_parking_data)
+
+    response_parking_data = put(
+        operator_api_client, detail_url, updated_parking_data,
+        use_method_override=(mode == 'method-override'),
+    )
 
     # check data in the response
     check_response_parking_data(updated_parking_data, response_parking_data)
@@ -198,7 +203,8 @@ def test_put_parking_optional_fields_null(operator_api_client, parking, updated_
     check_parking_data_matches_parking_object(updated_parking_data, parking)
 
 
-def test_patch_parking(operator_api_client, parking):
+@pytest.mark.parametrize('mode', ['normal', 'method-override'])
+def test_patch_parking(mode, operator_api_client, parking):
     detail_url = get_detail_url(parking)
     new_zone_number = parking.zone.number % 3 + 1
     new_zone = create_payment_zone(
@@ -206,7 +212,11 @@ def test_patch_parking(operator_api_client, parking):
         number=new_zone_number,
         id=new_zone_number,
         domain=EnforcementDomain.get_default_domain())
-    response_parking_data = patch(operator_api_client, detail_url, {'zone': new_zone.id})
+
+    response_parking_data = patch(
+        operator_api_client, detail_url, {'zone': new_zone.id},
+        use_method_override=(mode == 'method-override'),
+    )
 
     # check data in the response
     check_response_parking_data({'zone': new_zone.id}, response_parking_data)
@@ -217,11 +227,30 @@ def test_patch_parking(operator_api_client, parking):
     assert parking.domain.code == response_parking_data['domain']
 
 
-def test_delete_parking(operator_api_client, parking):
+@pytest.mark.parametrize('mode', ['normal', 'method-override'])
+def test_delete_parking(mode, operator_api_client, parking):
     detail_url = get_detail_url(parking)
-    delete(operator_api_client, detail_url)
+
+    delete(
+        operator_api_client,
+        detail_url,
+        use_method_override=(mode == 'method-override'),
+    )
 
     assert not Parking.objects.filter(id=parking.id).exists()
+
+
+@pytest.mark.parametrize('method', [
+    'FOO', '', '-', 'OPTIONS', 'HEAD', 'POST', 'GET', 'put', 'Put',
+])
+def test_invalid_method_override(method, operator_api_client, parking):
+    url = get_detail_url(parking) + '?method=' + method
+
+    response = operator_api_client.post(url)
+
+    assert response.status_code == 405
+    assert response.reason_phrase == 'Method Override Not Allowed'
+    assert response.content == b''
 
 
 def test_operator_cannot_be_set(operator_api_client, operator, operator_2, new_parking_data, updated_parking_data):

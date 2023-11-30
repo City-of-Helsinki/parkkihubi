@@ -10,7 +10,7 @@ api/public
 
 docs_dir=$(cd "$(dirname "$0")" && pwd)/docs
 generator_dir=$docs_dir/doc-generator
-redoc_cli=$generator_dir/node_modules/.bin/redoc-cli
+openapi=$generator_dir/node_modules/.bin/openapi
 
 default_output_dir=$docs_dir/generated
 
@@ -26,8 +26,8 @@ else
     output_dir=$default_output_dir
 fi
 
-if [ ! -e "$redoc_cli" ]; then
-    echo "Installing redoc-cli"
+if [ ! -e "$openapi" ]; then
+    echo "Installing @redocly/cli for the \"openapi\" tool"
     old_dir=$(pwd)
     cd "$generator_dir"
     NODE_ENV=production yarn
@@ -37,7 +37,7 @@ fi
 
 for name in $docs; do
     echo "Generating $name documentation"
-    "$redoc_cli" bundle "$docs_dir/$name.yaml" -o "$output_dir/$name/index.html"
+    "$openapi" build-docs "$docs_dir/$name.yaml" -o "$output_dir/$name/index.html"
     echo
 done
 

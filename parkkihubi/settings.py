@@ -91,6 +91,7 @@ if DEBUG and TIER == 'dev':
 ##############
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'parkkihubi.middleware.MethodOverrideMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
