@@ -1,29 +1,62 @@
-version: "3.7"
-
+---
+version: '3'
 services:
-  db:
-    image: postgis/postgis:10-3.0
-    environment:
-      POSTGRES_DB: parkkihubi
-      POSTGRES_PASSWORD: parkkihubi
-      POSTGRES_USER: parkkihubi
+  runserver:
+    user: bew
+    image: parkkihubi-project-django-virtualenv
+    build: .
+    command: /home/bew/.venv/bin/python3 manage.py runserver 0.0.0.0:8000
+    ports:
+      - '8000:8000'
     volumes:
-      - db_data:/var/lib/postgresql/data
-  api:
-    build:
-      context: "."
-      target: ${BUILD_TARGET:-development}
+      - .:/home/bew/bew
+    links:
+      - postgresql
+      - memcached
     environment:
-      DATABASE_URL: >-
-          postgis://parkkihubi:parkkihubi@db/parkkihubi
+      # Project specific env vars for this project:
+      - DATABASE_URL=postgis://parkkihubi:parkkihubi@postgresql/parkkihubi
+      - HTTPS=off
+      - SECRET_KEY=not-empty
+      # Service level env vars:
+      - LANG=en_US.utf8
+      - LC_ALL=en_US.UTF-8
+      - LC_LANG=en_US.UTF-8
+      - DJANGO_SETTINGS_MODULE=local_settings
+      # Infra env vars:
+      - PYTHONUNBUFFERED=1
+      - GIT_AUTHOR_EMAIL
+      - GIT_AUTHOR_NAME
+      - GIT_COMMITTER_EMAIL
+      - GIT_COMMITTER_NAME
+    networks:
+      - network
     depends_on:
-      - db
+      - postgresql
+      - memcached
     stdin_open: true
     tty: true
-    ports:
-      - "127.0.0.1:8000:8000"
+
+  postgresql:
+    image: postgis/postgis:14-3.4
+    environment:
+      - POSTGRES_PASSWORD=parkkihubi
+      - POSTGRES_USER=parkkihubi
+      - POSTGRES_DB=parkkihubi
     volumes:
-      - .:/app
+      - postgresql:/var/lib/postgresql/data
+    ports:
+      - 5432
+    networks:
+      - network
+
+  memcached:
+    image: memcached:1.6.14
+    networks:
+      - network
 
 volumes:
-  db_data:
+  postgresql:
+
+networks:
+  network:

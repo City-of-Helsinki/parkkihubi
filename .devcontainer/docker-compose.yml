@@ -1,0 +1,5 @@
+---
+version: '3'
+services:
+  runserver:
+    command: /bin/sh -c "while sleep 1000; do :; done"
