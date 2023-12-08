@@ -1,5 +1,5 @@
 {
-  "name": "parkkihubi Plumeria",
+  "name": "ParkkiHubi",
   "dockerComposeFile": [
     "../docker-compose.yml",
     "docker-compose.yml"
