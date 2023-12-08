@@ -1,0 +1,86 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Django: Runserver",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "runserver",
+        "0.0.0.0:8000"
+      ],
+      "django": true,
+      "justMyCode": false,
+      "subProcess": true
+    },
+    {
+      "name": "Django: Runserver - nonthreading",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "runserver",
+        "--nothreading",
+        "0.0.0.0:8000"
+      ],
+      "django": true,
+      "justMyCode": false,
+      "subProcess": true
+    },
+    {
+      "name": "Django: Shell",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "shell"
+      ],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Django: Migrate",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "migrate"
+      ],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Django: Make migrations",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "makemigrations"
+      ],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Django: Collectstatic",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/manage.py",
+      "args": [
+        "collectstatic",
+        "--no-input"
+      ],
+      "django": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Run pytest",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [],
+      "django": true,
+      "justMyCode": false
+    }
+  ]
+}

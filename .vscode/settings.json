@@ -1,0 +1,17 @@
+{
+  "python.defaultInterpreterPath": "../.venv/bin/python3",
+  "git.autofetch": true,
+  "git.autoStash": true,
+  "git.fetchOnPull": true,
+  "editor.renderWhitespace": "all",
+  "editor.renderControlCharacters": true,
+  "files.trimTrailingWhitespace": true,
+  "zenMode.hideLineNumbers": false,
+  "zenMode.centerLayout": false,
+  "zenMode.fullScreen": false,
+  "gitlens.codeLens.enabled": false,
+  "gitlens.currentLine.enabled": false,
+  "[python]": {
+    "editor.tabSize": 2
+  }
+}
