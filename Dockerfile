@@ -1,48 +1,49 @@
-FROM python:3.7-slim as appbase
+FROM ubuntu:jammy-20231004
 
-ENV PYTHONBUFFERED 1
+ENV USER=root DEBIAN_FRONTEND=noninteractive
+VOLUME ["/var/cache/apt/archives"]
+RUN touch /.dockerenv
 
-RUN apt-get update  \
-    && \
-    apt-get install --no-install-recommends -y \
-      gdal-bin \
-      python3-gdal \
-      netcat \
-      libpq-dev \
-      build-essential
+RUN apt-get update \
+    && apt-get install -y \
+        git \
+        sudo \
+        vim \
+        zsh \
+    && apt-get install -y \
+        gdal-bin \
+        python3 \
+        python3-cryptography \
+        python3-lxml \
+        python3-memcache \
+        python3-ndg-httpsclient \
+        python3-paste \
+        python3-pil \
+        python3-pip \
+        python3-psycopg2 \
+        python3-pyasn1 \
+        python3-pyproj \
+        python3-rcssmin \
+        python3-requests \
+        python3-six \
+        python3-socks \
+        python3-urllib3 \
+        python3-venv \
+        python3-wheel
 
-WORKDIR /app
+RUN useradd -m -u 1000 bew
+RUN usermod -aG sudo -s /usr/bin/zsh bew
+COPY zshrc /home/bew/.zshrc
+RUN chown -R bew:bew /home/bew
 
-COPY requirements.txt ./requirements.txt
+USER bew
+ENV USER=bew
+ENV PYTHONDONTWRITEBYTECODE=1
+WORKDIR /home/bew/bew
 
-RUN pip install --no-cache-dir -r requirements.txt \
-    && \
-    apt-get remove -y build-essential libpq-dev \
-    && \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-    && \
-    rm -rf /var/lib/apt/lists/* \
-    && \
-    rm -rf /var/cache/apt/archives
+COPY --chown=bew:bew . /home/bew/bew/
 
+RUN python3.10 -m venv --system-site-packages /home/bew/.venv
+RUN /home/bew/.venv/bin/pip3 install -r /home/bew/bew/requirements.txt
 
-COPY . .
-
-ENTRYPOINT ["/app/django-entrypoint.sh"]
-
-# TODO: Production environment
-# Production environment
-# CMD ["production"]
-
-
-# Development environment
-FROM appbase as development
-
-COPY requirements-*.txt ./
-
-RUN pip install --no-cache-dir \
-    -r requirements-dev.txt \
-    -r requirements-style.txt \
-    -r requirements-test.txt
-
-CMD ["development"]
+CMD /bin/zsh
