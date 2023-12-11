@@ -12,7 +12,7 @@ django-cors-headers==3.5.0
 django-environ==0.4.5
 django-filter==2.3.0
 django-sanitized-dump==1.2.1
-djangorestframework==3.11.1
+djangorestframework==3.14.0
 djangorestframework-gis==0.15
 djangorestframework-jwt==1.11.0  # via drf-jwt-2fa
 drf-jwt-2fa==0.3.0
