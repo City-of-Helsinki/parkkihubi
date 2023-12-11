@@ -1,7 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models.functions import Area
 from django.db.models import Func, Sum
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 
