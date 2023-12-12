@@ -10,6 +10,7 @@ RUN apt-get update \
         sudo \
         vim \
         zsh \
+    && echo '%sudo ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/sudo_nopasswd \
     && apt-get install -y \
         gdal-bin \
         python3 \
