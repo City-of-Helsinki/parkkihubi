@@ -5,13 +5,13 @@ VOLUME ["/var/cache/apt/archives"]
 RUN touch /.dockerenv
 
 RUN apt-get update \
-    && apt-get install -y \
+    && apt-get install --yes \
         git \
         sudo \
         vim \
         zsh \
     && echo '%sudo ALL=(ALL:ALL) NOPASSWD: ALL' > /etc/sudoers.d/sudo_nopasswd \
-    && apt-get install -y \
+    && apt-get install --yes --no-install-recommends \
         gdal-bin \
         python3 \
         python3-cryptography \
