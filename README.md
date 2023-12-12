@@ -40,8 +40,10 @@ Happy hacking :)
 
 ### Python requirements
 
-Use `pip-tools` to install and maintain installed dependencies.
+Use `pip-tools` to install and maintain installed dependencies. This also needs
+build essentials and required development libraries installed.
 
+    sudo apt-get install build-essential libpq-dev
     pip install pip-tools
 
 Use pip-compile to update the `requirements*.txt` files.
