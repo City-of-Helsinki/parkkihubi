@@ -12,6 +12,7 @@ chardet==3.0.4
     # via requests
 database-sanitizer==1.1.0
     # via django-sanitized-dump
+datatz==2023.3 #terhi
 django==4.2.8
     # via
     #   -r requirements.in
@@ -56,7 +57,7 @@ python-dateutil==2.8.1
     # via owslib
 python-memcached==1.59
     # via -r requirements.in
-pytz==2020.1
+pytz==2023.3.post1 #2020.1
     # via
     #   -r requirements.in
     #   django
