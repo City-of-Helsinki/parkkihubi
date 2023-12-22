@@ -12,7 +12,6 @@ chardet==3.0.4
     # via requests
 database-sanitizer==1.1.0
     # via django-sanitized-dump
-datatz==2023.3 #terhi
 django==4.2.8
     # via
     #   -r requirements.in
@@ -83,3 +82,4 @@ sqlparse==0.3.1
     # via django
 urllib3==1.25.10
     # via requests
+tzdata==2023.3
