@@ -92,7 +92,7 @@ class TestPermitLookupItemListAdmin(ListAdminTestCase):
 
     def test_series_column_exists(self):
         assert '>Series<' in self.response_text
-        assert '<th scope="col"  class="column-series">' in self.response_text
+        assert '<th scope="col" class="column-series">' in self.response_text
 
     def test_series_has_correct_value(self):
         expected_val = '{id}{star}'.format(
