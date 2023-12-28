@@ -25,7 +25,7 @@ pyproj==3.3.0      # Version from Ubuntu 22.04
 requests==2.25.1   # Version from Ubuntu 22.04
 
 # Misc
-tzdata #terhi
+tzdata
 django-cors-headers
 django-sanitized-dump
 python-memcached
