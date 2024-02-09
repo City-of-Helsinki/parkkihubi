@@ -5,6 +5,7 @@ import * as actions from './actions';
 import { Action } from './actions';
 import api from './api';
 import { MapViewport } from './components/types';
+import { ExportFilters } from './api/types';
 import { RootState } from './types';
 
 const updateInterval = 5 * 60 * 1000;  // 5 minutes in ms
@@ -91,6 +92,13 @@ export function setDataTime(time?: moment.Moment) {
   };
 }
 
+export function fetchData() {
+  return (dispatch: Dispatch<any>) => {
+    dispatch(fetchOperators());
+    dispatch(fetchPaymentZones());
+  };
+}
+
 function fetchMissingData(time: moment.Moment) {
   return (dispatch: Dispatch<any>, getState: () => RootState) => {
     const timestamp = time.valueOf();
@@ -161,6 +169,43 @@ export function fetchValidParkings(time: moment.Moment) {
         },
         (error) => {
           alert('Valid parkings fetch failed: ' + error);
+        });
+  };
+}
+
+export function downloadCSV(filters: ExportFilters) {
+  return (dispatch: Dispatch<Action>) => {
+    api.downloadCSV(
+        filters,
+        (response) => {
+          dispatch(actions.receiveCSV(response.data));
+        },
+        (error) => {
+          alert('CSV download failed: ' + error);
+        });
+  };
+}
+
+export function fetchOperators() {
+  return (dispatch: Dispatch<Action>) => {
+    api.fetchOperators(
+        (response) => {
+          dispatch(actions.receiveOperators(response.data));
+        },
+        (error) => {
+          alert('Operator fetch failed: ' + error);
+        });
+  };
+}
+
+export function fetchPaymentZones() {
+  return (dispatch: Dispatch<Action>) => {
+    api.fetchPaymentZones(
+        (response) => {
+          dispatch(actions.receivePaymentZones(response.data));
+        },
+        (error) => {
+          alert('Payment zone fetch failed: ' + error);
         });
   };
 }

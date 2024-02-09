@@ -1,6 +1,6 @@
 import { Moment } from 'moment';
 
-import { ParkingList, RegionList, RegionStatsList } from './api/types';
+import { ParkingList, RegionList, RegionStatsList, PaymentZoneList, OperatorList } from './api/types';
 import { MapViewport } from './components/types';
 
 interface CheckExistingLoginAction {
@@ -139,6 +139,39 @@ export function receiveValidParkings(
     return {type: 'RECEIVE_VALID_PARKINGS', data, time};
 }
 
+interface ReceiveCsvAction {
+    type: 'RECEIVE_CSV';
+    data: string;
+}
+
+export function receiveCSV(
+    data: string
+): ReceiveCsvAction {
+    return {type: 'RECEIVE_CSV', data}
+}
+
+interface ReceiveOperatorsAction {
+    type: 'RECEIVE_OPERATORS';
+    data: OperatorList;
+}
+
+export function receiveOperators(
+    data: OperatorList
+): ReceiveOperatorsAction {
+    return {type: 'RECEIVE_OPERATORS', data}
+}
+
+interface ReceivePaymentZonesAction {
+    type: 'RECEIVE_PAYMENT_ZONES';
+    data: PaymentZoneList;
+}
+
+export function receivePaymentZones(
+    data: PaymentZoneList
+): ReceivePaymentZonesAction {
+    return {type: 'RECEIVE_PAYMENT_ZONES', data}
+}
+
 export type Action =
     CheckExistingLoginAction |
     ResolveExistingLoginCheckAction |
@@ -155,4 +188,7 @@ export type Action =
     SetSelectedRegionAction |
     ReceiveRegionStatsAction |
     ReceiveRegionInfoAction |
-    ReceiveValidParkingsAction;
+    ReceiveValidParkingsAction |
+    ReceiveOperatorsAction |
+    ReceivePaymentZonesAction |
+    ReceiveCsvAction;

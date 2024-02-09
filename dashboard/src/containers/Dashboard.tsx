@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 
 import { Button } from 'reactstrap';
 
+import Export from './Export';
 import RegionSelector from './RegionSelector';
 import * as dispatchers from '../dispatchers';
 import { RootState } from '../types';
@@ -14,6 +15,7 @@ import LastParkingsTable from './LastParkingsTable';
 
 interface Props {
     autoUpdate?: boolean;
+    onMount?: () => void;
     onUpdate?: () => void;
     onLogout?: () => void;
 }
@@ -25,6 +27,9 @@ class Dashboard extends Component<Props> {
     timerInterval: number = 1000; // 1 second
 
     componentDidMount() {
+      if(this.props.onMount) {
+        this.props.onMount();
+      }
       if (this.props.autoUpdate && !this.timer) {
         this.enableAutoUpdate();
       }
@@ -82,6 +87,7 @@ class Dashboard extends Component<Props> {
             <div className="d-flex">
                 <div className="table-card">
                     <TimeSelect />
+                    <Export />
                     <div className="margin-bottom-8" />
                     <LastParkingsTable />
                 </div>
@@ -104,6 +110,7 @@ const mapStateToProps = (state: RootState): Props => ({
 });
 
 const mapDispatchToProps = (dispatch: any): Props => ({
+  onMount: () => dispatch(dispatchers.fetchData()),
   onUpdate: () => dispatch(dispatchers.updateData()),
   onLogout: () => dispatch(dispatchers.logout()),
 });

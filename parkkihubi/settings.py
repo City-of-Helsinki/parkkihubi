@@ -200,6 +200,9 @@ JWT2FA_AUTH = {
 }
 
 CORS_ORIGIN_ALLOW_ALL = True
+CORS_EXPOSE_HEADERS = [
+    "X-Suggested-Filename", # Custom header for export CSV file name
+]
 
 ##############
 # Parkkihubi #

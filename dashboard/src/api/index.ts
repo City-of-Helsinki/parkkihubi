@@ -2,7 +2,8 @@ import * as axios from 'axios';
 import { Moment } from 'moment';
 
 import AuthManager from './auth-manager';
-import { ParkingList, RegionList, RegionStatsList } from './types';
+import { download } from './utils';
+import { ExportFilters, ParkingList, RegionList, RegionStatsList, OperatorList, PaymentZoneList } from './types';
 
 interface SuccessCallback<T> {
     (response: axios.AxiosResponse<T>): void;
@@ -20,6 +21,9 @@ export class Api {
         regions: '/monitoring/v1/region/',
         regionStats: '/monitoring/v1/region_statistics/',
         validParkings: '/monitoring/v1/valid_parking/',
+        exportDownload: '/monitoring/v1/export/download/',
+        operators: '/enforcement/v1/operator/',
+        paymentZones: '/operator/v1/payment_zone/',
     };
 
     public auth: AuthManager;
@@ -62,9 +66,37 @@ export class Api {
                             callback, errorHandler);
     }
 
+    downloadCSV(
+        filters: ExportFilters,
+        callback: SuccessCallback<string>,
+        errorHandler: ErrorHandler,
+    ) : void {
+        this.axios.post(this.endpoints.exportDownload, filters)
+            .then((response) => {
+                callback(response);
+                const fileName = response.headers["x-suggested-filename"]
+                download(response.data, fileName);
+            })
+            .catch(errorHandler);
+    }
+
+    fetchOperators(
+        callback: SuccessCallback<OperatorList>,
+        errorHandler: ErrorHandler
+    ) {
+        this._fetchAllPages(this.endpoints.operators, callback, errorHandler);
+    }
+
+    fetchPaymentZones(
+        callback: SuccessCallback<PaymentZoneList>,
+        errorHandler: ErrorHandler
+    ) {
+        this._fetchAllPages(this.endpoints.paymentZones, callback, errorHandler);
+    }
+
     private _fetchAllPages(
         url: string,
-        callback: SuccessCallback<RegionList> | SuccessCallback<ParkingList> | SuccessCallback<RegionStatsList>,
+        callback: SuccessCallback<RegionList> | SuccessCallback<ParkingList> | SuccessCallback<RegionStatsList> | SuccessCallback<OperatorList> | SuccessCallback<PaymentZoneList>,
         errorHandler: ErrorHandler
     ) {
         this.axios.get(url)
