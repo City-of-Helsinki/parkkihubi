@@ -5,6 +5,18 @@ from environ import Env
 from raven import fetch_git_sha
 from raven.exceptions import InvalidGitRepository
 
+# Prevent warning regarding
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+import django
+from django.utils.translation import gettext_lazy
+django.utils.translation.ugettext_lazy = gettext_lazy
+from django.utils.translation import gettext
+django.utils.translation.ugettext = gettext
+from django.utils.encoding import smart_str
+django.utils.encoding.smart_text = smart_str
+
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 assert os.path.isfile(os.path.join(BASE_DIR, 'manage.py'))
 

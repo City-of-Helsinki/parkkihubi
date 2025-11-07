@@ -30,7 +30,11 @@ class WfsImporter(metaclass=abc.ABCMeta):
 
         wfs = WebFeatureService(url=self.wfs_url, version='2.0.0')
         response = wfs.getfeature(typename=self.wfs_typename)
-        return bytes(response.getvalue(), 'UTF-8')
+
+        if isinstance(response.getvalue(), bytes):
+            return response.getvalue()
+        else:
+            return bytes(response.getvalue(), 'UTF-8')
 
     def _parse_response(self, content):
         logger.info('Parsing Data.')

@@ -52,7 +52,7 @@ def test_list_endpoint_data(monitoring_api_client, parking):
 
 def check_parking_feature_shape(parking_feature):
     assert set(parking_feature.keys()) == {
-        'id', 'type', 'geometry', 'properties'}
+        'id', 'type','time_start', 'time_end', 'geometry', 'properties'}
     assert parking_feature['type'] == 'Feature'
     assert set(parking_feature['geometry'].keys()) == {
         'type', 'coordinates'}
@@ -80,8 +80,8 @@ def check_parking_feature_matches_parking_object(parking_feature, parking_obj):
     assert props['zone'] == parking_obj.zone.casted_code
     assert props['created_at'] == iso8601_us(parking_obj.created_at)
     assert props['modified_at'] == iso8601_us(parking_obj.modified_at)
-    assert props['time_start'] == iso8601(parking_obj.time_start)
-    assert props['time_end'] == iso8601(parking_obj.time_end)
+    assert props['time_start'] == iso8601_us(parking_obj.time_start)
+    assert props['time_end'] == iso8601_us(parking_obj.time_end)
     assert props['operator_name'] == parking_obj.operator.name
     assert props['region'] == getattr(parking_obj.region, 'pk', None)
 

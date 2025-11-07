@@ -1,5 +1,5 @@
 # Django
-Django~=2.2.0
+Django~=4.2.0
 
 # Settings
 django-environ
@@ -8,8 +8,7 @@ django-environ
 raven>=5.2.0
 
 # PostgreSQL
-psycopg2
---no-binary psycopg2
+psycopg2==2.9.2   # Version from Ubuntu 22.04
 
 # Django REST Framework
 djangorestframework>=3.9
@@ -18,12 +17,15 @@ django-filter>=2.1.0
 drf-jwt-2fa
 
 # XML parsing
-lxml
+lxml==4.8.0   # Version from Ubuntu 22.04
 
 # WFS
-owslib
+owslib==0.25.0     # Version from Ubuntu 22.04
+pyproj==3.3.0      # Version from Ubuntu 22.04
+requests==2.25.1   # Version from Ubuntu 22.04
 
 # Misc
+tzdata
 django-cors-headers
 django-sanitized-dump
 python-memcached

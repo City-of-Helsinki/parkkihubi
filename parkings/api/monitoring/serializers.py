@@ -31,4 +31,12 @@ class ParkingSerializer(gis_serializers.GeoFeatureModelSerializer):
         representation = super().to_representation(instance)
         if instance.zone:
             representation['properties']['zone'] = instance.zone.casted_code
+
+        if instance.time_start is not None:
+            replacement_value = instance.time_start.strftime('%Y-%m-%dT%H:%M:%SZ')
+            representation['time_start'] = replacement_value or None
+
+        if instance.time_end is not None:
+            replacement_value = instance.time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
+            representation['time_end'] = replacement_value or None
         return representation

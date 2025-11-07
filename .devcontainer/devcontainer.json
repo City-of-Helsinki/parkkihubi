@@ -1,0 +1,27 @@
+{
+  "name": "ParkkiHubi",
+  "dockerComposeFile": [
+    "../docker-compose.yml",
+    "docker-compose.yml"
+  ],
+  "service": "runserver",
+  "workspaceFolder": "/home/bew/bew",
+  "runServices": [
+    "runserver",
+    "postgresql",
+    "memcached"
+  ],
+  "shutdownAction": "stopCompose",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "donjayamanne.githistory",
+        "eamodio.gitlens",
+        "davidanson.vscode-markdownlint",
+        "dakara.transformer"
+      ]
+    }
+  },
+  "postCreateCommand": "cp -n local_settings.py.tpl_dev local_settings.py"
+}

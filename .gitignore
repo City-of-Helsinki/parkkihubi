@@ -22,6 +22,9 @@ tags
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
 
+# User files
+.ssh
+
 # .nfs files are created when an open file is removed but is still being accessed
 .nfs*
 ### macOS template
@@ -56,6 +59,7 @@ Temporary Items
 __pycache__/
 *.py[cod]
 *$py.class
+*.pyc
 
 # C extensions
 *.so
@@ -107,6 +111,9 @@ coverage.xml
 # Django stuff:
 *.log
 local_settings.py
+mediaroot/
+staticroot/
+database.db
 
 # Flask stuff:
 instance/
@@ -200,6 +207,9 @@ fabric.properties
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
+
+# New Relic configuration file
+newrelic.ini
 
 # Folder config file
 Desktop.ini

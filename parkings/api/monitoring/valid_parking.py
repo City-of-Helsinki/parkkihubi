@@ -1,6 +1,6 @@
 import django_filters
 import rest_framework_gis.pagination as gis_pagination
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets
 

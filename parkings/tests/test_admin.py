@@ -62,7 +62,7 @@ class TestParkingCheckAdmin(ObjAdminTestCase):
         )
 
     def test_location_rendered_as_map(self):
-        assert '<div id="id_location_map">' in self.response_text
+        assert '<div id="id_location_map" dir="ltr">' in self.response_text
         assert "OpenLayers.Map('id_location_map'" in self.response_text
 
     def test_location_not_modifiable(self):
@@ -92,7 +92,7 @@ class TestPermitLookupItemListAdmin(ListAdminTestCase):
 
     def test_series_column_exists(self):
         assert '>Series<' in self.response_text
-        assert '<th scope="col"  class="column-series">' in self.response_text
+        assert '<th scope="col" class="column-series">' in self.response_text
 
     def test_series_has_correct_value(self):
         expected_val = '{id}{star}'.format(

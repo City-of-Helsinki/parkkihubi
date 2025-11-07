@@ -1,15 +1,28 @@
-FROM python:3.8-slim-buster AS base
+FROM ubuntu:jammy-20231004
 
 EXPOSE 8000
 
-# Install system dependencies
-RUN apt-get update  \
-    && \
-    apt-get install --no-install-recommends -y \
-      gdal-bin \
-      netcat \
-      libpq-dev \
-      build-essential
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends \
+        gdal-bin \
+        python3 \
+        python3-cryptography \
+        python3-lxml \
+        python3-memcache \
+        python3-ndg-httpsclient \
+        python3-paste \
+        python3-pil \
+        python3-pip \
+        python3-psycopg2 \
+        python3-pyasn1 \
+        python3-pyproj \
+        python3-rcssmin \
+        python3-requests \
+        python3-six \
+        python3-socks \
+        python3-urllib3 \
+        python3-venv \
+        python3-wheel
 
 # Set cache path to /tmp/pycache so that pyc files are not read from or
 # written to the __pycache__ directories in their normal locations next
