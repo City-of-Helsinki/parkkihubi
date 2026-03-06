@@ -56,16 +56,11 @@ Use pip-compile to update the `requirements*.txt` files.
 Environment variables are used to customize base configuration in
 `parkkihubi/settings.py`. If you wish to override any settings, you can place
 them in a local `.env` file which will automatically be sourced when Django imports
-the settings file. This repository also uses `local_settings.py` settings module
-for more comprehensive configuration.
+the settings file.
 
 Create a basic file for development as follows
 
     echo 'DEBUG=True' > .env
-
-File `local_settings.py` will be copied from `local_settings.py.tpl_dev` when VSCode
-enviroment is started. If you choose not to use the preferred environment, copy this
-file by hand before starting docker-compose environment.
 
 #### Parkkihubi settings
 
