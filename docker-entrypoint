@@ -32,9 +32,10 @@ elif [[ "$RUN_MODE" == "production" ]]; then
     uwsgi \
         --plugin python3 \
         --need-app \
+        --venv "$VIRTUALENV" \
         --wsgi parkkihubi.wsgi \
         --http-socket :$PORT \
-        --static-map /static=/app/var/static \
+        --static-map /static=/home/appuser/var/static \
         --master \
         --enable-threads \
         --workers 4 \

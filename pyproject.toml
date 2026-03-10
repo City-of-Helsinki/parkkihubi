@@ -1,0 +1,63 @@
+[project]
+name = "parkkihubi"
+version = "3.1.0+post0-dev1"
+description = "Hub for parking information"
+readme = "README.md"
+requires-python = "==3.10.*"
+dependencies = [
+    "django",
+    "django-cors-headers",
+    "django-environ",
+    "django-filter",
+    "django-sanitized-dump",
+    "djangorestframework",
+    "djangorestframework-gis",
+    "drf-jwt-2fa",
+    "lxml",
+    "owslib",
+    "psycopg2",
+    "python-dateutil",
+    "python-memcached",
+    "pytz",
+    "raven",
+    "requests",
+]
+
+[dependency-groups]
+dev = [
+    "factory-boy",
+    "freezegun",
+    "django-extensions",
+    "pytest",
+    "pytest-cov",
+    "pytest-django",
+    "pytest-factoryboy",
+    "pyyaml",
+    "requests-mock",
+]
+extra-dev = [
+    "autoflake",
+    "autopep8",
+    "ipython",
+    "isort",
+    "pydocstyle",
+    "tox",
+    "werkzeug",
+]
+style=[
+    "flake8",
+    "flake8-isort",
+    "flake8-print",
+    "pep8-naming",
+]
+
+[[tool.uv."dependency-metadata"]]
+# Add setuptools<81 to drf-jwt-2fa deps, because it imports pkg_resources
+name = "drf-jwt-2fa"
+version = "0.3.0"
+requires-dist = [
+  "django",
+  "djangorestframework",
+  "djangorestframework-jwt",
+  "setuptools<81",
+]
