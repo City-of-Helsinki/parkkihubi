@@ -1,9 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 from django.test import override_settings
 from django.urls import reverse
-from django.utils.timezone import utc
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST, HTTP_401_UNAUTHORIZED, HTTP_403_FORBIDDEN)
 
@@ -13,6 +12,8 @@ from parkings.factories.parking import create_payment_zone
 from ..utils import (
     ALL_METHODS, check_list_endpoint_base_fields, check_method_status_codes,
     check_response_objects, get, get_ids_from_results)
+
+UTC = timezone.utc
 
 list_url = reverse('enforcement:v1:valid_parking-list')
 
@@ -180,14 +181,14 @@ def test_registration_number_filter(operator, enforcer_api_client, parking_facto
 def test_time_filtering(operator, enforcer_api_client, parking_factory, name, enforcer):
     p1 = parking_factory(
         registration_number='ABC-123',
-        time_start=datetime(2012, 1, 1, 12, 0, 0, tzinfo=utc),
-        time_end=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
+        time_start=datetime(2012, 1, 1, 12, 0, 0, tzinfo=UTC),
+        time_end=datetime(2014, 1, 1, 12, 0, 0, tzinfo=UTC),
         operator=operator,
         domain=enforcer.enforced_domain)
     p2 = parking_factory(
         registration_number='ABC-123',
-        time_start=datetime(2014, 1, 1, 12, 0, 0, tzinfo=utc),
-        time_end=datetime(2016, 1, 1, 12, 0, 0, tzinfo=utc),
+        time_start=datetime(2014, 1, 1, 12, 0, 0, tzinfo=UTC),
+        time_end=datetime(2016, 1, 1, 12, 0, 0, tzinfo=UTC),
         operator=operator,
         domain=enforcer.enforced_domain)
     p3 = parking_factory(registration_number='ABC-123', domain=enforcer.enforced_domain)
