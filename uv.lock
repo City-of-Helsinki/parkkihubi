@@ -194,16 +194,16 @@ wheels = [
 
 [[package]]
 name = "django-sanitized-dump"
-version = "1.2.1"
+version = "1.2.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "database-sanitizer" },
     { name = "pyyaml" },
     { name = "six" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/59/5d/4722acaab67d69dd7da4f36f9d2a4c0be7049b6886db268dd6ac15f42263/django-sanitized-dump-1.2.1.tar.gz", hash = "sha256:a5ceb1f4205c2e0813cc1ca9b86b412d15bde465cece92d06e3553d9e82e1543", size = 9386, upload-time = "2020-07-10T17:14:30.658Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/12/02/4a20a30c8daf1ea7430674aa328cbe2a2334ba7ae24ade49eeccfd544d45/django-sanitized-dump-1.2.2.tar.gz", hash = "sha256:abb087a29b981de97d21bbac05c64f1f59ea0a69f479dde638994276499b4fd1", size = 9398, upload-time = "2023-09-20T14:14:31.954Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f7/25/91131e5970d65c6193f34913cfb046a6da6f164cd0a3e7e75c914a43c24e/django_sanitized_dump-1.2.1-py2.py3-none-any.whl", hash = "sha256:8a588b6ce1a6157c9fa3ebd4fe4bcb967f1d39a3dceab97f0c366b9ffe5449e0", size = 10389, upload-time = "2020-07-10T17:14:29.241Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/b7/63f41a15ee1bf8cb7c8b973e52a206f58130762772079f5bcdff1d1e1dea/django_sanitized_dump-1.2.2-py2.py3-none-any.whl", hash = "sha256:77da860ca62f16869ad947f4da1d4823bac11ba4fcbb38cdcac69fd93e0f5a26", size = 10395, upload-time = "2023-09-20T14:14:30.1Z" },
 ]
 
 [[package]]
