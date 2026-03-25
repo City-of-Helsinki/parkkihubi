@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
                 ('time_start', models.DateTimeField(db_index=True, verbose_name='parking start time')),
                 ('zone', models.IntegerField(validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(3)], verbose_name='zone number')),
                 ('address', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='parkings', to='parkings.Address', verbose_name='address')),
-                ('operator', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='parkings', to='parkings.Operator', verbose_name='operator')),
+                ('operator', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='parkings.Operator', verbose_name='operator')),
             ],
             options={
                 'abstract': False,

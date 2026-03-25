@@ -3,7 +3,6 @@
 from __future__ import unicode_literals
 
 from django.contrib.gis.db.models.fields import PointField
-from django.contrib.postgres.fields.jsonb import JSONField
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import migrations, models
 
@@ -29,7 +28,7 @@ class Migration(migrations.Migration):
                     max_length=20, verbose_name='registration number')),
                 ('location', PointField(
                     srid=4326, verbose_name='location')),
-                ('result', JSONField(
+                ('result', models.JSONField(
                     blank=True,
                     encoder=DjangoJSONEncoder,
                     verbose_name='result')),

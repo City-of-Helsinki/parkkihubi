@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='parking',
             name='domain',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='parkings', to='parkings.EnforcementDomain'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to='parkings.EnforcementDomain'),
         ),
         migrations.AddField(
             model_name='parkingarea',
