@@ -1,27 +1,16 @@
-FROM ubuntu:jammy-20231004
+FROM ubuntu:22.04 AS base
 
 EXPOSE 8000
 
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends \
         gdal-bin \
+        python-is-python3 \
         python3 \
-        python3-cryptography \
         python3-lxml \
         python3-memcache \
-        python3-ndg-httpsclient \
-        python3-paste \
-        python3-pil \
         python3-pip \
         python3-psycopg2 \
-        python3-pyasn1 \
-        python3-pyproj \
-        python3-rcssmin \
-        python3-requests \
-        python3-six \
-        python3-socks \
-        python3-urllib3 \
-        python3-venv \
         python3-wheel
 
 # Set cache path to /tmp/pycache so that pyc files are not read from or
@@ -39,23 +28,24 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 # Disable pip complaining about being run as root without virtualenv
 ENV PIP_ROOT_USER_ACTION=ignore
 
-# Upgrade pip (sending the warning about running as root to /dev/null)
-RUN pip install -U pip 2>/dev/null
+WORKDIR /app
 
 # Install pip requirements
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-WORKDIR /app
-
 RUN adduser -u 1000 --disabled-password --gecos "" appuser
-
-ENTRYPOINT ["./docker-entrypoint"]
 
 # ---------------------------------------------------------------------
 # Development image
 
 FROM base AS development
+
+RUN apt-get install --no-install-recommends -y \
+    build-essential \
+    libpq-dev \
+    python3-dev \
+    pipx
 
 # Install dev, test and style dependencies
 COPY requirements-dev.txt .
@@ -76,15 +66,19 @@ RUN chown -R appuser /app
 
 ENV DEBUG=1
 USER appuser
+ENTRYPOINT ["./docker-entrypoint"]
 
 # ---------------------------------------------------------------------
 # Production image
 
 FROM base AS production
-RUN pip install uwsgi==2.0.21
+RUN apt-get install --no-install-recommends -y uwsgi uwsgi-plugin-python3
 COPY . /app
 RUN python -m compileall .
+
+RUN mkdir /app/var && chown -R appuser /app/var
 
 ENV RUN_MODE=production
 ENV DEBUG=0
 USER appuser
+ENTRYPOINT ["./docker-entrypoint"]
