@@ -3,9 +3,9 @@ name = "parkkihubi"
 version = "3.1.0+post0-dev1"
 description = "Hub for parking information"
 readme = "README.md"
-requires-python = "==3.10.*"
+requires-python = ">=3.10"
 dependencies = [
-    "django",
+    "django<5",
     "django-cors-headers",
     "django-environ",
     "django-filter",
