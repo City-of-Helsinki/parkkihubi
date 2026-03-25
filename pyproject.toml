@@ -42,6 +42,7 @@ extra-dev = [
     "isort",
     "pydocstyle",
     "tox",
+    "tox-uv-bare",
     "werkzeug",
 ]
 style=[
