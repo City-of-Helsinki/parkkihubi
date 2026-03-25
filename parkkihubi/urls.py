@@ -1,6 +1,6 @@
 from django.conf import settings
-from django.urls import include, re_path
 from django.contrib import admin
+from django.urls import include, re_path
 
 from parkings.api.auth import urls as auth_urls
 from parkings.api.enforcement import urls as enforcement_urls
