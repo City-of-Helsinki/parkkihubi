@@ -52,7 +52,7 @@ def test_list_endpoint_data(monitoring_api_client, parking):
 
 def check_parking_feature_shape(parking_feature):
     assert set(parking_feature.keys()) == {
-        'id', 'type','time_start', 'time_end', 'geometry', 'properties'}
+        'id', 'type', 'time_start', 'time_end', 'geometry', 'properties'}
     assert parking_feature['type'] == 'Feature'
     assert set(parking_feature['geometry'].keys()) == {
         'type', 'coordinates'}

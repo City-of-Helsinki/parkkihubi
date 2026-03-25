@@ -1,5 +1,4 @@
 from django.urls import re_path
-
 from drf_jwt_2fa import views
 
 urlpatterns = [
