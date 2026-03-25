@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 import pytz
 from django.urls import reverse
 from rest_framework import status
@@ -38,9 +36,10 @@ def test_with_single_parking(monitoring_api_client, region, parking):
         'next': None,
         'previous': None,
         'results': [
-            OrderedDict([
-                ('id', str(region.id)),
-                ('parking_count', 1)]),
+            {
+                'id': str(region.id),
+                'parking_count': 1,
+            },
         ]
     }
     assert result.status_code == status.HTTP_200_OK
@@ -86,7 +85,7 @@ def test_with_many_parkings_and_specified_time(monitoring_api_client):
     }
     assert len(results) == len(regions_with_valid_parkings)
     for result in results:
-        assert isinstance(result, OrderedDict)
+        assert isinstance(result, dict)
         assert set(result.keys()) == {'id', 'parking_count'}
         assert result['id'] in regions_by_id
         region = regions_by_id[result['id']]
