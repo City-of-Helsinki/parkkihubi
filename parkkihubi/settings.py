@@ -10,10 +10,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 import django  # noqa
 from django.utils.translation import gettext_lazy  # noqa
+
 django.utils.translation.ugettext_lazy = gettext_lazy  # noqa
 from django.utils.translation import gettext  # noqa
+
 django.utils.translation.ugettext = gettext  # noqa
 from django.utils.encoding import smart_str  # noqa
+
 django.utils.encoding.smart_text = smart_str  # noqa
 
 

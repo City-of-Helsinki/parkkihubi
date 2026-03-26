@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# flake8: noqa: T201
 """
 Measure performance of the check_parking endpoint.
 
