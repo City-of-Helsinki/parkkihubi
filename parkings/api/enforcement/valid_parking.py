@@ -27,6 +27,10 @@ class ValidParkingSerializer(serializers.ModelSerializer):
             'operator_name',
             'is_disc_parking',
         ]
+        extra_kwargs = {
+            'time_start': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+            'time_end': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+        }
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -36,14 +40,6 @@ class ValidParkingSerializer(serializers.ModelSerializer):
 
         if not instance.is_disc_parking:
             representation.pop('is_disc_parking')
-
-        if instance.time_start is not None:
-            replacement_value = instance.time_start.strftime('%Y-%m-%dT%H:%M:%SZ')
-            representation['time_start'] = replacement_value or None
-
-        if instance.time_end is not None:
-            replacement_value = instance.time_end.strftime('%Y-%m-%dT%H:%M:%SZ')
-            representation['time_end'] = replacement_value or None
 
         if instance.time_end is None:
             replacement_value = getattr(

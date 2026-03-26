@@ -27,19 +27,10 @@ class ValidPermitItemSerializer(serializers.ModelSerializer):
             'operator_name',
             'properties',
         ]
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-
-        if instance.start_time is not None:
-            replacement_value = instance.start_time.strftime('%Y-%m-%dT%H:%M:%SZ')
-            representation['start_time'] = replacement_value or None
-
-        if instance.end_time is not None:
-            replacement_value = instance.end_time.strftime('%Y-%m-%dT%H:%M:%SZ')
-            representation['end_time'] = replacement_value or None
-
-        return representation
+        extra_kwargs = {
+            'start_time': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+            'end_time': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+        }
 
 
 class ValidPermitItemFilter(django_filters.rest_framework.FilterSet):
