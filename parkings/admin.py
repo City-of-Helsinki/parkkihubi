@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.contrib.gis.admin import OSMGeoAdmin
+from django.contrib.gis.admin import GISModelAdmin
 from django.db import models
 
 from .admin_utils import ReadOnlyAdmin, WithAreaField
@@ -10,13 +10,13 @@ from .models import (
 
 
 @admin.register(Enforcer)
-class EnforcerAdmin(WithAreaField, OSMGeoAdmin):
+class EnforcerAdmin(WithAreaField, GISModelAdmin):
     list_display = ['id', 'name', 'user', 'enforced_domain']
     ordering = ('name',)
 
 
 @admin.register(EnforcementDomain)
-class EnforcementDomainAdmin(WithAreaField, OSMGeoAdmin):
+class EnforcementDomainAdmin(WithAreaField, GISModelAdmin):
     list_display = ['id', 'code', 'name', 'area']
     ordering = ('code',)
 
@@ -33,14 +33,14 @@ class OperatorAdmin(admin.ModelAdmin):
 
 
 @admin.register(PaymentZone)
-class PaymentZoneAdmin(WithAreaField, OSMGeoAdmin):
+class PaymentZoneAdmin(WithAreaField, GISModelAdmin):
     list_display = ['id', 'domain', 'number', 'name', 'area']
     list_filter = ['domain']
     ordering = ('number',)
 
 
 @admin.register(Parking, ArchivedParking)
-class ParkingAdmin(OSMGeoAdmin):
+class ParkingAdmin(GISModelAdmin):
     date_hierarchy = 'time_start'
     list_display = [
         'id', 'operator', 'domain', 'zone', 'parking_area', 'terminal_number',
@@ -52,14 +52,14 @@ class ParkingAdmin(OSMGeoAdmin):
 
 
 @admin.register(Region)
-class RegionAdmin(WithAreaField, OSMGeoAdmin):
+class RegionAdmin(WithAreaField, GISModelAdmin):
     list_display = ['id', 'domain', 'name', 'capacity_estimate', 'area']
     list_filter = ['domain']
     ordering = ('name',)
 
 
 @admin.register(ParkingArea)
-class ParkingAreaAdmin(WithAreaField, OSMGeoAdmin):
+class ParkingAreaAdmin(WithAreaField, GISModelAdmin):
     area_scale = 1
     list_display = ['id', 'origin_id', 'domain', 'capacity_estimate', 'area']
     list_filter = ['domain']
@@ -67,12 +67,12 @@ class ParkingAreaAdmin(WithAreaField, OSMGeoAdmin):
 
 
 @admin.register(ParkingCheck)
-class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
+class ParkingCheckAdmin(ReadOnlyAdmin, GISModelAdmin):
     list_display = [
         'id', 'time', 'registration_number', 'location',
         'allowed', 'result', 'performer', 'created_at']
 
-    modifiable = False
+    gis_widget_kwargs = {'attrs': {'disabled': True}}
 
     def get_readonly_fields(self, request, obj=None):
         # Remove location from readonly fields, because otherwise the
@@ -84,11 +84,11 @@ class ParkingCheckAdmin(ReadOnlyAdmin, OSMGeoAdmin):
 
     def has_change_permission(self, request, obj=None):
         # Needed to make the map visible for the location field
-        return True
+        return True if request.method == "GET" else False
 
 
 @admin.register(ParkingTerminal)
-class ParkingTerminalAdmin(OSMGeoAdmin):
+class ParkingTerminalAdmin(GISModelAdmin):
     list_display = ['id', 'domain', 'number', 'name']
     list_filter = ['domain']
 
@@ -111,7 +111,7 @@ class PermitAdmin(admin.ModelAdmin):
 
 
 @admin.register(PermitArea)
-class PermitAreaAdmin(WithAreaField, OSMGeoAdmin):
+class PermitAreaAdmin(WithAreaField, GISModelAdmin):
     list_display = ['id', 'domain', 'identifier', 'name', 'area']
     list_filter = ['domain']
     ordering = ('identifier',)
