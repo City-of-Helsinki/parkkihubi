@@ -51,3 +51,6 @@ style=[
     "flake8-print",
     "pep8-naming",
 ]
+
+[tool.uv]
+default-groups = "all"
