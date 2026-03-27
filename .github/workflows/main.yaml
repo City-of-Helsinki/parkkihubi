@@ -76,7 +76,7 @@ jobs:
   checks:
     strategy:
       matrix:
-        toxenv: [style, uvlock, sanitizer]
+        toxenv: [style, check, uvlock, sanitizer]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
@@ -88,7 +88,7 @@ jobs:
 
       - name: Install GDAL
         run: sudo apt-get update && sudo apt-get install -y gdal-bin
-        if: ${{ matrix.toxenv == 'sanitizer' }}
+        if: ${{ contains(fromJSON('["check", "sanitizer"]'), matrix.toxenv) }}
 
       - name: Install Tox, tox-uv and tox-gh-actions
         run: pip install tox tox-uv tox-gh-actions
