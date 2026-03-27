@@ -5,9 +5,6 @@ from environ import Env
 from raven import fetch_git_sha
 from raven.exceptions import InvalidGitRepository
 
-# Prevent warning regarding
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
-
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 assert os.path.isfile(os.path.join(BASE_DIR, 'manage.py'))
 
@@ -26,6 +23,7 @@ DEBUG = env.bool('DEBUG', default=False)
 TIER = env.str('TIER', default='dev')
 SECRET_KEY = env.str('SECRET_KEY', default=('' if not DEBUG else 'xxx'))
 ALLOWED_HOSTS = ['*']
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 #########
 # Paths #
