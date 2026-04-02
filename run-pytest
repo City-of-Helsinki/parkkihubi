@@ -1,7 +1,7 @@
 #!/bin/bash
-# Run pytest locally or on docker-compose app service
+# Run pytest locally or on docker compose app service
 #
-# When using docker-compose app service, the options passed by VSCodium
+# When using docker compose app service, the options passed by VSCodium
 # will be handled specially to make its pytest integration smoother.
 #
 # To run pytest within docker, set USE_DOCKER environment variable to 1
@@ -15,7 +15,7 @@ if [[ -z "$USE_DOCKER" ]] && [[ -e .env ]]; then
 fi
 
 if [[ "$USE_DOCKER" == "1" ]] || [[ "$USE_DOCKER" == "yes" ]]; then
-    docker-compose up -d
+    docker compose up -d
 else
     exec pytest "$@"
     exit $?
@@ -40,13 +40,10 @@ misc_opts=(
     "-o" "cache_dir=/tmp/pytest_cache"
 )
 
-docker_compose_exec=("docker-compose" "exec")
+docker_compose_exec=("docker" "compose" "exec")
 if ! tty -s; then
     docker_compose_exec+=("-T")  # If there is no TTY available, pass -T
 fi
-
-# Wait until the database is ready
-"${docker_compose_exec[@]}" -e RUN_MIGRATIONS=0 app ./docker-entrypoint /bin/true
 
 set +e
 "${docker_compose_exec[@]}" app pytest "${misc_opts[@]}" "${opts[@]}"

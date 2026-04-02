@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.urls import re_path
 from rest_framework.routers import DefaultRouter
 
 from ..url_utils import versioned_url
@@ -15,7 +15,7 @@ class Router(DefaultRouter):
     def get_urls(self):
         urls = super().get_urls()
         return urls + [
-            url(r"^check_parking/$", CheckParking.as_view(), name="check_parking"),
+            re_path(r"^check_parking/$", CheckParking.as_view(), name="check_parking"),
         ]
 
     def get_api_root_view(self, *args, **kwargs):

@@ -27,6 +27,10 @@ class ValidPermitItemSerializer(serializers.ModelSerializer):
             'operator_name',
             'properties',
         ]
+        extra_kwargs = {
+            'start_time': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+            'end_time': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+        }
 
 
 class ValidPermitItemFilter(django_filters.rest_framework.FilterSet):

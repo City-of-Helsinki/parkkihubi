@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='parking',
             name='parking_area',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='parkings', to='parkings.ParkingArea', verbose_name='parking area'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='parkings.ParkingArea', verbose_name='parking area'),
         ),
     ]

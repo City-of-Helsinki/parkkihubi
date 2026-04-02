@@ -1,12 +1,17 @@
+import datetime
+
+import django
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
 from django.test import TestCase
 from django.test.client import Client
 from django.urls import reverse
-from rest_framework.status import HTTP_200_OK
+from rest_framework.status import HTTP_200_OK, HTTP_403_FORBIDDEN
 
 from ..factories.permit import create_permit, create_permit_series
 from ..models import ParkingCheck
+
+UTC = datetime.timezone.utc
 
 
 class AdminTestCase(TestCase):
@@ -52,7 +57,7 @@ class TestParkingCheckAdmin(ObjAdminTestCase):
     def create_object(self):
         return ParkingCheck.objects.create(
             performer=self.user,
-            time='2019-01-01T12:00:00Z',
+            time=datetime.datetime(2019, 1, 1, 12, 0, tzinfo=UTC),
             time_overridden=True,
             registration_number='ABC-123',
             location=Point(60.193609, 24.951394),
@@ -62,11 +67,43 @@ class TestParkingCheckAdmin(ObjAdminTestCase):
         )
 
     def test_location_rendered_as_map(self):
-        assert '<div id="id_location_map">' in self.response_text
-        assert "OpenLayers.Map('id_location_map'" in self.response_text
+        assert '<div id="id_location_map" class="dj_map"' in self.response_text
+        assert '<textarea id="id_location"' in self.response_text
+        assert '<script src="/static/gis/js/OLMapWidget.js"' in self.response_text
+        if django.VERSION < (6, 0):
+            assert 'geodjango_location = new MapWidget' in self.response_text
+        else:
+            assert 'id="id_location_mapwidget_options"' in self.response_text
 
-    def test_location_not_modifiable(self):
-        assert 'geodjango_location.modifiable = false;' in self.response_text
+    def test_location_is_disabled(self):
+        # Unfortunately setting the location field as readonly causes
+        # the map to not be rendered at all and making it disabled only
+        # removes the "Delete all Features" button.  Let's check that
+        # the button is not there at least.
+        assert 'class="clear_features"' not in self.response_text
+        assert 'Delete all Features' not in self.response_text
+
+    def test_form_cannot_be_saved(self):
+        submission_response = self.client.post(self.url, {
+            'performerx': self.obj.performer.id,
+            'time': self.obj.time.isoformat(),
+            'time_overridden': self.obj.time_overridden,
+            'registration_number': self.obj.registration_number,
+            'location': 'POINT(24.951394 60.193609)',
+            'result': '{}',
+            'allowed': self.obj.allowed,
+            'found_parking': '',
+        })
+        assert submission_response.status_code == HTTP_403_FORBIDDEN
+        assert 'Forbidden' in submission_response.content.decode()
+
+    def test_save_buttons_not_rendered(self):
+        assert 'name="_save"' not in self.response_text
+        assert 'name="_continue"' not in self.response_text
+        assert 'name="_addanother"' not in self.response_text
+        assert '"Save"' not in self.response_text
+        assert 'Save and add another' not in self.response_text
+        assert 'Save and continue editing' not in self.response_text
 
 
 class TestPermitListAdmin(ListAdminTestCase):
@@ -92,7 +129,7 @@ class TestPermitLookupItemListAdmin(ListAdminTestCase):
 
     def test_series_column_exists(self):
         assert '>Series<' in self.response_text
-        assert '<th scope="col"  class="column-series">' in self.response_text
+        assert '<th scope="col" class="column-series">' in self.response_text
 
     def test_series_has_correct_value(self):
         expected_val = '{id}{star}'.format(

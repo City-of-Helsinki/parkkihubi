@@ -14,6 +14,13 @@ class ReadOnlyAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return False
 
+    def render_change_form(
+        self, request, context, add=False, change=False, form_url='', obj=None
+    ):
+        context['show_save'] = False
+        context['show_save_and_continue'] = False
+        return super().render_change_form(request, context, add, change, form_url, obj)
+
 
 class WithAreaField:
     area_scale = 1000000

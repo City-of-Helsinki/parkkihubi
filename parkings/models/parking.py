@@ -3,7 +3,7 @@ from django.contrib.gis.db.models.functions import Distance
 from django.db import connections, router, transaction
 from django.utils import timezone
 from django.utils.timezone import localtime, now
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from parkings.models.mixins import TimestampedModelMixin, UUIDPrimaryKeyMixin
 from parkings.models.operator import Operator

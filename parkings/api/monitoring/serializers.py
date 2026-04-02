@@ -25,6 +25,10 @@ class ParkingSerializer(gis_serializers.GeoFeatureModelSerializer):
             'created_at',
             'modified_at',
         ]
+        extra_kwargs = {
+            'time_start': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+            'time_end': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+        }
         geo_field = 'location'  # Stored already in SRID 4326 / WGS84
 
     def to_representation(self, instance):

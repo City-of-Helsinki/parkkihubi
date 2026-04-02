@@ -11,7 +11,7 @@ class Field:
         return value
 
     def __eq__(self, other):
-        return (type(self) == type(other))
+        return (type(self) is type(other))
 
 
 @deconstructible
@@ -31,7 +31,7 @@ class TextField(Field):
         return value
 
     def __eq__(self, other):
-        return (type(self) == type(other) and
+        return (type(self) is type(other) and
                 self.max_length == other.max_length)
 
 
@@ -109,5 +109,5 @@ class DictListValidator:
 
     def __eq__(self, other):
         return (
-            type(self) == type(other) and
+            type(self) is type(other) and
             self.item_schema == other.item_schema)

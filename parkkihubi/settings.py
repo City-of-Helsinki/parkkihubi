@@ -23,6 +23,7 @@ DEBUG = env.bool('DEBUG', default=False)
 TIER = env.str('TIER', default='dev')
 SECRET_KEY = env.str('SECRET_KEY', default=('' if not DEBUG else 'xxx'))
 ALLOWED_HOSTS = ['*']
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 #########
 # Paths #
@@ -140,7 +141,6 @@ LANGUAGE_CODE = 'en'
 TIME_ZONE = 'UTC'
 ADMIN_TIME_ZONE = 'Europe/Helsinki'
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 
 ########
@@ -181,15 +181,16 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
-JWT_AUTH = {
-    'JWT_EXPIRATION_DELTA': timedelta(minutes=30),
-    'JWT_ALLOW_REFRESH': True,
-    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ['Bearer', 'JWT'],
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
 JWT2FA_AUTH = {
     'CODE_TOKEN_THROTTLE_RATE': '5/15m',
     'AUTH_TOKEN_RETRY_WAIT_TIME': timedelta(seconds=10),
+    'AUTH_RESULT_ACCESS_TOKEN_KEY': 'token',
     'EMAIL_SENDER_SUBJECT_OVERRIDE': '{code} - Varmennuskoodisi',
     'EMAIL_SENDER_BODY_OVERRIDE': (
         'Hei!\n'

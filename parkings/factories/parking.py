@@ -26,7 +26,8 @@ def generate_registration_number():
 
 
 def create_payment_zone(**kwargs):
-    from parkings.tests.api.enforcement.test_check_parking import create_area_geom
+    from parkings.tests.api.enforcement.test_check_parking import (
+        create_area_geom)
     kwargs.setdefault('domain', EnforcementDomainFactory())
     kwargs.setdefault('number', 1)
     kwargs.setdefault('code', "1")

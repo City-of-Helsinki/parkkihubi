@@ -1,31 +1,38 @@
-version: "3.8"
-
+---
 services:
   db:
     image: postgis/postgis:15-3.4
     environment:
       POSTGRES_DB: parkkihubi
-      POSTGRES_USER: parkkihubi
-      POSTGRES_PASSWORD: parkkihubi
-      PGDATABASE: parkkihubi
-      PGUSER: parkkihubi
-      PGPASSWORD: parkkihubi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     volumes:
       - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - >-
+          pg_isready -U postgres -d parkkihubi &&
+          psql -U postgres parkkihubi -t --csv
+          -c "SELECT extname FROM pg_extension" | grep -q postgis &&
+          sleep 1
+      start_interval: 2s
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 3
   app:
     platform: "linux/amd64"
     image: parkkihubi
     build:
       context: "."
-      target: "development"
+      target: "${DOCKER_APP_TARGET:-development}"
     environment:
-      DATABASE_URL: postgis://parkkihubi:parkkihubi@db/parkkihubi
-      RUN_MIGRATIONS: 1
-      DEBUG: 1
+      DATABASE_URL: postgis://postgres:postgres@db/parkkihubi
       SECRET_KEY: not-empty
-      VAR_ROOT: /tmp/var
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "127.0.0.1:8000:8000"
       - "127.0.0.1:5678:5678"

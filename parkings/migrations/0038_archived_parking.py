@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='parking',
             name='terminal',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='parkings', to='parkings.ParkingTerminal', verbose_name='terminal'),
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='parkings.ParkingTerminal', verbose_name='terminal'),
         ),
         migrations.CreateModel(
             name='ArchivedParking',

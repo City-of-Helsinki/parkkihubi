@@ -6,6 +6,11 @@ if [ -r ../etc/env ]; then
     . ../etc/env
 fi
 
+export UV_PROJECT_ENVIRONMENT=${UV_PROJECT_ENVIRONMENT:-$HOME/venv}
+if [ ! -e .venv ]; then
+    ln -srv "$UV_PROJECT_ENVIRONMENT" .venv
+fi
+
 # Update the dashboard
 if [ "$DISABLE_DASHBOARD_DEPLOY" = "1" ]; then
     echo "Not deploying Dashboard, since DISABLE_DASHBOARD_DEPLOY is set."
@@ -25,9 +30,7 @@ elif [ "$force_update" = "true" ] || \
 fi
 
 # Update the backend
-pip install -r requirements-pip.txt
-pip install -r requirements-prequ.txt
-prequ sync requirements.txt
+uv sync --frozen --no-default-groups
 
 ./manage.py collectstatic --noinput
 
@@ -38,6 +41,4 @@ else
 fi
 
 # Send notification about succesful update
-if [ -x ../bin/update-notify ]; then
-    ../bin/update-notify "Successfully updated to $new_ver"
-fi
+update_notify "Updated to $new_ver" || true

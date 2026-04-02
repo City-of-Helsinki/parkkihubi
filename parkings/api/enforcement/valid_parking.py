@@ -27,6 +27,10 @@ class ValidParkingSerializer(serializers.ModelSerializer):
             'operator_name',
             'is_disc_parking',
         ]
+        extra_kwargs = {
+            'time_start': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+            'time_end': {'format': '%Y-%m-%dT%H:%M:%SZ'},
+        }
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

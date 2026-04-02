@@ -1,8 +1,0 @@
-autoflake
-autopep8
-django-extensions
-ipython
-isort
-pydocstyle
-tox
-werkzeug
