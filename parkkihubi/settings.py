@@ -181,16 +181,16 @@ REST_FRAMEWORK = {
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 }
 
-JWT_AUTH = {
-    'JWT_AUTH_HEADER_PREFIX': 'JWT',
-    'JWT_EXPIRATION_DELTA': timedelta(minutes=30),
-    'JWT_ALLOW_REFRESH': True,
-    'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ['Bearer', 'JWT'],
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
 JWT2FA_AUTH = {
     'CODE_TOKEN_THROTTLE_RATE': '5/15m',
     'AUTH_TOKEN_RETRY_WAIT_TIME': timedelta(seconds=10),
+    'AUTH_RESULT_ACCESS_TOKEN_KEY': 'token',
     'EMAIL_SENDER_SUBJECT_OVERRIDE': '{code} - Varmennuskoodisi',
     'EMAIL_SENDER_BODY_OVERRIDE': (
         'Hei!\n'

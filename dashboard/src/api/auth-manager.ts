@@ -123,7 +123,7 @@ export default class AuthManager {
             ...request,
             headers: {
                 ...request.headers,
-                'Authorization': `JWT ${tokenStorage.getToken()}`,
+                Authorization: `Bearer ${tokenStorage.getToken()}`,
             }
         };
     }
