@@ -4,21 +4,29 @@ import { Api } from './index';
 import { AuthToken, CodeToken } from './types';
 
 class TokenStorage {
-    storeToken(token: string) {
+    storeToken(token: string, refreshToken: string | null = null) {
         if (!token) {
             throw new Error('Cannot store empty token');
         }
         localStorage.setItem('AUTH_TOKEN', token);
         localStorage.setItem('AUTH_TOKEN_STORED_AT', Date.now().toString());
+        if (refreshToken) {
+            localStorage.setItem('REFRESH_TOKEN', refreshToken);
+        }
     }
 
     getToken(): string | null {
         return localStorage.getItem('AUTH_TOKEN');
     }
 
+    getRefreshToken(): string | null {
+        return localStorage.getItem('REFRESH_TOKEN');
+    }
+
     clearToken() {
         localStorage.removeItem('AUTH_TOKEN');
         localStorage.removeItem('AUTH_TOKEN_STORED_AT');
+        localStorage.removeItem('REFRESH_TOKEN');
     }
 
     getTokenAge(): number | null {
@@ -68,7 +76,11 @@ export default class AuthManager {
         const params = {code_token: codeToken, code: verificationCode};
         return this._axios.post<AuthToken>(authTokenUrl, params).then(
             (response) => {
-                tokenStorage.storeToken(response.data.token);
+                const data = response.data;
+                tokenStorage.storeToken(
+                    data.access || data.token || '',
+                    data.refresh || null
+                );
                 this._ejectAxiosInterceptor();
                 this._mountAxiosInterceptor();
                 return response.data;
@@ -121,11 +133,14 @@ export default class AuthManager {
             return this._tokenRefreshPromise;
         }
         const refreshUrl = this._api.endpoints.authRefresh;
+        const refresh = tokenStorage.getRefreshToken();
+        const data = (refresh) ? {refresh} : {token: tokenStorage.getToken()};
         const promise = this._tokenRefreshPromise = this._axios.post(
-            refreshUrl, {token: tokenStorage.getToken()}).then(
+            refreshUrl, data).then(
                 (response) => {
                     this._tokenRefreshPromise = null;
-                    tokenStorage.storeToken(response.data.token);
+                    const resp = response.data;
+                    tokenStorage.storeToken(resp.access || resp.token || '');
                     return response.data;
                 },
                 (error) => {

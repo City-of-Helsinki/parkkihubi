@@ -15,7 +15,8 @@ export function checkExistingLogin() {
     api.auth.checkExistingLogin().then(
         (authToken) => {
           if (authToken) {
-            dispatch(actions.receiveAuthToken(authToken.token));
+            const token = authToken.access || authToken.token || '';
+            dispatch(actions.receiveAuthToken(token));
           }
           dispatch(actions.resolveExistingLoginCheck());
         },
@@ -48,7 +49,8 @@ export function continueLogin(verificationCode: string) {
     if (codeToken) {
       api.auth.continueLogin(codeToken, verificationCode).then(
           (authToken) => {
-            dispatch(actions.receiveAuthToken(authToken.token));
+            const token = authToken.access || authToken.token || '';
+            dispatch(actions.receiveAuthToken(token));
           },
           (error) => {
             dispatch(actions.receiveAuthTokenFailure(

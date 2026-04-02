@@ -1,7 +1,9 @@
 import * as geojson from 'geojson';
 
 export interface AuthToken {
-    token: string;
+    token?: string;
+    access?: string;
+    refresh?: string;
 }
 
 export interface CodeToken {
