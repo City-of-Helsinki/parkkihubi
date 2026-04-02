@@ -5,7 +5,7 @@ description = "Hub for parking information"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "django<5",
+    "django>4",
     "django-cors-headers",
     "django-environ",
     "django-filter",

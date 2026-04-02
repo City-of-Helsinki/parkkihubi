@@ -1021,7 +1021,7 @@ style = [
 
 [package.metadata]
 requires-dist = [
-    { name = "django", specifier = "<5" },
+    { name = "django", specifier = ">4" },
     { name = "django-cors-headers" },
     { name = "django-environ" },
     { name = "django-filter" },
