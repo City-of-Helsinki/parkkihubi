@@ -66,13 +66,17 @@ class ParkingAreaAdmin(WithAreaField, GISModelAdmin):
     ordering = ('origin_id',)
 
 
+class CustomizedOSMWidget(GISModelAdmin.gis_widget):
+    def get_context(self, name, value, attrs):
+        return {**super().get_context(name, value, attrs), 'disabled': True}
+
+
 @admin.register(ParkingCheck)
 class ParkingCheckAdmin(ReadOnlyAdmin, GISModelAdmin):
+    gis_widget = CustomizedOSMWidget
     list_display = [
         'id', 'time', 'registration_number', 'location',
         'allowed', 'result', 'performer', 'created_at']
-
-    gis_widget_kwargs = {'attrs': {'disabled': True}}
 
     def get_readonly_fields(self, request, obj=None):
         # Remove location from readonly fields, because otherwise the

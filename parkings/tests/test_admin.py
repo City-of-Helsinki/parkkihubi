@@ -1,5 +1,6 @@
 import datetime
 
+import django
 from django.contrib.auth import get_user_model
 from django.contrib.gis.geos import Point
 from django.test import TestCase
@@ -67,7 +68,12 @@ class TestParkingCheckAdmin(ObjAdminTestCase):
 
     def test_location_rendered_as_map(self):
         assert '<div id="id_location_map" class="dj_map"' in self.response_text
-        assert 'geodjango_location = new MapWidget' in self.response_text
+        assert '<textarea id="id_location"' in self.response_text
+        assert '<script src="/static/gis/js/OLMapWidget.js"' in self.response_text
+        if django.VERSION < (6, 0):
+            assert 'geodjango_location = new MapWidget' in self.response_text
+        else:
+            assert 'id="id_location_mapwidget_options"' in self.response_text
 
     def test_location_is_disabled(self):
         # Unfortunately setting the location field as readonly causes
