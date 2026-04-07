@@ -24,14 +24,6 @@ body {
 .login-form .title-section {
   margin-bottom: 24px;
 }
-.submit-button {
-  color: #515455 !important;
-  background: #d0e8ed !important;
-  border-color: #d0e8ed !important;
-}
-.submit-button i {
-  margin-left: 4px;
-}
 .margin-bottom-8 {
   margin-bottom: 8px;
 }

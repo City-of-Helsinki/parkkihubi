@@ -1,7 +1,5 @@
 import * as React from 'react';
-import {
-  Alert, Button, Form, FormGroup, Label, Input,
-} from 'reactstrap';
+import { Alert, Button, Form } from 'react-bootstrap';
 
 export interface Props {
     phase?: 'login' | 'verification-code';
@@ -22,15 +20,15 @@ const Field = ({ name, text, ...inputProps }: {
     text: string;
     [key: string]: {};
 }) => (
-  <FormGroup>
-    <Label for={name}>{text}</Label>
-    <Input
+  <Form.Group className="mb-3">
+    <Form.Label htmlFor={name}>{text}</Form.Label>
+    <Form.Control
       type={(name !== 'password') ? 'text' : 'password'}
       name={name}
       id={name}
       {...inputProps}
     />
-  </FormGroup>
+  </Form.Group>
 );
 
 export default class LoginForm extends React.Component<Props, State> {
@@ -61,7 +59,7 @@ export default class LoginForm extends React.Component<Props, State> {
               onChange={this.handleChange}
             />
             {(this.props.loginErrorMessage) ? (
-              <Alert color="danger">{this.props.loginErrorMessage}</Alert>
+              <Alert variant="danger">{this.props.loginErrorMessage}</Alert>
             ) : null}
           </>
         ) : (
@@ -73,25 +71,23 @@ export default class LoginForm extends React.Component<Props, State> {
               onChange={this.handleChange}
             />
             {(this.props.verificationCodeErrorMessage) ? (
-              <Alert color="danger">{this.props.verificationCodeErrorMessage}</Alert>
+              <Alert variant="danger">{this.props.verificationCodeErrorMessage}</Alert>
             ) : null}
           </>
         )}
         <div className="d-flex justify-content-end">
-            <Button
-                type="submit"
+            <Button type="submit"
                 onClick={this.handleSubmit}
-                color="primary"
-                className="submit-button d-flex align-items-center"
+                variant="primary"
             >
                 {(this.props.phase === 'login') ? (
                     <>
-                        <span>Seuraava</span>
+                        <span className="me-1">Seuraava</span>
                         <i className="fa fa-chevron-right" />
                     </>
                 ) : (
                     <>
-                        <span>Kirjaudu</span>
+                        <span className="me-1">Kirjaudu</span>
                         <i className="fa fa-sign-in" />
                     </>
                 )}

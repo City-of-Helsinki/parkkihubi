@@ -46,6 +46,22 @@
                 "django": true,
                 "justMyCode": false
             }
-        }
+        },
+        {
+            "name": "Dashboard: Debug React App (Chrome)",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:5173",
+            "preLaunchTask": "Dashboard: Start",
+            "webRoot": "${workspaceFolder}/dashboard/src"
+        },
+        {
+            "name": "Dashboard: Start and Attach to Chrome",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222,
+            "preLaunchTask": "Dashboard: Start",
+            "webRoot": "${workspaceFolder}/dashboard/src"
+        },
     ]
 }

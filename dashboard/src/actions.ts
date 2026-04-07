@@ -84,10 +84,10 @@ export function setMapViewport(viewport: MapViewport): SetMapViewportAction {
 
 interface SetDataTimeAction {
     type: 'SET_DATA_TIME';
-    time: Moment;
+    time: number;
 }
 export function setDataTime(time: Moment): SetDataTimeAction {
-    return {type: 'SET_DATA_TIME', time};
+    return {type: 'SET_DATA_TIME', time: time.valueOf()};
 }
 
 interface SetAutoUpdateAction {
@@ -110,13 +110,13 @@ SetSelectedRegionAction {
 interface ReceiveRegionStatsAction {
     type: 'RECEIVE_REGION_STATS';
     data: RegionStatsList;
-    time: Moment;
+    time: number;
 }
 export function receiveRegionStats(
     data: RegionStatsList,
     time: Moment
 ): ReceiveRegionStatsAction {
-    return {type: 'RECEIVE_REGION_STATS', data, time};
+    return {type: 'RECEIVE_REGION_STATS', data, time: time.valueOf()};
 }
 
 interface ReceiveRegionInfoAction {
@@ -130,13 +130,13 @@ export function receiveRegionInfo(data: RegionList): ReceiveRegionInfoAction {
 interface ReceiveValidParkingsAction {
     type: 'RECEIVE_VALID_PARKINGS';
     data: ParkingList;
-    time: Moment;
+    time: number;
 }
 export function receiveValidParkings(
     data: ParkingList,
     time: Moment,
 ): ReceiveValidParkingsAction {
-    return {type: 'RECEIVE_VALID_PARKINGS', data, time};
+    return {type: 'RECEIVE_VALID_PARKINGS', data, time: time.valueOf()};
 }
 
 export type Action =

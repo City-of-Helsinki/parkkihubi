@@ -17,14 +17,14 @@ if [ "$DISABLE_DASHBOARD_DEPLOY" = "1" ]; then
 elif [ "$force_update" = "true" ] || \
        git diff --name-only "$prev_head..HEAD" | grep -q "^dashboard/"; then
     if [ "$TIER" != "prod" ]; then
-        export REACT_APP_API_URL="https://testapi.parkkiopas.fi/"
-        echo "Using API base URL: $REACT_APP_API_URL"
+        export VITE_API_URL="${VITE_API_URL:-https://testapi.parkkiopas.fi/}"
     fi
+    [ -z "$VITE_API_URL" ] || echo "Using API base URL: $VITE_API_URL"
     cd dashboard
-    yarn install --production=false  # dev deps are needed for @types packages
-    yarn run build
+    NODE_ENV=production pnpm i --frozen-lockfile
+    NODE_ENV=production pnpm build
     if [ -d ../../var ]; then
-        rsync -av --delete build/ ../../var/dashboard/
+        rsync -av --delete dist/ ../../var/dashboard/
     fi
     cd ..
 fi

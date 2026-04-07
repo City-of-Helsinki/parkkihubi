@@ -1,4 +1,4 @@
-import * as chroma from 'chroma-js';
+import chroma from 'chroma-js';
 import * as geojson from 'geojson';
 import * as Leaflet from 'leaflet';
 import { MapViewport, Point, Region, RegionProperties } from './types';

@@ -115,17 +115,15 @@ export default class AuthManager {
         }
     }
 
-    private _authRequestInterceptor = (request: axios.AxiosRequestConfig) => {
+    private _authRequestInterceptor = (
+        request: axios.InternalAxiosRequestConfig
+    ): axios.InternalAxiosRequestConfig => {
         if ((tokenStorage.getTokenAge() || 0) > this.maxTokenAge) {
             this._refreshToken();
         }
-        return {
-            ...request,
-            headers: {
-                ...request.headers,
-                Authorization: `Bearer ${tokenStorage.getToken()}`,
-            }
-        };
+        request.headers = axios.AxiosHeaders.from(request.headers);
+        request.headers.set('Authorization', `Bearer ${tokenStorage.getToken()}`);
+        return request;
     }
 
     private _refreshToken: (() => Promise<AuthToken>) = () => {

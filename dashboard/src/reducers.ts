@@ -124,7 +124,7 @@ function makeReducer<T>(
 
 function dataTime(state: number|null = null, action: Action) {
     if (action.type === 'SET_DATA_TIME') {
-        return action.time.valueOf();
+        return action.time;
     }
     return state;
 }
@@ -156,7 +156,7 @@ function regionUsageHistory(
     action: Action
 ): RegionUsageHistory {
     if (action.type === 'RECEIVE_REGION_STATS') {
-        const timestamp = action.time.valueOf();
+        const timestamp = action.time;
         const oldStats = state[timestamp] || {};
         const newStats = mapByIdAndApply(
             action.data.results, conv.convertRegionStats as any);
@@ -170,7 +170,7 @@ function validParkingsHistory(
     action: Action
 ): ValidParkingsHistory {
     if (action.type === 'RECEIVE_VALID_PARKINGS') {
-        const timestamp = action.time.valueOf();
+        const timestamp = action.time;
         const oldList = state[timestamp] || [];
         const newList = action.data.features.map(
             (feature: {id: string}) => feature.id);
