@@ -30,7 +30,7 @@ if [ ! -e "$openapi" ]; then
     echo "Installing @redocly/cli for the \"openapi\" tool"
     old_dir=$(pwd)
     cd "$generator_dir"
-    NODE_ENV=production yarn
+    NODE_ENV=production pnpm i
     cd "$old_dir"
     echo
 fi
