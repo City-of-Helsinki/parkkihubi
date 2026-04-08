@@ -2,8 +2,8 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Django runserver",
-            "type": "python",
+            "name": "Django: Runserver",
+            "type": "debugpy",
             "request": "launch",
             "program": "${workspaceFolder}/manage.py",
             "args": ["runserver"],
@@ -11,15 +11,15 @@
             "justMyCode": false
         },
         {
-            "name": "Python: Debug Tests",
-            "type": "python",
+            "name": "Django: Debug Tests",
+            "type": "debugpy",
             "request": "launch",
             "purpose": ["debug-test"],
             "justMyCode": false
         },
         {
-            "name": "Python: Attach to docker container",
-            "type": "python",
+            "name": "Django: Debug runserver on Docker",
+            "type": "debugpy",
             "request": "attach",
             "connect": {"host": "localhost", "port": 5678},
             "pathMappings": [
@@ -29,23 +29,6 @@
                 }
             ],
             "justMyCode": false
-        },
-        {
-            "name": "Docker: Python - Django",
-            "type": "docker",
-            "request": "launch",
-            "preLaunchTask": "docker-run: debug",
-            "python": {
-                "pathMappings": [
-                    {
-                        "localRoot": "${workspaceFolder}",
-                        "remoteRoot": "/app"
-                    }
-                ],
-                "projectType": "django",
-                "django": true,
-                "justMyCode": false
-            }
         },
         {
             "name": "Dashboard: Debug React App (Chrome)",

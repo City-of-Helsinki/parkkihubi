@@ -9,7 +9,22 @@ PORT=${DJANGO_PORT:-8000}
 DEBUG_PORT=${DEBUGPY_PORT:-5678}
 
 RUN_MODE=${RUN_MODE:-development}
-RUN_MIGRATIONS=${RUN_MIGRATIONS}
+
+if [[ "$RUN_MODE" == "debug" ]]; then
+    if ! [[ -d /tmp/debugpy ]]; then
+        pip --disable-pip-version-check install debugpy -t /tmp
+    fi
+    echo "Using debugpy on port $DEBUG_PORT..."
+    prefix_cmd=(
+        python /tmp/debugpy --wait-for-client --listen 0.0.0.0:$DEBUG_PORT
+    )
+    default_cmd=(runserver 0.0.0.0:$PORT --nothreading --noreload)
+    RUN_MIGRATIONS=${RUN_MIGRATIONS:-0}
+    RUN_COLLECT_STATIC=${RUN_COLLECT_STATIC:-0}
+else
+    prefix_cmd=()
+    default_cmd=(runserver 0.0.0.0:$PORT)
+fi
 
 if [[ $RUN_MIGRATIONS != "0" ]]; then
     ./manage.py migrate --noinput
@@ -19,15 +34,8 @@ if [[ $RUN_COLLECT_STATIC != "0" ]]; then
     ./manage.py collectstatic --noinput
 fi
 
-if [[ "$RUN_MODE" == "debug" ]]; then
-    if ! [ -d /tmp/debugpy ]; then
-        pip --disable-pip-version-check install debugpy -t /tmp
-    fi
-    echo "Starting Django to port $PORT with debugpy on port $DEBUG_PORT..."
-    python /tmp/debugpy --wait-for-client --listen 0.0.0.0:$DEBUG_PORT \
-        manage.py runserver 0.0.0.0:$PORT --nothreading --noreload
-elif [[ -n "$1" ]]; then
-    ./manage.py "$@"
+if [[ -n "$1" ]]; then
+    "${prefix_cmd[@]}" ./manage.py "$@"
 elif [[ "$RUN_MODE" == "production" ]]; then
     uwsgi \
         --plugin python3 \
@@ -46,5 +54,5 @@ elif [[ "$RUN_MODE" == "production" ]]; then
         --ignore-write-errors \
         --disable-write-exception
 else
-    ./manage.py runserver 0.0.0.0:$PORT
+    "${prefix_cmd[@]}" ./manage.py "${default_cmd[@]}"
 fi

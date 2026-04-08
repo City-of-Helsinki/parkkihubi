@@ -30,6 +30,7 @@ services:
     environment:
       DATABASE_URL: postgis://postgres:postgres@db/parkkihubi
       SECRET_KEY: not-empty
+      RUN_MODE: ${RUN_MODE:-${DOCKER_APP_TARGET:-development}}
     depends_on:
       db:
         condition: service_healthy
