@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { Container, Row, Col } from 'reactstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 
 import { RootState } from '../types';
 
@@ -21,10 +21,10 @@ class App extends React.Component<Props> {
         <Container fluid>
           <Row>
             <Col className="login-form"
-              xs={{ size: 10, offset: 1 }}
-              sm={{ size: 8, offset: 2 }}
-              md={{ size: 6, offset: 3 }}
-              lg={{ size: 4, offset: 4 }}
+              xs={{ span: 10, offset: 1 }}
+              sm={{ span: 8, offset: 2 }}
+              md={{ span: 6, offset: 3 }}
+              lg={{ span: 4, offset: 4 }}
             >
                 <div className="title-section d-flex align-items-center justify-content-center">
                     <img className="logo" src="parkkihubi.svg" alt=""/>

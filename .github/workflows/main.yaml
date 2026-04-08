@@ -97,3 +97,35 @@ jobs:
         run: tox
         env:
           TOXENV: ${{matrix.toxenv}}
+
+  dashboard:
+    strategy:
+      matrix:
+        check: [build, tests]
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10"
+
+      - name: Install dashboard dependencies
+        run: pnpm i
+
+      - name: Build dashboard
+        if: ${{ matrix.check == 'build' }}
+        run: pnpm build
+
+      - name: Test dashboard
+        if: ${{ matrix.check == 'tests' }}
+        run: pnpm test --run

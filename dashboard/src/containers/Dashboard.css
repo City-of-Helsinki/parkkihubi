@@ -6,10 +6,6 @@
     align-items: center;
     justify-content: space-between;
 }
-.toolbar .submit-button {
-    background: white !important;
-    border-color: white !important;
-}
 .map-card, .table-card{
     height: calc(100vh - 140px);
 }

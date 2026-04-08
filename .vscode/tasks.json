@@ -35,6 +35,37 @@
                     "DATABASE_URL": "postgis://parkkihubi:parkkihubi@db/parkkihubi"
                 }
             }
-        }
+        },
+        {
+            "label": "Dashboard: Build",
+            "group": "build",
+            "type": "shell",
+            "command": "pnpm run build",
+            "options": {"cwd": "${workspaceFolder}/dashboard"},
+            "problemMatcher": ["$tsc"],
+        },
+        {
+            "label": "Dashboard: Start",
+            "type": "shell",
+            "command": "pnpm run start",
+            "options": {"cwd": "${workspaceFolder}/dashboard"},
+            "isBackground": true,
+            "problemMatcher": [
+                {
+                    "owner": "vite",
+                    "pattern": {
+                        "regexp": "^(NOMATCH):(\\d+):\\s+(.*)$",
+                        "file": 1,
+                        "line": 2,
+                        "message": 3
+                    },
+                    "background": {
+                        "activeOnStart": true,
+                        "beginsPattern": "VITE",
+                        "endsPattern": "Local:"
+                    }
+                }
+            ],
+        },
     ]
 }

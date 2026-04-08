@@ -1,7 +1,7 @@
 import moment from 'moment';
 import DateTime from 'react-datetime';
 import * as React from 'react';
-import { Button, ButtonGroup, InputGroup } from 'reactstrap';
+import { Button, ButtonGroup, InputGroup } from 'react-bootstrap';
 
 import 'react-datetime/css/react-datetime.css';
 
@@ -40,8 +40,7 @@ class AutoUpdatingDatetime extends Component<Props> {
                     <Button
                         onClick={this.handleUpdateButtonClick}
                         className="update-button"
-                        color="info"
-                        outline={true}
+                        variant="outline-info"
                         active={this.props.autoUpdate}
                     >
                         <i className={iconClass}/>

@@ -1,7 +1,7 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
-import { Button } from 'reactstrap';
+import { Button } from 'react-bootstrap';
 
 import RegionSelector from './RegionSelector';
 import * as dispatchers from '../dispatchers';
@@ -20,7 +20,7 @@ interface Props {
 
 
 class Dashboard extends Component<Props> {
-    timer: NodeJS.Timeout|null = null;
+    timer: ReturnType<typeof setInterval> | null = null;
 
     timerInterval: number = 1000; // 1 second
 
@@ -69,12 +69,8 @@ class Dashboard extends Component<Props> {
                   <img className="logo mini" src="parkkihubi.svg" alt=""/>
                   <h2>Parkkihubi</h2>
               </div>
-              <Button
-                  className="submit-button d-flex align-items-center"
-                  onClick={this.props.onLogout}
-                  color="danger"
-              >
-                  <span>Kirjaudu ulos</span>
+              <Button onClick={this.props.onLogout} variant="outline-dark">
+                  <span className="me-1">Kirjaudu ulos</span>
                   <i className="fa fa-sign-out" />
               </Button>
             </div>
