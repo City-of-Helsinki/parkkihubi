@@ -12,32 +12,6 @@ Ubuntu 24.04.
 
 Current uv.lock pins Django to 5.2, but 4.2 and 6.0 should also work.
 
-## Preferred usage with Visual Studio Code
-
-Install Remote Containers support in Visual Studio Code with these instructions:
-
-* https://code.visualstudio.com/docs/remote/remote-overview
-* https://code.visualstudio.com/docs/remote/containers
-
-After that this should be easy, if all that magic works:
-
-* Open the project folder in Visual Studio Code
-* It asks to reopen the folder in remote container
-* Accept
-* Wait a while for it to automatically build the environment for you
-
-You are free to change the included VSCode settings locally for yourself but it is
-expected that you produce code which pass linters defined in the preferred settings.
-
-In the debug panel you can run following with debugger enabled:
-
-* Django runserver in hot reload mode
-* Django shell
-* Django migrations
-* Generate new Django migrations for all Django apps
-
-Happy hacking :)
-
 ### Python requirements
 
 Use `pip-tools` to install and maintain installed dependencies. This also needs
