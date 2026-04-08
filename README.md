@@ -4,9 +4,13 @@ Parkkihubi is a Django based REST API for processing parking data.
 
 ## Requirements
 
-* Ubuntu 22.04
-* Python 3.10
+* Python >= 3.10
 * PostgreSQL 14 + PostGIS 3.4
+
+Preferred versions are Python 3.12, PostgreSQL 16.13 and PostGIS 3.5 on
+Ubuntu 24.04.
+
+Current uv.lock pins Django to 5.2, but 4.2 and 6.0 should also work.
 
 ## Preferred usage with Visual Studio Code
 
