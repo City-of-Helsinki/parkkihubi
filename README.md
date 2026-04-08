@@ -14,16 +14,16 @@ Current uv.lock pins Django to 5.2, but 4.2 and 6.0 should also work.
 
 ### Python requirements
 
-Use `pip-tools` to install and maintain installed dependencies. This also needs
-build essentials and required development libraries installed.
+Use [uv](https://docs.astral.sh/uv/) to install and maintain installed
+dependencies.  You may also need build essentials and some development
+libraries installed.
 
     sudo apt-get install build-essential libpq-dev
-    pip install pip-tools
+    pipx install uv  # Or see uv's docs for other install methods
 
-Use pip-compile to update the `requirements*.txt` files.
+And then, to install the dependencies:
 
-    pip-compile requirements.in
-    pip-compile requirements-dev.in
+    uv sync
 
 ### Django configuration
 
@@ -47,11 +47,11 @@ Create a basic file for development as follows
 
 Run all tests
 
-    py.test
+    pytest
 
 Run with coverage
 
-    py.test --cov-report html --cov .
+    pytest --cov-report html --cov .
 
 Open `htmlcov/index.html` for the coverage report.
 
