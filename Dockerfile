@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS base
+FROM ubuntu:24.04 AS base
 
 EXPOSE 8000
 
@@ -21,9 +21,9 @@ RUN --mount=type=cache,sharing=locked,target=/var/lib/apt/lists \
     tzdata \
     build-essential
 
-RUN pip install uv
+RUN pip install --break-system-packages uv
 
-RUN adduser -u 1000 --disabled-password --gecos "" appuser
+RUN userdel -r ubuntu && useradd -u 1000 -m appuser
 
 WORKDIR /app
 
