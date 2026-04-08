@@ -1,6 +1,4 @@
 #!/bin/sh
 set -e
 
-if [ -x ../bin/update-notify ]; then
-    ../bin/update-notify "Updating from $prev_ver to $new_ver"
-fi
+update_notify "Updating from $prev_ver to $new_ver" || true
