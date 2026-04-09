@@ -24,6 +24,9 @@ dependencies = [
 ]
 
 [dependency-groups]
+deploy = [
+    "uwsgi>=2.0.31",
+]
 dev = [
     "factory-boy",
     "freezegun",

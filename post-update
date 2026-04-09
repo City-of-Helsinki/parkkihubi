@@ -30,7 +30,7 @@ elif [ "$force_update" = "true" ] || \
 fi
 
 # Update the backend
-uv sync --frozen --no-default-groups
+uv sync --locked --no-default-groups --group deploy
 
 ./manage.py collectstatic --noinput
 

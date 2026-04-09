@@ -51,7 +51,7 @@ ENV VAR_ROOT=/home/appuser/var
 COPY pyproject.toml uv.lock .
 
 RUN --mount=type=cache,sharing=locked,uid=1000,target=/home/appuser/.cache/uv \
-    uv sync --locked --no-default-groups
+    uv sync --locked --no-default-groups --group deploy
 
 # ---------------------------------------------------------------------
 # Development image
@@ -72,14 +72,6 @@ ENTRYPOINT ["./docker-entrypoint"]
 # Production image
 
 FROM base AS production
-
-USER root
-RUN --mount=type=cache,sharing=locked,target=/var/lib/apt/lists \
-    --mount=type=cache,sharing=locked,target=/var/cache/apt \
-    rm -f /etc/apt/apt.conf.d/docker-clean && \
-    apt-get update && \
-    apt-get install --no-install-recommends -y uwsgi uwsgi-plugin-python3
-USER appuser
 
 COPY . /app
 RUN python -m compileall .
