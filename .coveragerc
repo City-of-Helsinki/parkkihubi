@@ -1,8 +1,0 @@
-[run]
-branch = True
-
-[report]
-omit =
-    */.tox/*
-    manage.py
-    time_check_parking.py
