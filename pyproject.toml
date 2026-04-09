@@ -24,6 +24,7 @@ dependencies = [
 
 [dependency-groups]
 deploy = [
+    "redis>=7.4.0",
     "sentry-sdk>=2.57.0",
     "uwsgi>=2.0.31",
 ]
