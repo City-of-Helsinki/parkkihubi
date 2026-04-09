@@ -38,7 +38,6 @@ if [[ -n "$1" ]]; then
     "${prefix_cmd[@]}" ./manage.py "$@"
 elif [[ "$RUN_MODE" == "production" ]]; then
     uwsgi \
-        --plugin python3 \
         --need-app \
         --venv "$VIRTUALENV" \
         --wsgi parkkihubi.wsgi \
