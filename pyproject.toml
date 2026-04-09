@@ -58,3 +58,22 @@ style=[
 
 [tool.uv]
 default-groups = "all"
+
+[tool.pytest]
+strict = true
+pythonpath = ["."]
+DJANGO_SETTINGS_MODULE = "parkkihubi.settings_test"
+addopts = ["--doctest-modules", "--reuse-db"]
+doctest_optionflags = ["NORMALIZE_WHITESPACE", "IGNORE_EXCEPTION_DETAIL"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+precision = 1
+show_missing = true
+omit = [
+     "*/.tox/*",
+     "manage.py",
+     "time_check_parking.py",
+]
