@@ -47,6 +47,7 @@ elif [[ "$RUN_MODE" == "production" ]]; then
         --enable-threads \
         --workers 4 \
         --die-on-term \
+        --py-call-uwsgi-fork-hooks \
         --single-interpreter \
         --thunder-lock \
         --ignore-sigpipe \

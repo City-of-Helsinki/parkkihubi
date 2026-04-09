@@ -1,9 +1,8 @@
+import logging
 import os
 from datetime import timedelta
 
 from environ import Env
-from raven import fetch_git_sha
-from raven.exceptions import InvalidGitRepository
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 assert os.path.isfile(os.path.join(BASE_DIR, 'manage.py'))
@@ -71,7 +70,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    'raven.contrib.django.raven_compat',
     'corsheaders',
     'rest_framework',
     'rest_framework.authtoken',
@@ -125,14 +123,25 @@ TEMPLATES = [
 ##########
 # Sentry #
 ##########
-try:
-    git_sha = fetch_git_sha(BASE_DIR)
-except InvalidGitRepository:
-    git_sha = None
-RAVEN_CONFIG = {
-    'dsn': env.str('SENTRY_DSN', default=None),
-    'release': git_sha,
-}
+SENTRY_DSN = env.str("SENTRY_DSN", "")
+if SENTRY_DSN:
+    import sentry_sdk
+    import sentry_sdk.integrations.django
+    import sentry_sdk.integrations.logging
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        environment=env.str("SENTRY_ENVIRONMENT", "development" if DEBUG else None),
+        send_default_pii=env.bool("SENTRY_SEND_DEFAULT_PII", True),
+        attach_stacktrace=True,
+        integrations=[
+            sentry_sdk.integrations.django.DjangoIntegration(),
+            sentry_sdk.integrations.logging.LoggingIntegration(
+                level=logging.INFO,
+                event_level=logging.WARNING,
+            ),
+        ],
+    )
 
 ############################
 # Languages & Localization #
@@ -233,16 +242,8 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'sentry': {
-            'level': 'ERROR',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-        },
     },
     'loggers': {
-        'root': {
-            'handlers': ['sentry'],
-            'level': 'WARNING',
-        },
         'parkings': {
             'handlers': ['console'],
             'level': 'DEBUG',

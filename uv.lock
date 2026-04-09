@@ -983,12 +983,12 @@ dependencies = [
     { name = "python-dateutil" },
     { name = "python-memcached" },
     { name = "pytz" },
-    { name = "raven" },
     { name = "requests" },
 ]
 
 [package.dev-dependencies]
 deploy = [
+    { name = "sentry-sdk" },
     { name = "uwsgi" },
 ]
 dev = [
@@ -1038,12 +1038,14 @@ requires-dist = [
     { name = "python-dateutil" },
     { name = "python-memcached" },
     { name = "pytz" },
-    { name = "raven" },
     { name = "requests" },
 ]
 
 [package.metadata.requires-dev]
-deploy = [{ name = "uwsgi", specifier = ">=2.0.31" }]
+deploy = [
+    { name = "sentry-sdk", specifier = ">=2.57.0" },
+    { name = "uwsgi", specifier = ">=2.0.31" },
+]
 dev = [
     { name = "django-extensions" },
     { name = "factory-boy" },
@@ -1399,15 +1401,6 @@ wheels = [
 ]
 
 [[package]]
-name = "raven"
-version = "6.10.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/79/57/b74a86d74f96b224a477316d418389af9738ba7a63c829477e7a86dd6f47/raven-6.10.0.tar.gz", hash = "sha256:3fa6de6efa2493a7c827472e984ce9b020797d0da16f1db67197bcc23c8fae54", size = 288902, upload-time = "2018-12-19T11:55:50.498Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/bd/8e/62e26a88c0a1bbae677200baf0767c1022321a6555634f8129e6d55c5ddc/raven-6.10.0-py2.py3-none-any.whl", hash = "sha256:44a13f87670836e153951af9a3c80405d36b43097db869a36e92809673692ce4", size = 284314, upload-time = "2018-12-19T11:55:45.435Z" },
-]
-
-[[package]]
 name = "requests"
 version = "2.33.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1432,6 +1425,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/92/32/587625f91f9a0a3d84688bf9cfc4b2480a7e8ec327cefd0ff2ac891fd2cf/requests-mock-1.12.1.tar.gz", hash = "sha256:e9e12e333b525156e82a3c852f22016b9158220d2f47454de9cae8a77d371401", size = 60901, upload-time = "2024-03-29T03:54:29.446Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/97/ec/889fbc557727da0c34a33850950310240f2040f3b1955175fdb2b36a8910/requests_mock-1.12.1-py2.py3-none-any.whl", hash = "sha256:b1e37054004cdd5e56c84454cc7df12b25f90f382159087f4b6915aaeef39563", size = 27695, upload-time = "2024-03-29T03:54:27.64Z" },
+]
+
+[[package]]
+name = "sentry-sdk"
+version = "2.57.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4f/87/46c0406d8b5ddd026f73adaf5ab75ce144219c41a4830b52df4b9ab55f7f/sentry_sdk-2.57.0.tar.gz", hash = "sha256:4be8d1e71c32fb27f79c577a337ac8912137bba4bcbc64a4ec1da4d6d8dc5199", size = 435288, upload-time = "2026-03-31T09:39:29.264Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c9/64/982e07b93219cb52e1cca5d272cb579e2f3eb001956c9e7a9a6d106c9473/sentry_sdk-2.57.0-py2.py3-none-any.whl", hash = "sha256:812c8bf5ff3d2f0e89c82f5ce80ab3a6423e102729c4706af7413fd1eb480585", size = 456489, upload-time = "2026-03-31T09:39:27.524Z" },
 ]
 
 [[package]]

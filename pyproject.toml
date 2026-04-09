@@ -19,12 +19,12 @@ dependencies = [
     "python-dateutil",
     "python-memcached",
     "pytz",
-    "raven",
     "requests",
 ]
 
 [dependency-groups]
 deploy = [
+    "sentry-sdk>=2.57.0",
     "uwsgi>=2.0.31",
 ]
 dev = [
