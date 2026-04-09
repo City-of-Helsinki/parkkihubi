@@ -30,6 +30,20 @@ export function convertRegionStats(
     };
 }
 
+export function convertOperator(operator: api.Operator): ui.Operator {
+    return {
+        id: operator.id,
+        name: operator.name!,
+    }
+}
+
+export function convertPaymentZone(paymentZone: api.PaymentZone): ui.PaymentZone {
+    return {
+        code: paymentZone.code,
+        name: paymentZone.name!,
+    }
+}
+
 export function convertParking(parking: api.Parking): ui.Parking {
     const props = parking.properties;
     return {
