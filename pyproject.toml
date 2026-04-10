@@ -1,6 +1,6 @@
 [project]
 name = "parkkihubi"
-version = "3.1.0+post0-dev1"
+version = "4.0.0"
 description = "Hub for parking information"
 readme = "README.md"
 requires-python = ">=3.10"
