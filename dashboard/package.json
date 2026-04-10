@@ -5,7 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.2",
-    "axios": "^1.14.0",
+    "axios": "^1.15.0",
     "bootstrap": "^5.3.8",
     "chroma-js": "^3.2.0",
     "font-awesome": "^4.7.0",
