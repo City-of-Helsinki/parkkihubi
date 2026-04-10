@@ -975,7 +975,7 @@ wheels = [
 
 [[package]]
 name = "parkkihubi"
-version = "3.1.0+post0.dev1"
+version = "4.0.0"
 source = { virtual = "." }
 dependencies = [
     { name = "django" },
