@@ -54,6 +54,12 @@ strategy:
     expire_date: null
     session_data: string.empty
     session_key: string.random
+  drf_jwt_2fa_usertwofactorauthdata:
+    id: null
+    user_id: null
+    preferred_2fa_auth: null
+    encrypted_totp_secret: string.empty
+    encrypted_totp_secret_pending: string.empty
   geometry_columns:
     coord_dimension: null
     f_geometry_column: null

@@ -4,8 +4,8 @@
   "private": true,
   "license": "MIT",
   "dependencies": {
-    "@reduxjs/toolkit": "^2.11.2",
-    "axios": "^1.15.0",
+    "@reduxjs/toolkit": "^2.12.0",
+    "axios": "^1.16.1",
     "bootstrap": "^5.3.8",
     "chroma-js": "^3.2.0",
     "font-awesome": "^4.7.0",
@@ -13,16 +13,16 @@
     "leaflet": "^1.9.4",
     "lodash": "^4.18.1",
     "moment": "^2.30.1",
-    "react": "^19.2.4",
+    "react": "^19.2.7",
     "react-bootstrap": "^2.10.10",
-    "react-data-table-component": "^7.7.0",
+    "react-data-table-component": "^7.7.1",
     "react-datetime": "^3.3.1",
-    "react-dom": "^19.2.4",
+    "react-dom": "^19.2.7",
     "react-leaflet": "^5.0.0",
-    "react-redux": "^9.2.0",
+    "react-redux": "^9.3.0",
     "react-select": "^5.10.2",
     "redux": "^5.0.1",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.3"
   },
   "scripts": {
     "start": "vite",
@@ -50,14 +50,14 @@
     "@types/jest": "^30.0.0",
     "@types/leaflet": "^1.9.21",
     "@types/lodash": "^4.17.24",
-    "@types/node": "^25.5.2",
-    "@types/react": "^19.2.14",
+    "@types/node": "^25.9.1",
+    "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
     "@types/react-redux": "^7.1.34",
-    "@vitejs/plugin-react": "^5.2.0",
-    "jsdom": "^27.4.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "jsdom": "^29.1.1",
     "sass": "~1.77.8",
-    "vite": "^7.3.2",
-    "vitest": "^3.2.4"
+    "vite": "^8.0.16",
+    "vitest": "^4.1.8"
   }
 }
