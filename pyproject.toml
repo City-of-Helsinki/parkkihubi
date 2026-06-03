@@ -15,7 +15,7 @@ dependencies = [
     "drf-jwt-2fa>0.4",
     "lxml",
     "owslib",
-    "psycopg2",
+    "psycopg",
     "python-dateutil",
     "python-memcached",
     "pytz",

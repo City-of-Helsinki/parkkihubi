@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'rest_framework_gis',
     'django_filters',
+    'drf_jwt_2fa',
     'parkkihubi',
     'parkings',
     'sanitized_dump',
