@@ -1,0 +1,91 @@
+i {
+    margin-right: 3px !important;
+}
+
+.filter-card {
+    display: table !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important
+}
+
+.row {
+    display: table !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    flex: 1 !important;
+    box-sizing: border-box;
+}
+
+.export-button {
+    color: #515455 !important;
+    box-shadow: none !important;
+    background: hsl(32, 39%, 81%) !important;
+    border-color: #e1cfbb !important;
+    margin-top: 4px;
+}
+
+.export-button:hover {
+    background: #f0e5dd !important;
+    border-color: #f0e5dd !important;
+}
+
+.download-button {
+    color: #515455 !important;
+    box-shadow: none !important;
+    background: #e1cfbb !important;
+    border-color: #e1cfbb !important;
+    float: right;
+    margin-right: 4px;
+}
+
+.download-button:hover {
+    background: #f0e5dd !important;
+    border-color: #f0e5dd !important;
+}
+
+.filter-field {
+    display: table-cell !important;
+    padding: 5px !important;
+}
+
+.multi-select-field {
+    width: 50% !important;
+}
+
+.datepicker-field {
+    width: 160px !important;
+}
+
+.parking-check-button {
+    color: #515455 !important;
+    box-shadow: none !important;
+    background: #f0e5dd !important;
+    border-color: #e1cfbb !important;
+}
+
+.parking-check-button:hover {
+    background: #e1cfbb !important;
+    border-color: #f0e5dd !important;
+}
+
+.parking-check-active {
+    background: #e1cfbb !important;
+}
+
+@media screen and (max-width: 28rem) {
+    .export-button .text {
+        display: none;
+        margin-right: auto !important;
+    }
+
+    .download-button .text {
+        display: none;
+        margin-right: auto !important;
+    }
+
+    .parking-check-button .text {
+        display: none;
+        margin-right: auto !important;
+    }
+}

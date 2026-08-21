@@ -6,7 +6,7 @@ import { centerCoordinates } from './config';
 import * as conv from './converters';
 import {
     AuthenticationState, ParkingRegionMapState, ParkingsMap, RegionsMap,
-    RegionUsageHistory, ValidParkingsHistory,
+    RegionUsageHistory, ValidParkingsHistory, PaymentZones, Operators,
     ViewState } from './types';
 
 // Auth state reducer ////////////////////////////////////////////////
@@ -151,6 +151,22 @@ function parkings(state: ParkingsMap = {}, action: Action): ParkingsMap {
     return state;
 }
 
+function operators(state: any = {}, action: Action): Operators {
+    if (action.type === 'RECEIVE_OPERATORS') {
+        const newOperators = mapByIdAndApply(action.data.results, conv.convertOperator as any);
+        return {...state, ...newOperators } as Operators;
+    }
+    return state;
+}
+
+function paymentZones(state: any = {}, action: Action): PaymentZones {
+    if (action.type === 'RECEIVE_PAYMENT_ZONES') {
+        const newPaymentZones = _.assign({}, ...action.data.results.map((item: any) => ({[item.code]: conv.convertPaymentZone(item)})));
+        return {...state, ...newPaymentZones} as PaymentZones;
+    }
+    return state;
+}
+
 function regionUsageHistory(
     state: RegionUsageHistory = {},
     action: Action
@@ -202,6 +218,8 @@ const rootReducer  = () => combineReducers({
         parkings,
         regionUsageHistory,
         validParkingsHistory,
+        operators,
+        paymentZones,
     });
 
 export default rootReducer;
